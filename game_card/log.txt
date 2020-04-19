@@ -1,0 +1,10 @@
+[INFO] 21:58:19:651 tp0/(19188:19189): soy un log
+[INFO] 21:59:05:524 tp0/(19243:19248): soy un log
+[INFO] 21:59:44:551 tp0/(19295:19300): soy un log
+[INFO] 21:59:44:551 tp0/(19295:19300): puerto del broker: 6006
+[INFO] 22:00:29:432 tp0/(19352:19357): soy un log
+[INFO] 22:00:29:432 tp0/(19352:19357): puerto del broker: 6006
+[INFO] 22:00:47:744 tp0/(19396:19401): soy un log
+[INFO] 22:00:47:750 tp0/(19396:19401): puerto del broker: 6006
+[INFO] 22:02:24:58 tp0/(19472:19477): soy un log
+[INFO] 22:02:24:58 tp0/(19472:19477): puerto del broker: 6006
