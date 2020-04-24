@@ -71,7 +71,9 @@ void process_request(int cod_op, int cliente_fd) {
 			printf("aca llego sv? \n");
 			msg = recibir_mensaje(cliente_fd, &size);
 			printf("aca llego sv012? \n");
-			devolver_mensaje(msg, size, cliente_fd);
+			char* newMessage = "LASTIII";
+			int newSize = strlen(newMessage) + 1;
+			devolver_mensaje(newMessage, newSize, cliente_fd);
 			printf("aca llego sv013? \n");
 			free(msg);
 			break;
