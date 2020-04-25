@@ -1,0 +1,2 @@
+[INFO] 20:09:15:1 tp0/(4683:4688): soy un log
+[INFO] 20:09:15:1 tp0/(4683:4688): puerto del broker: 6002

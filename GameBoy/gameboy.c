@@ -8,44 +8,23 @@
  ============================================================================
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <pthread.h>
 #include<commons/log.h>
 #include<commons/config.h>
 #include<sys/socket.h>
-#include<unistd.h>
-#include<netdb.h>
 #include<commons/collections/list.h>
-#include<string.h>
+#include <serverUtils.h>
+#include <clientUtils.h>
 
 #define IP "127.0.0.1"
-#define TIEMPO_REINTENTO 10
+
 #define TIEMPO_CHECK 15
 
 pthread_t hilo1;
 pthread_t hilo2;
 pthread_t hilo3;
 
-typedef enum
-{
-	MENSAJE=1
-}op_code;
-
-typedef struct
-{
-	int size;
-	void* stream;
-} t_buffer;
-
-typedef struct
-{
-	op_code codigo_operacion;
-	t_buffer* buffer;
-} t_paquete;
-
-int crear_conexion(char *ip, char* puerto);
-void enviar_mensaje(char* mensaje, int socket_cliente);
 
 void server_broker(){
 	char* puerto = "6003";
@@ -256,82 +235,4 @@ int main(void) {
 }
 
 
-int crear_conexion(char *ip, char* puerto)
-{
-	int socket_cliente;
-	char modulo[16];
-	int tid = pthread_self();
-	pthread_getname_np(tid, modulo, 16);
-	int conexion = -2;
-	while (conexion < 0){
-		if (conexion == -1){
-			printf("Reintentando en %d segundos\n", TIEMPO_REINTENTO);
-				sleep(TIEMPO_REINTENTO);
-		}
 
-	struct addrinfo hints;
-	struct addrinfo *server_info;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	getaddrinfo(ip, puerto, &hints, &server_info);
-
-	socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
-
-	conexion = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
-	if(conexion == -1)
-		printf("error de conexion con el %s\n", modulo);
-
-	freeaddrinfo(server_info);
-	}
-
-	return socket_cliente;
-}
-
-void enviar_mensaje(char* mensaje, int socket_cliente)
-{
-	//Quiero mandar el stream de datos	|cod_op|size|mensaje|
-
-	t_buffer *ptr_buffer = malloc(sizeof(t_buffer));
-	t_paquete *paquete = malloc(sizeof(t_paquete));
-
-	//meto la cod_op en el paquete
-	paquete->codigo_operacion = MENSAJE;
-	//asigno el buffer que previamente reserve memoria
-	paquete->buffer = ptr_buffer;
-	//asigno el size del buffer
-	paquete->buffer->size = strlen(mensaje) + 1;
-	//Con el size calculado, reservo memoria para el payload
-	paquete->buffer->stream = malloc(paquete->buffer->size);
-	//con memcpy() lleno el stream
-	memcpy(paquete->buffer->stream, mensaje, paquete->buffer->size);
-
-
-	int bytes = sizeof(int)*2 + ptr_buffer->size;
-
-	//meto el cod_op + size + mensaje todo en un stream de datos
-	void* a_enviar = malloc(bytes);
-	int offset = 0;
-
-	memcpy(a_enviar, &(paquete->codigo_operacion), sizeof(int));
-	offset += sizeof(int);
-	memcpy(a_enviar + offset, &(paquete->buffer->size), sizeof(int));
-	offset += sizeof(int);
-	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
-
-	printf("Intentando enviar\n");
-	if(send(socket_cliente, a_enviar, bytes, 0) == -1)
-		printf("Error al enviar\n");
-	else
-		printf("Enviado\n");
-
-	free(a_enviar);
-	free(paquete->buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
-
-
-}

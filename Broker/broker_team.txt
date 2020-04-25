@@ -10,3 +10,9 @@
 [INFO] 22:04:27:514 tp0/(19088:19095): Mi puerto es: 6002
 [INFO] 22:05:12:258 tp0/(28357:28363): soy un log
 [INFO] 22:05:12:259 tp0/(28357:28363): Mi puerto es: 6002
+[INFO] 20:06:19:665 tp0/(4391:4397): soy un log
+[INFO] 20:06:19:666 tp0/(4391:4397): Mi puerto es: 6002
+[INFO] 20:08:47:195 tp0/(4623:4629): soy un log
+[INFO] 20:08:47:195 tp0/(4623:4629): Mi puerto es: 6002
+[INFO] 20:49:59:803 tp0/(6001:6008): soy un log
+[INFO] 20:49:59:813 tp0/(6001:6008): Mi puerto es: 6002

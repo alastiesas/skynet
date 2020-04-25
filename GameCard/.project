@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>broker</name>
+	<name>GameCard</name>
 	<comment></comment>
 	<projects>
+		<project>clientUtils</project>
+		<project>serverUtils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
