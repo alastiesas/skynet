@@ -5,7 +5,14 @@
  *      Author: utnso
  */
 
+#include <stdio.h>
+#include <libs/conexion.h>
+
 
 int main(int argc, char **argv) {
-	printf("hola");
+	char* string = "Broker";
+
+	int peso = pesoString(string);
+
+	printf("el peso es %d. \n", peso);
 }
