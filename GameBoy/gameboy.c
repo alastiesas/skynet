@@ -5,7 +5,12 @@
  *      Author: utnso
  */
 
+#include <libs/conexion.h>
 
 int main(int argc, char **argv) {
-	printf("hola");
+	char* string = "GameBoy";
+
+	int peso = pesoString(string);
+
+	printf("el peso es %d. \n", peso);
 }
