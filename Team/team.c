@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "team.h"
 
+#include <libs/conexion.h>
 
 
 int main(void)
@@ -42,4 +43,11 @@ int main(void)
 	//loguear mensaje recibido
 	log_info(logger, message);
 	terminar_programa(conexion, logger, config);
+  /*
+	char* string = "Team";
+
+	int peso = pesoString(string);
+
+	printf("el peso es %d. \n", peso);
+  */
 }
