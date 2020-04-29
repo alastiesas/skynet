@@ -1,4 +1,0 @@
-[INFO] 22:38:44:92 tp0/(3617:3622): soy un log
-[INFO] 22:38:44:92 tp0/(3617:3622): puerto del broker: 6006
-[INFO] 20:09:28:446 game-card/(4732:4737): soy un log
-[INFO] 20:09:28:446 game-card/(4732:4737): puerto del broker: 6001

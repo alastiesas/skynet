@@ -12,214 +12,136 @@
 #include <pthread.h>
 #include<commons/log.h>
 #include<commons/config.h>
-#include<sys/socket.h>
 #include<commons/collections/list.h>
-#include <serverUtils.h>
-#include <clientUtils.h>
+#include <conexion.h>
+#include <mensajes.h>
 
-#define IP "127.0.0.1"
-
-#define TIEMPO_CHECK 15
+#define LOG_CONSOLE true
 
 pthread_t hilo1;
 pthread_t hilo2;
 pthread_t hilo3;
 
+t_config* config;
+
 
 void server_broker(){
-	char* puerto = "6003";
-
-	printf("id del thread: '%lu'\n", hilo1);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo1, "Broker");
-	pthread_getname_np(hilo1, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
-
-	int socket_cliente;
+	char* yo = "GameBoy";
+	char* el = "Broker";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo1);
 
-	logger = log_create("game_boy_broker.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
 
-//	config = config_create("game_card.config");
+	char* puerto; //config_get_string reserva la memoria necesaria
+	char* ip;
+puerto="6003";//		puerto = config_get_string_value(config, "PUERTO_BROKER");
+		ip = config_get_string_value(config, "IP_BROKER");
+			log_info(logger, "Puerto del Broker: %s", puerto);
+			log_info(logger, "IP del Broker: %s", ip);
 
-//	puerto = config_get_string_value(config, "PUERTO_BROKER");
-	log_info(logger, "puerto del broker: %s", puerto);
+	uint32_t socket;
 
 	//crear conexion
-	socket_cliente = crear_conexion(IP, puerto);
-	log_info(logger, "conexion creada\n");
-
-	//enviar mensaje
-	int vez = 1;
-	while(1){
-	enviar_mensaje("Buen dia broker soy el game boy\n", socket_cliente);
+	socket = connect_to_server(ip, puerto, logger);
 
 
-	//recibir mensaje
-	char* buffer;
-	printf("intentando recibir cod_op por vez numero %d\n", vez);
-	int cod_op;
-		if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) == -1)
-		printf("error\n");
-			else
-		printf("se recibio la cod op: %d\n", cod_op);
+	//enviar muchos mensajes
+	enviar_muchos_mensajes(yo, el, socket, logger);
 
-		int size;
-	printf("esperando recibir tamanio del mensaje\n");
-	recv(socket_cliente, &size, sizeof(int), MSG_WAITALL);
-	printf("se solicito recibir un tamanio de mensaje de: %d\n", size);
-	buffer = malloc(size);
-	recv(socket_cliente, buffer, size, MSG_WAITALL);
 
-	//loguear mensaje recibido
-	printf("mensaje rerespuesta del %s recibido: %s\n", nombre, buffer);
-	free(buffer);
 
-	sleep(TIEMPO_CHECK);
-	vez++;
-	}
-
-	for(;;);
-	log_info(logger, "fin del la conexion con el broker\n");
-	close(socket_cliente);
+	log_info(logger, "Fin del la conexion con el Broker\n");
+	close(socket);
 	log_destroy(logger);
-//	config_destroy(config);
 
 }
 
 void server_game_card(){
-	char* puerto = "6004";
-
-	printf("id del thread: '%lu'\n", hilo2);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo2, "Game-card");
-	pthread_getname_np(hilo2, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
-
-	int socket_cliente;
+	char* yo = "GameBoy";
+	char* el = "GameCard";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo2);
 
-	logger = log_create("game_boy_game_card.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
 
-//	config = config_create("game_card.config");
+	char* puerto; //config_get_string reserva la memoria necesaria
+	char* ip;
+puerto="6004";//		puerto = config_get_string_value(config, "PUERTO_GAMECARD");
+		ip = config_get_string_value(config, "IP_GAMECARD");
+			log_info(logger, "Puerto del GameCard: %s", puerto);
+			log_info(logger, "IP del GameCard: %s", ip);
 
-//	puerto = config_get_string_value(config, "PUERTO_BROKER");
-	log_info(logger, "puerto del broker: %s", puerto);
+	uint32_t socket;
 
 	//crear conexion
-	socket_cliente = crear_conexion(IP, puerto);
-	log_info(logger, "conexion creada\n");
-
-	//enviar mensaje
-	int vez = 1;
-	while(1){
-	enviar_mensaje("Buen dia game_card soy el game boy\n", socket_cliente);
+	socket = connect_to_server(ip, puerto, logger);
 
 
-	//recibir mensaje
-	char* buffer;
-	printf("intentando recibir cod_op por vez numero %d\n", vez);
-	int cod_op;
-		if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) == -1)
-		printf("error\n");
-			else
-		printf("se recibio la cod op: %d\n", cod_op);
+	//enviar muchos mensajes
+	enviar_muchos_mensajes(yo, el, socket, logger);
 
-		int size;
-	printf("esperando recibir tamanio del mensaje\n");
-	recv(socket_cliente, &size, sizeof(int), MSG_WAITALL);
-	printf("se solicito recibir un tamanio de mensaje de: %d\n", size);
-	buffer = malloc(size);
-	recv(socket_cliente, buffer, size, MSG_WAITALL);
 
-	//loguear mensaje recibido
-	printf("mensaje rerespuesta del %s recibido: %s\n", nombre, buffer);
-	free(buffer);
 
-	sleep(TIEMPO_CHECK);
-	vez++;
-	}
-
-	for(;;);
-	log_info(logger, "fin del la conexion con el broker\n");
-	close(socket_cliente);
+	log_info(logger, "Fin del la conexion con el GameCard\n");
+	close(socket);
 	log_destroy(logger);
-//	config_destroy(config);
+
+
 
 }
 
 void server_team(){
-	char* puerto = "6005";
-
-	printf("id del thread: '%lu'\n", hilo3);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo3, "Team");
-	pthread_getname_np(hilo3, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
-
-	int socket_cliente;
+	char* yo = "GameBoy";
+	char* el = "Team";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo3);
 
-	logger = log_create("game_boy_team.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
 
-//	config = config_create("game_card.config");
+	char* puerto; //config_get_string reserva la memoria necesaria
+	char* ip;
+puerto="6005";//	puerto = config_get_string_value(config, "PUERTO_TEAM");
+		ip = config_get_string_value(config, "IP_TEAM");
+			log_info(logger, "Puerto del Team: %s", puerto);
+			log_info(logger, "IP del Team: %s", ip);
 
-//	puerto = config_get_string_value(config, "PUERTO_BROKER");
-	log_info(logger, "puerto del broker: %s", puerto);
+	uint32_t socket;
 
 	//crear conexion
-	socket_cliente = crear_conexion(IP, puerto);
-	log_info(logger, "conexion creada\n");
-
-	//enviar mensaje
-	int vez = 1;
-	while(1){
-	enviar_mensaje("Buen dia team soy el game boy\n", socket_cliente);
+	socket = connect_to_server(ip, puerto, logger);
 
 
-	//recibir mensaje
-	char* buffer;
-	printf("intentando recibir cod_op por vez numero %d\n", vez);
-	int cod_op;
-		if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) == -1)
-		printf("error\n");
-			else
-		printf("se recibio la cod op: %d\n", cod_op);
+	//enviar muchos mensajes
+	enviar_muchos_mensajes(yo, el, socket, logger);
 
-		int size;
-	printf("esperando recibir tamanio del mensaje\n");
-	recv(socket_cliente, &size, sizeof(int), MSG_WAITALL);
-	printf("se solicito recibir un tamanio de mensaje de: %d\n", size);
-	buffer = malloc(size);
-	recv(socket_cliente, buffer, size, MSG_WAITALL);
 
-	//loguear mensaje recibido
-	printf("mensaje rerespuesta del %s recibido: %s\n", nombre, buffer);
-	free(buffer);
 
-	sleep(TIEMPO_CHECK);
-	vez++;
-	}
-
-	for(;;);
-	log_info(logger, "fin del la conexion con el broker\n");
-	close(socket_cliente);
+	log_info(logger, "Fin del la conexion con el Team\n");
+	close(socket);
 	log_destroy(logger);
-//	config_destroy(config);
 
 }
 
 int main(void) {
 	puts("!!!Hola bienvenido al Game Boy!!!\n"); /* prints !!!Hello World!!! */
+
+//Se crea el logger	obligatorio
+	t_log* obligatorio;		//ver que pide loguear el tp
+	if((obligatorio = log_create("GameBoy.txt", "GameBoy", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+		puts("No se pudo crear el log");
+	}
+	else
+		log_info(obligatorio, "Log del GameBoy creado");
+
+
+//Crear config
+	if((config = config_create("gameBoy.config")) == NULL){
+		log_error(obligatorio, "No se pudo crear la config");
+	}
+	else
+		log_info(obligatorio, "config creada");
+
 
 	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
 
@@ -229,10 +151,10 @@ int main(void) {
 
 
 	for(;;);
+	config_destroy(config);
 	puts("Fin\n");
 
 	return EXIT_SUCCESS;
 }
-
 
 

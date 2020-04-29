@@ -1,2 +1,0 @@
-[INFO] 20:09:40:643 tp0/(4774:4779): soy un log
-[INFO] 20:09:40:643 tp0/(4774:4779): puerto del broker: 6003

@@ -9,96 +9,86 @@
  */
 
 #include<commons/config.h>
-#include <serverUtils.h>
-#include <clientUtils.h>
+#include <conexion.h>
+#include <mensajes.h>
 
 #define IP "127.0.0.1"
 
 
-pthread_t thread;
+
 pthread_t hilo1;
 pthread_t hilo2;
 pthread_t hilo3;
 
+t_config* config;
+
 void cliente_game_card(){
-
-	char* puerto = "6001";
-
-	printf("id del thread: '%lu'\n", hilo1);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo1, "Game-card");
-	pthread_getname_np(hilo1, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
-
+	char* yo = "Broker";
+	char* el = "GameCard";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo1);
 
-	logger = log_create("broker_game_card.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
+	char* puerto;
+puerto="6001";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
 
-	//config = config_create("broker.config");
-	//puerto = config_get_string_value(config, "PUERTO_TEAM");
-	log_info(logger, "Mi puerto es: %s", puerto);
+	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
 
-	puts("Por iniciar servidor");
-	iniciar_servidor(puerto);
+	iniciar_servidor(puerto, logger);
 
 }
 
 void cliente_team(){
-
-	char* puerto = "6002";
-
-	printf("id del thread: '%lu'\n", hilo2);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo2, "Team");
-	pthread_getname_np(hilo2, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
+	char* yo = "Broker";
+	char* el = "Team";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo2);
 
-	logger = log_create("broker_team.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
+	char* puerto;
+	puerto="6002";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
 
-	//config = config_create("broker.config");
-	//puerto = config_get_string_value(config, "PUERTO_TEAM");
-	log_info(logger, "Mi puerto es: %s", puerto);
+	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
 
-	puts("Por iniciar servidor");
-	iniciar_servidor(puerto);
+	iniciar_servidor(puerto, logger);
 
 }
 
 void cliente_game_boy(){
-
-	char* puerto = "6003";
-
-	printf("id del thread: '%lu'\n", hilo3);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo3, "Game-boy");
-	pthread_getname_np(hilo3, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
+	char* yo = "Broker";
+	char* el = "GameBoy";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo3);
 
-	logger = log_create("broker_game_boy.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
+	char* puerto;
+	puerto="6003";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
 
-	//config = config_create("broker.config");
-	//puerto = config_get_string_value(config, "PUERTO_TEAM");
-	log_info(logger, "Mi puerto es: %s", puerto);
+	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
 
-	puts("Por iniciar servidor");
-	iniciar_servidor(puerto);
+	iniciar_servidor(puerto, logger);
 
 }
 
 
 int main(void) {
 	puts("!!!Hola bienvenido al broker!!!\n"); /* prints !!!Hello World!!! */
+
+	//Se crea el logger	obligatorio
+		t_log* obligatorio;		//ver que pide loguear el tp
+		if((obligatorio = log_create("Broker.txt", "Broker", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+			puts("No se pudo crear el log");
+		}
+		else
+			log_info(obligatorio, "Log del Broker creado");
+
+
+	//Crear config
+		if((config = config_create("broker.config")) == NULL){
+			log_error(obligatorio, "No se pudo crear la config");
+		}
+		else
+			log_info(obligatorio, "config creada");
 
 
 	pthread_create(&hilo1, NULL, (void*) cliente_game_card, NULL);

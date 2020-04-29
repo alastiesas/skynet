@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Broker</name>
+	<name>broker</name>
 	<comment></comment>
 	<projects>
-		<project>serverUtils</project>
-		<project>clientUtils</project>
+		<project>utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -13,8 +13,8 @@
 #include<commons/config.h>
 #include<sys/socket.h>
 #include<commons/collections/list.h>
-#include <serverUtils.h>
-#include <clientUtils.h>
+#include <conexion.h>
+#include <mensajes.h>
 
 #define IP "127.0.0.1"
 
@@ -24,100 +24,76 @@ pthread_t thread;
 pthread_t hilo1;
 pthread_t hilo2;
 
+t_config* config;
 
 void server_broker(){
-	char* puerto = "6002";
 
-	printf("id del thread: '%lu'\n", hilo1);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo1, "Broker");
-	pthread_getname_np(hilo1, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
-
-	int socket_cliente;
+	char* yo = "Team";
+	char* el = "Broker";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo1);
 
-	logger = log_create("team_broker.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
 
-//	config = config_create("game_card.config");
+	char* puerto; //config_get_string reserva la memoria necesaria
+	char* ip;
+puerto="6002";//		puerto = config_get_string_value(config, "PUERTO_BROKER");
+		ip = config_get_string_value(config, "IP_BROKER");
+			log_info(logger, "Puerto del Broker: %s", puerto);
+			log_info(logger, "IP del Broker: %s", ip);
 
-//	puerto = config_get_string_value(config, "PUERTO_BROKER");
-	log_info(logger, "puerto del broker: %s", puerto);
+	uint32_t socket;
 
 	//crear conexion
-	socket_cliente = crear_conexion(IP, puerto);
-	log_info(logger, "conexion creada\n");
-
-	//enviar mensaje
-	int vez = 1;
-	while(1){
-	enviar_mensaje("Buen dia broker soy el team\n", socket_cliente);
+	socket = connect_to_server(ip, puerto, logger);
 
 
-	//recibir mensaje
-	char* buffer;
-	printf("intentando recibir cod_op por vez numero %d\n", vez);
-	int cod_op;
-		if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) == -1)
-		printf("error\n");
-			else
-		printf("se recibio la cod op: %d\n", cod_op);
+	//enviar muchos mensajes
+	enviar_muchos_mensajes(yo, el, socket, logger);
 
-		int size;
-	printf("esperando recibir tamanio del mensaje\n");
-	recv(socket_cliente, &size, sizeof(int), MSG_WAITALL);
-	printf("se solicito recibir un tamanio de mensaje de: %d\n", size);
-	buffer = malloc(size);
-	recv(socket_cliente, buffer, size, MSG_WAITALL);
 
-	//loguear mensaje recibido
-	printf("mensaje rerespuesta del %s recibido: %s\n", nombre, buffer);
-	free(buffer);
 
-	sleep(TIEMPO_CHECK);
-	vez++;
-	}
-
-	for(;;);
-	log_info(logger, "fin del la conexion con el broker\n");
-	close(socket_cliente);
+	log_info(logger, "Fin del la conexion con el Broker\n");
+	close(socket);
 	log_destroy(logger);
-//	config_destroy(config);
-
 
 }
 
 void cliente_game_boy(){
-	char* puerto = "6005";
-
-	printf("id del thread: '%lu'\n", hilo2);
-	char nombre[16];	//minimo es 16
-	pthread_setname_np(hilo2, "Game-boy");
-	pthread_getname_np(hilo2, nombre, 16);
-	printf("nombre del thread: %s\n", nombre);
+	char* yo = "Team";
+	char* el = "GameBoy";
 
 	t_log* logger;
-//	t_config* config;
+	logger = initialize_thread(yo, el, hilo2);
 
-	logger = log_create("team_game_boy.txt", "tp0", true, LOG_LEVEL_INFO);
-	log_info(logger, "soy un log");
+	char* puerto;
+puerto="6005";//	puerto = config_get_string_value(config, "PUERTO_TEAM");
 
-	//config = config_create("broker.config");
-	//puerto = config_get_string_value(config, "PUERTO_TEAM");
-	log_info(logger, "Mi puerto es: %s", puerto);
+	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
 
-	puts("Por iniciar servidor");
-	iniciar_servidor(puerto);
-
+	iniciar_servidor(puerto, logger);
 
 }
 
 
 int main(void) {
-	puts("!!!Hola bienvenido al broker!!!\n"); /* prints !!!Hello World!!! */
+	puts("!!!Hola bienvenido al Team!!!\n"); /* prints !!!Hello World!!! */
+
+	//Se crea el logger	obligatorio
+		t_log* obligatorio;		//ver que pide loguear el tp
+		if((obligatorio = log_create("Team.txt", "Team", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+			puts("No se pudo crear el log");
+		}
+		else
+			log_info(obligatorio, "Log del Team creado");
+
+
+	//Crear config
+		if((config = config_create("team.config")) == NULL){
+			log_error(obligatorio, "No se pudo crear la config");
+		}
+		else
+			log_info(obligatorio, "config creada");
 
 	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
 

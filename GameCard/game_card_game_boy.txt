@@ -1,2 +1,0 @@
-[INFO] 20:09:28:445 Game-card/(4732:4738): soy un log
-[INFO] 20:09:28:447 Game-card/(4732:4738): Mi puerto es: 6004
