@@ -13,11 +13,11 @@
 
 void* recibir_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger)
 {
-	void * buffer;
+	void* buffer;
 
 	log_debug(logger, "Esperando recibir tamanio del mensaje\n");
 
-	if(recv(socket_cliente, size, sizeof(int), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el tamanio del mensaje");
 	else
 		log_debug(logger, "Se solicito recibir un tamanio de mensaje de: %d\n", *size);
@@ -32,27 +32,10 @@ void* recibir_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger)
 	return buffer;
 }
 
-
-
-
-void enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
+int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 {
-	//Quiero mandar el stream de datos	|cod_op|size|mensaje|
-	//Para mandar cualquier cosa, primero se crea el paquete, y luego uso la funcion send_paquete()
 
-	t_buffer* ptr_buffer = malloc(sizeof(t_buffer));
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-
-	//meto la cod_op en el paquete
-	paquete->codigo_operacion = MENSAJE;
-	//asigno el buffer que previamente reserve memoria
-	paquete->buffer = ptr_buffer;
-	//asigno el size del buffer
-	paquete->buffer->size = strlen(mensaje) + 1;
-	//Con el size calculado, reservo memoria para el payload
-	paquete->buffer->stream = malloc(paquete->buffer->size);
-	//con memcpy() lleno el stream
-	memcpy(paquete->buffer->stream, mensaje, paquete->buffer->size);
+	t_paquete* paquete = serialize_message(mensaje);
 
 
 //ya se puede enviar el paquete
@@ -65,6 +48,81 @@ void enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 
 //TODO se debe recibir la confirmacion del mensaje
 //	receive_ACK();
+
+	return result;
+}
+
+int32_t send_catch(t_catch* catch, uint32_t socket, t_log* logger){
+
+	t_paquete* paquete = serialize_catch(catch);
+
+
+//ya se puede enviar el paquete
+	int32_t result;
+	log_info(logger, "Intentando enviar");
+	if((result = send_paquete(socket, paquete)) == -1)
+		log_error(logger, "Error al enviar");
+	else
+		log_info(logger, "Se enviaron %d bytes", result);
+
+//TODO se debe recibir la confirmacion del mensaje
+//	receive_ACK();
+
+	return result;
+
+}
+
+t_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+
+	t_catch* catch = malloc(sizeof(t_catch));
+
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+
+	//recibir id de catch
+	if(recv(socket_cliente, &(catch->id), sizeof(catch->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de catch");
+	else
+		log_info(logger, "id de catch recibido: %d", catch->id);
+
+	//recibir size_nombre de catch
+	if(recv(socket_cliente, &(catch->size_nombre), sizeof(catch->size_nombre), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el size_nombre de catch");
+	else
+		log_info(logger, "size_nombre de catch recibido: %d", catch->size_nombre);
+
+catch->nombre = malloc(sizeof(catch->size_nombre));
+
+	//recibir nombre de catch
+	if(recv(socket_cliente, catch->nombre, catch->size_nombre, MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el nombre de catch");
+	else
+		log_info(logger, "nombre de catch recibido: %s", catch->nombre);
+
+	//recibir posX de catch
+	if(recv(socket_cliente, &(catch->posX), sizeof(catch->posX), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir la posX de catch");
+	else
+		log_info(logger, "posX de catch recibida: %d", catch->posX);
+
+	//recibir posY de catch
+	if(recv(socket_cliente, &(catch->posY), sizeof(catch->posY), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir ela posY de catch");
+	else
+		log_info(logger, "posY de catch recibida: %d\n", catch->posY);
+
+
+
+	if(*size != sizeof(catch->id) + sizeof(catch->size_nombre) + strlen(catch->nombre)+1 + sizeof(catch->posX) + sizeof(catch->posY))
+		log_error(logger, "Tamanio erroneo");
+
+	return catch;
 
 }
 
@@ -111,20 +169,36 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 		string_append(&mensaje, yo);
 
 	uint32_t size = strlen(mensaje)+1;
-			size = sizeof(mensaje);
+			//size = sizeof(mensaje);	por que no se puede hacer sizeof??????
+
+	t_catch* catch = malloc(sizeof(t_catch));
+	catch->id = 2;
+	catch->nombre = "pepito";
+	catch->size_nombre = strlen(catch->nombre)+1;
+	catch->posX = 4;
+	catch->posY = 7;
+
 	uint32_t vez = 1;
 	while(1){
-		enviar_mensaje(mensaje, socket, logger);
+		if(vez%2 == 0)	//alterna entre uno y otro
+			enviar_mensaje(mensaje, socket, logger);
+		else
+			send_catch(catch, socket, logger);
 
 	//recibir mensaje
-		log_info(logger, "Intentando recibir el mensaje por vez numero %d\n", vez);
+		log_info(logger, "Intentando recibir el paquete por vez numero %d\n", vez);
 
 		op_code codigo;
 		codigo = receive_cod_op(socket, logger);
 
+
 		char* buffer;
+		t_catch* catch2 = malloc(sizeof(t_catch));
 		switch(codigo){
 		case MENSAJE:
+
+			log_info(logger, "Se recibe un paquete de tipo mensaje");
+
 
 		buffer = recibir_mensaje(socket, &size, logger);
 
@@ -133,9 +207,20 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 			free(buffer);
 			break;
 
-		case CATCH:	//TODO
-			log_error(logger, "Sorry no te recibo ese mensaje, ya trabaste todo el programa");
+		case CATCH:
+
+			log_info(logger, "Se recibe un paquete de tipo CATCH");
+
+
+		catch2 = receive_catch(socket, &size, logger);
+
+		//loguear mensaje recibido
+			log_info(logger, "Mensaje rerespuesta del %s recibido:\n id: %d\n size_nombre: %d\n nombre: %s\n posX: %d\n posY: %d \n", el, catch2->id, catch2->size_nombre, catch2->nombre, catch2->posX, catch2->posY);
+
+			free(catch2->nombre);
+			free(catch2);
 			break;
+
 		default:
 			log_error(logger, "Sorry no te recibo ese mensaje, ya trabaste todo el programa");
 
@@ -144,6 +229,8 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 		sleep(TIEMPO_CHECK);
 		vez++;
 	}
+
+	free(catch);
 }
 
 op_code receive_cod_op(uint32_t socket, t_log* logger){

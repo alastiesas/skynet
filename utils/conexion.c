@@ -109,12 +109,23 @@ void recibir_muchos_mensajes(void* input)
 void process_request(op_code cod_op, int32_t cliente_fd, t_log* logger) {
 	uint32_t size;
 	void* msg;
+	t_catch* catch = malloc(sizeof(t_catch));
 		switch (cod_op) {
 		case MENSAJE:
+
 			msg = recibir_mensaje(cliente_fd, &size, logger);
 			enviar_mensaje(msg, cliente_fd, logger);
 			free(msg);
 			break;
+
+		case CATCH:
+
+			catch = receive_catch(cliente_fd, &size, logger);
+			send_catch(catch, cliente_fd, logger);
+			free(catch);
+			log_warning(logger, "Falta hacer el free() de catch->nombre");
+			break;
+
 		default:
 			log_warning(logger, "se recibio la cod_op %d asi que finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);

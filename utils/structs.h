@@ -30,4 +30,21 @@ typedef struct
 } t_paquete;
 
 
+typedef struct
+{
+		//op_code CATCH
+	uint32_t id;
+	uint32_t size_nombre;
+	char* nombre;
+	uint32_t posX;
+	uint32_t posY;
+
+} t_catch;
+
+
+
+
+
+
+
 #endif /* STRUCTS_H_ */

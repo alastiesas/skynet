@@ -6,6 +6,7 @@
  */
 #include "serialize.h"
 #include <stdio.h>
+#include <stdint.h>		//para uint32_t
 
 
 uint32_t send_paquete(int32_t socket, t_paquete* paquete){
@@ -34,6 +35,78 @@ uint32_t send_paquete(int32_t socket, t_paquete* paquete){
 
 return result;
 }
+
+
+t_paquete* serialize_message(char* mensaje){
+
+	t_buffer* ptr_buffer = malloc(sizeof(t_buffer));
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+
+	//meto la cod_op en el paquete
+	paquete->codigo_operacion = MENSAJE;
+	//asigno el buffer que previamente reserve memoria
+	paquete->buffer = ptr_buffer;
+	//asigno el size del buffer
+	paquete->buffer->size = strlen(mensaje) + 1;
+	//Con el size calculado, reservo memoria para el payload
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+	//con memcpy() lleno el stream
+	memcpy(paquete->buffer->stream, mensaje, paquete->buffer->size);
+
+	return paquete;
+}
+
+
+
+
+
+t_paquete* serialize_catch(t_catch* catch){
+
+	if(catch->nombre == NULL)
+		printf("ERROR FALTA COMPLETAR CAMPOS DEL MENSAJE CATCH");	//no se pueden comprobar enteros sin inicializar
+
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+//	void* stream = paquete->buffer->stream;
+
+	int32_t buffer_size = sizeof(catch->id) + sizeof(catch->size_nombre) + catch->size_nombre + sizeof(catch->posX) + sizeof(catch->posY);
+
+	//meto la cod_op en el paquete
+	paquete->codigo_operacion = CATCH;
+	//asigno el buffer que previamente reserve memoria
+	paquete->buffer = buffer;
+	//asigno el size del buffer
+	paquete->buffer->size = buffer_size;
+	//Con el size calculado, reservo memoria para el payload
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+
+	int offset = 0;
+	//con memcpy() lleno el stream
+	memcpy(paquete->buffer->stream + offset, &(catch->id), sizeof(catch->id));
+	offset += sizeof(catch->id);
+	memcpy(paquete->buffer->stream + offset, &(catch->size_nombre), sizeof(catch->size_nombre));
+	offset += sizeof(catch->size_nombre);
+	memcpy(paquete->buffer->stream + offset, catch->nombre, catch->size_nombre);
+	offset += catch->size_nombre;
+	memcpy(paquete->buffer->stream + offset, &(catch->posX), sizeof(catch->posX));
+	offset += sizeof(catch->posX);
+	memcpy(paquete->buffer->stream + offset, &(catch->posY), sizeof(catch->posY));
+	offset += sizeof(catch->posY);
+
+
+	return paquete;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 void* serializar_paquete(t_paquete* paquete, int bytes)
 {
