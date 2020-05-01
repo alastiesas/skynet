@@ -15,6 +15,5 @@
 #include<commons/config.h>
 #include<readline/readline.h>
 
-#include "utils.h"
 
 #endif /* TEAM_H_ */
