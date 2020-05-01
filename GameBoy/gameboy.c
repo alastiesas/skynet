@@ -25,6 +25,57 @@ pthread_t hilo3;
 t_config* config;
 
 
+void server_broker();
+void server_game_card();
+void server_team();
+
+
+int main(void) {
+	puts("!!!Hola bienvenido al Game Boy!!!\n"); /* prints !!!Hello World!!! */
+
+//Se crea el logger	obligatorio
+	t_log* obligatorio;		//ver que pide loguear el tp
+	if((obligatorio = log_create("GameBoy.txt", "GameBoy", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+		puts("No se pudo crear el log");
+	}
+	else
+		log_info(obligatorio, "Log del GameBoy creado");
+
+
+//Crear config
+	if((config = config_create("gameBoy.config")) == NULL){
+		log_error(obligatorio, "No se pudo crear la config");
+	}
+	else
+		log_info(obligatorio, "config creada");
+
+
+	printf("\n\n");
+	log_warning(obligatorio, "El gameboy debe funcionar con argumentos del main()");
+	log_info(obligatorio, "Segun los argumentos, se envia un unico determinado mensaje, y listo se cierra el proceso gameboy");
+	log_info(obligatorio, "Otra funcionalidad, es suscribirse a una cola del broker por un tiempo limitado. (Sirve para visualizar una cola)\n\n");
+
+
+	log_info(obligatorio, "Aqui se crearon tres hilos que no sirven:");
+	log_info(obligatorio, "Presione enter para continuar");
+    int test; scanf("%d", &test);
+
+	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
+
+	pthread_create(&hilo2, NULL, (void*) server_game_card, NULL);
+
+	pthread_create(&hilo3, NULL, (void*) server_team, NULL);
+
+
+	for(;;);
+	config_destroy(config);
+	puts("Fin\n");
+
+	return EXIT_SUCCESS;
+}
+
+//--------Funciones de prueba
+
 void server_broker(){
 	char* yo = "GameBoy";
 	char* el = "Broker";
@@ -88,7 +139,6 @@ puerto="6004";//		puerto = config_get_string_value(config, "PUERTO_GAMECARD");
 	log_destroy(logger);
 
 
-
 }
 
 void server_team(){
@@ -122,39 +172,3 @@ puerto="6005";//	puerto = config_get_string_value(config, "PUERTO_TEAM");
 	log_destroy(logger);
 
 }
-
-int main(void) {
-	puts("!!!Hola bienvenido al Game Boy!!!\n"); /* prints !!!Hello World!!! */
-
-//Se crea el logger	obligatorio
-	t_log* obligatorio;		//ver que pide loguear el tp
-	if((obligatorio = log_create("GameBoy.txt", "GameBoy", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
-		puts("No se pudo crear el log");
-	}
-	else
-		log_info(obligatorio, "Log del GameBoy creado");
-
-
-//Crear config
-	if((config = config_create("gameBoy.config")) == NULL){
-		log_error(obligatorio, "No se pudo crear la config");
-	}
-	else
-		log_info(obligatorio, "config creada");
-
-
-	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
-
-	pthread_create(&hilo2, NULL, (void*) server_game_card, NULL);
-
-	pthread_create(&hilo3, NULL, (void*) server_team, NULL);
-
-
-	for(;;);
-	config_destroy(config);
-	puts("Fin\n");
-
-	return EXIT_SUCCESS;
-}
-
-

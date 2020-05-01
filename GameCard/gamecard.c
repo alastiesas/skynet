@@ -26,6 +26,49 @@ pthread_t hilo2;
 
 t_config* config;
 
+void server_broker();
+void cliente_game_boy();
+
+
+int main(void) {
+	puts("!!!Hola bienvenido al Game Card!!!\n"); /* prints !!!Hello World!!! */
+
+	//Se crea el logger	obligatorio
+		t_log* obligatorio;		//ver que pide loguear el tp
+		if((obligatorio = log_create("GameCard.txt", "GameCard", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+			puts("No se pudo crear el log");
+		}
+		else
+			log_info(obligatorio, "Log del GameCard creado");
+
+
+	//Crear config
+		if((config = config_create("gameCard.config")) == NULL){
+			log_error(obligatorio, "No se pudo crear la config");
+		}
+		else
+			log_info(obligatorio, "config creada");
+
+
+	printf("\n\n");
+
+	log_info(obligatorio, "Aqui se crearon tres hilos que no sirven:");
+	log_info(obligatorio, "Presione enter para continuar\n\n");
+    int test; scanf("%d", &test);
+
+	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
+
+	pthread_create(&hilo2, NULL, (void*) cliente_game_boy, NULL);
+
+
+	for(;;);
+	puts("Fin\n");
+
+	return EXIT_SUCCESS;
+}
+
+//--------Funciones de prueba
+
 void server_broker(){
 
 	char* yo = "GameCard";
@@ -75,37 +118,3 @@ puerto="6004";//	puerto = config_get_string_value(config, "PUERTO_GAMECARD");
 	iniciar_servidor(puerto, logger);
 
 }
-
-
-int main(void) {
-	puts("!!!Hola bienvenido al Game Card!!!\n"); /* prints !!!Hello World!!! */
-
-	//Se crea el logger	obligatorio
-		t_log* obligatorio;		//ver que pide loguear el tp
-		if((obligatorio = log_create("GameCard.txt", "GameCard", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
-			puts("No se pudo crear el log");
-		}
-		else
-			log_info(obligatorio, "Log del GameCard creado");
-
-
-	//Crear config
-		if((config = config_create("gameCard.config")) == NULL){
-			log_error(obligatorio, "No se pudo crear la config");
-		}
-		else
-			log_info(obligatorio, "config creada");
-
-
-	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
-
-	pthread_create(&hilo2, NULL, (void*) cliente_game_boy, NULL);
-
-
-	for(;;);
-	puts("Fin\n");
-
-	return EXIT_SUCCESS;
-}
-
-
