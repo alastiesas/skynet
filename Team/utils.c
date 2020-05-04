@@ -69,7 +69,7 @@ void enviar_mensaje(char* mensaje, int socket_cliente)
 
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 
-	paquete->codigo_operacion = MENSAJE;
+	paquete->codigo_operacion = NEW;
 	paquete->buffer = malloc(sizeof(t_buffer));
 	paquete->buffer = buffer;
 	printf("aca no llega \n");

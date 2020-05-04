@@ -14,7 +14,7 @@
 #include<commons/string.h>
 #include<commons/config.h>
 #include<readline/readline.h>
-
+#include "serializer.h"
 #include "utils.h"
 
 typedef struct

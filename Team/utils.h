@@ -19,17 +19,8 @@
 #include<sys/socket.h>
 #include<netdb.h>
 #include<string.h>
+#include "serializer.h"
 
-typedef enum
-{
-	MENSAJE = 1,
-}op_code;
-
-typedef struct
-{
-	int size;
-	void* stream;
-} t_buffer;
 
 typedef struct
 {

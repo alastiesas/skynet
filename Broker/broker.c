@@ -1,9 +1,13 @@
 /*
- * broker.c
- *
- *  Created on: 11 abr. 2020
- *      Author: utnso
+ ============================================================================
+ Name        : broker.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
  */
+
 
 #include <stdio.h>
 //#include <libs/conexion.h>
@@ -12,18 +16,8 @@
 int main(void)
 {
 	int p = 2;
+
 	iniciar_servidor();
 
 	return EXIT_SUCCESS;
-  /*
-  char* string = "Broker";
-
-	int peso = pesoString(string);
-
-	printf("el peso es %d. \n", peso);
-  */
 }
- 
-
-
-
