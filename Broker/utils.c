@@ -32,7 +32,7 @@ void iniciar_servidor(void)
         break;
     }
 
-	listen(socket_servidor, SOMAXCONN);
+	listen(socket_servidor, 5);
 
     freeaddrinfo(servinfo);
     printf("servidor escuchando \n");

@@ -6,12 +6,12 @@
  */
 
 #include <stdio.h>
-#include <libs/conexion.h>
+//#include <libs/conexion.h>
 #include "broker.h"
 
 int main(void)
 {
-
+	int p = 2;
 	iniciar_servidor();
 
 	return EXIT_SUCCESS;

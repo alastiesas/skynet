@@ -133,7 +133,7 @@ t_log* iniciar_logger(void)
 //TODO
 t_config* leer_config(void)
 {
-	return config_create("tp0.config");
+	return config_create("team.config");
 
 }
 

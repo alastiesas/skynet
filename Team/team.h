@@ -17,4 +17,12 @@
 
 #include "utils.h"
 
+typedef struct
+{
+	uint32_t id;
+	t_position position;
+	char** objectives;
+	char** pokemons;
+} t_trainer;
+
 #endif /* TEAM_H_ */
