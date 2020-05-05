@@ -68,10 +68,27 @@ void esperar_cliente(int32_t socket_servidor, t_log* logger)
     struct thread_args* args = malloc(sizeof(struct thread_args));
     args->socket = socket_cliente;
     args->logger = logger;
-	pthread_create(&thread,NULL,(void*)recibir_muchos_mensajes, (void *)args);		//TODO comprobar errores de pthread_create
+	pthread_create(&thread,NULL,(void*)broker_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
 
 //	pthread_detach(thread);
 //	free(args);		//liberar args una vez cerrado el hilo
+
+}
+
+void broker_serves_client(void* input){
+	int32_t socket = ((struct thread_args*)input)->socket;
+	t_log*	logger = ((struct thread_args*)input)->logger;
+
+	pthread_t self = pthread_self();
+	log_info(logger, "Se creo un thread %d para atender la conexion del cliente %d\n", self, socket);
+
+	char modulo[16];
+	pthread_getname_np(self, modulo, 16);
+
+	//chequea si es suscripcion o mensaje, y que tipo
+
+	//recive NEW, hace process_NEW()
+
 
 }
 
@@ -106,32 +123,55 @@ void recibir_muchos_mensajes(void* input)
 
 }
 
-void process_request(op_code cod_op, int32_t cliente_fd, t_log* logger) {
+void process_request(op_code cod_op, int32_t socket_cliente, t_log* logger) {
 	uint32_t size;
 	void* msg;
 	t_catch* catch = malloc(sizeof(t_catch));
 		switch (cod_op) {
-		case MENSAJE:
+		case SALUDO:
 
-			msg = recibir_mensaje(cliente_fd, &size, logger);
-			enviar_mensaje(msg, cliente_fd, logger);
+			msg = recibir_mensaje(socket_cliente, &size, logger);
+			enviar_mensaje(msg, socket_cliente, logger);
 			free(msg);
+			break;
+
+		case NEW:
+			process_NEW(socket_cliente, logger);
 			break;
 
 		case CATCH:
 
-			catch = receive_catch(cliente_fd, &size, logger);
-			send_catch(catch, cliente_fd, logger);
+			catch = receive_catch(socket_cliente, &size, logger);
+			send_catch(catch, socket_cliente, logger);
 			free(catch);
 			log_warning(logger, "Falta hacer el free() de catch->nombre");
 			break;
 
 		default:
-			log_warning(logger, "se recibio la cod_op %d asi que finaliza el thread de conexion", cod_op);
+			log_warning(logger, "Aun no recibio la cod_op %d, intente otro dia, finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);
 		}
 }
 
+void process_NEW(int32_t socket_cliente, t_log* logger){
+	uint32_t size;
+	t_new* new = malloc(sizeof(t_new));
+
+	new = receive_new(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	new->id = 99;
+
+	send_ID(new->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+		//mutex
+//	queue_push(queue_NEW, new);		//falta que las librerias conozcan las colas
+		//end_mutex
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
 
 uint32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 {

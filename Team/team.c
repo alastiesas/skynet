@@ -49,43 +49,7 @@ int main(void) {
 			log_info(obligatorio, "config creada");
 
 
-	printf("\n\n");
-	log_info(obligatorio, "En un hilo crea un servidor, para recibir mensajes unitarios del gameboy, asi de simple");
-	log_info(obligatorio, "Ese mensaje, se debe enviar al hilo principal para atenderlo normalmente\n");
 
-
-	log_warning(obligatorio, "Falta inicializacion del Team:");
-	log_info(obligatorio, "Leer el archivo config, y cargar en memoria los entrenadores, sus pokemon necesarios, y sus posiciones");
-	log_info(obligatorio, "Definir objetivo global: sumo los pokemon de cada especie que necesitan todos los entrenadores del TEAM\n");
-
-
-	log_warning(obligatorio, "Falta suscribirse a las colas de mensajes del broker:");
-	log_info(obligatorio, "Un hilo por cada cola");
-	log_info(obligatorio, "Un connect por cada cola: un proceso team va a ser cliente tres veces del broker (sockets abiertos permanentemente)");
-	log_info(obligatorio, "Al hacer el connect, le envio la cola elegida al broker");
-	log_info(obligatorio, "Luego de recibir la confirmacion de suscripcion, se queda permanentemente a la escucha de mensajes");
-	log_info(obligatorio, "Al recibir un mensaje, debe responder confirmando que lo recibio, y vuelve a la escucha permanente\n");
-
-	log_info(obligatorio, "Si no pudo conectar a determinada cola, va a usar respuestas fijas para sus mensajes. Debe reintentar conexion cada X");
-	log_info(obligatorio, "Esos tres sockets van a ser para recibir mensajes. Para enviar, abre un nuevo socket en el hilo principal en los momentos que necesite enviar.\n");
-
-
-	log_warning(obligatorio, "Falta enviar un mensaje GET al broker por cada especie de pokemon que necesite");
-	log_info(obligatorio, "Para enviar un mensaje, hace un nuevo connect al broker, que queda abierto hasta recibir la respuesta con la confirmacion (que puede ser con el id del mensaje)\n");
-
-	log_warning(obligatorio, "Falta crear estructuras en el TEAM");
-	log_info(obligatorio, "Cola de ready, cola de bloqued, etc");
-	log_info(obligatorio, "Lista de entrenadores");
-	log_info(obligatorio, "Lista de pokemon");
-	log_info(obligatorio, "Lista de objetivos\n");
-
-	log_info(obligatorio, "Cada entrenador se crea en estado new");
-	log_info(obligatorio, "Solo un estado exec en simultaneo\n\n");
-
-
-	log_info(obligatorio, "Aqui se crearon dos hilos que no sirven:");
-	log_info(obligatorio, "Presione enter para continuar");
-    int test; scanf("%d", &test);
 
 
 	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);

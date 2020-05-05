@@ -50,11 +50,7 @@ int main(void) {
 			log_info(obligatorio, "config creada");
 
 
-	printf("\n\n");
 
-	log_info(obligatorio, "Aqui se crearon tres hilos que no sirven:");
-	log_info(obligatorio, "Presione enter para continuar\n\n");
-    int test; scanf("%d", &test);
 
 	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
 

@@ -23,6 +23,9 @@ uint32_t send_paquete(int32_t socket, t_paquete* paquete);
 //Recibe un char* y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
 t_paquete* serialize_message(char* mensaje);
 
+//Recibe un t_new y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
+t_paquete* serialize_new(t_new* new);
+
 //Recibe un t_catch y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
 t_paquete* serialize_catch(t_catch* catch);
 

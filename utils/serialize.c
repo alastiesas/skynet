@@ -43,7 +43,7 @@ t_paquete* serialize_message(char* mensaje){
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 
 	//meto la cod_op en el paquete
-	paquete->codigo_operacion = MENSAJE;
+	paquete->codigo_operacion = SALUDO;
 	//asigno el buffer que previamente reserve memoria
 	paquete->buffer = ptr_buffer;
 	//asigno el size del buffer
@@ -57,7 +57,43 @@ t_paquete* serialize_message(char* mensaje){
 }
 
 
+t_paquete* serialize_new(t_new* new){
 
+	if(new->nombre == NULL)
+		printf("ERROR FALTA COMPLETAR CAMPOS DEL MENSAJE NEW");	//no se pueden comprobar enteros sin inicializar
+
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+//	void* stream = paquete->buffer->stream;
+
+	int32_t buffer_size = sizeof(new->id) + sizeof(new->size_nombre) + new->size_nombre + sizeof(new->posX) + sizeof(new->posY) + sizeof(new->cantidad);
+
+	//meto la cod_op en el paquete
+	paquete->codigo_operacion = NEW;
+	//asigno el buffer que previamente reserve memoria
+	paquete->buffer = buffer;
+	//asigno el size del buffer
+	paquete->buffer->size = buffer_size;
+	//Con el size calculado, reservo memoria para el payload
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+
+	int offset = 0;
+	//con memcpy() lleno el stream
+	memcpy(paquete->buffer->stream + offset, &(new->id), sizeof(new->id));
+	offset += sizeof(new->id);
+	memcpy(paquete->buffer->stream + offset, &(new->size_nombre), sizeof(new->size_nombre));
+	offset += sizeof(new->size_nombre);
+	memcpy(paquete->buffer->stream + offset, new->nombre, new->size_nombre);
+	offset += new->size_nombre;
+	memcpy(paquete->buffer->stream + offset, &(new->posX), sizeof(new->posX));
+	offset += sizeof(new->posX);
+	memcpy(paquete->buffer->stream + offset, &(new->posY), sizeof(new->posY));
+	offset += sizeof(new->posY);
+	memcpy(paquete->buffer->stream + offset, &(new->cantidad), sizeof(new->cantidad));
+	offset += sizeof(new->cantidad);
+
+	return paquete;
+}
 
 
 t_paquete* serialize_catch(t_catch* catch){

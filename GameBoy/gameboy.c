@@ -26,11 +26,10 @@ t_config* config;
 
 
 void server_broker();
-void server_game_card();
-void server_team();
 
 
-int main(void) {
+
+int main(int argc, char* argv[]) {
 	puts("!!!Hola bienvenido al Game Boy!!!\n"); /* prints !!!Hello World!!! */
 
 //Se crea el logger	obligatorio
@@ -49,22 +48,76 @@ int main(void) {
 	else
 		log_info(obligatorio, "config creada");
 
+	//./gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]
 
-	printf("\n\n");
-	log_warning(obligatorio, "El gameboy debe funcionar con argumentos del main()");
-	log_info(obligatorio, "Segun los argumentos, se envia un unico determinado mensaje, y listo se cierra el proceso gameboy");
-	log_info(obligatorio, "Otra funcionalidad, es suscribirse a una cola del broker por un tiempo limitado. (Sirve para visualizar una cola)\n\n");
+	if(argc != 7){
+			printf("Solo recibo mensaje NEW con 6 argumentos\n./gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]\n");
+			exit(EXIT_SUCCESS);
+		}
+
+	int proceso;
+	if (strcmp(argv[1], "BROKER") == 0)
+		proceso = 1;
+	else{
+		proceso = 0;
+		printf("Solo envio al broker\n\n");
+		exit(EXIT_SUCCESS);
+	}
+
+	int mensaje;
+	if (strcmp(argv[2], "NEW_POKEMON") == 0)
+		mensaje = 1;
+	else{
+		mensaje = 0;
+		printf("Solo envio mensaje NEW\n\n");
+		exit(EXIT_SUCCESS);
+	}
+
+	switch(proceso){
+	case 1:
+		switch(mensaje){
+		case 1:
+			t_new* new = malloc(sizeof(t_new));		//mover a una funcion aparte asi puedo declarar la estructura
+			new->id = 0;
+			char* name;
+			strcpy(name, argv[3]);
+			strcpy(new->nombre, argv[3]);
+			uint32_t size_name = strlen(name)+1;
+			new->size_nombre = size_name;
+			new->posX = argv[4];				//convertir string a int?
+			new->posY = argv[5];
+			new->cantidad = argv[6];
+
+			//serializar
+			t_paquete* paquete = malloc(sizeof(t_paquete));
+			paquete = serialize_new(t_new* new);
+			//conectar al broker para enviar
+			connect_to_server(ip, puerto, logger);
+			//enviar
+			send_paquete(socket, paquete);
+			//recibir ID
+			receive_ID(socket, logger);
+				//no usa para nada el ID
+			//enviar confirmacion
+			send_ACK(socket, logger);
+
+			//fin de proceso gameboy
+
+			break;
+		default:
+			printf("Error de argumento\n");
+			break;
+		}
+		break;
+	default:
+		printf("Error de argumento\n");
+		break;
+	}
 
 
-	log_info(obligatorio, "Aqui se crearon tres hilos que no sirven:");
-	log_info(obligatorio, "Presione enter para continuar");
-    int test; scanf("%d", &test);
 
-	pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
+	//pthread_create(&hilo1, NULL, (void*) server_broker, NULL);
 
-	pthread_create(&hilo2, NULL, (void*) server_game_card, NULL);
-
-	pthread_create(&hilo3, NULL, (void*) server_team, NULL);
 
 
 	for(;;);
@@ -108,67 +161,4 @@ puerto="6003";//		puerto = config_get_string_value(config, "PUERTO_BROKER");
 
 }
 
-void server_game_card(){
-	char* yo = "GameBoy";
-	char* el = "GameCard";
 
-	t_log* logger;
-	logger = initialize_thread(yo, el, hilo2);
-
-
-	char* puerto; //config_get_string reserva la memoria necesaria
-	char* ip;
-puerto="6004";//		puerto = config_get_string_value(config, "PUERTO_GAMECARD");
-		ip = config_get_string_value(config, "IP_GAMECARD");
-			log_info(logger, "Puerto del GameCard: %s", puerto);
-			log_info(logger, "IP del GameCard: %s", ip);
-
-	uint32_t socket;
-
-	//crear conexion
-	socket = connect_to_server(ip, puerto, logger);
-
-
-	//enviar muchos mensajes
-	enviar_muchos_mensajes(yo, el, socket, logger);
-
-
-
-	log_info(logger, "Fin del la conexion con el GameCard\n");
-	close(socket);
-	log_destroy(logger);
-
-
-}
-
-void server_team(){
-	char* yo = "GameBoy";
-	char* el = "Team";
-
-	t_log* logger;
-	logger = initialize_thread(yo, el, hilo3);
-
-
-	char* puerto; //config_get_string reserva la memoria necesaria
-	char* ip;
-puerto="6005";//	puerto = config_get_string_value(config, "PUERTO_TEAM");
-		ip = config_get_string_value(config, "IP_TEAM");
-			log_info(logger, "Puerto del Team: %s", puerto);
-			log_info(logger, "IP del Team: %s", ip);
-
-	uint32_t socket;
-
-	//crear conexion
-	socket = connect_to_server(ip, puerto, logger);
-
-
-	//enviar muchos mensajes
-	enviar_muchos_mensajes(yo, el, socket, logger);
-
-
-
-	log_info(logger, "Fin del la conexion con el Team\n");
-	close(socket);
-	log_destroy(logger);
-
-}

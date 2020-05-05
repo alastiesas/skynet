@@ -13,8 +13,15 @@
 
 typedef enum
 {
-	MENSAJE=1,
-	CATCH=2
+	SALUDO=1,
+	NEW=2,
+	APPEARED=3,
+	GET=4,
+	LOCALIZED=5,
+	CATCH=6,
+	CAUGHT=7,
+	SUSCRIPCION=8,
+	CONFIRMACION=9
 }op_code;
 
 typedef struct
@@ -41,7 +48,17 @@ typedef struct
 
 } t_catch;
 
+typedef struct
+{
+		//op_code NEW
+	uint32_t id;
+	uint32_t size_nombre;
+	char* nombre;
+	uint32_t posX;
+	uint32_t posY;
+	uint32_t cantidad;
 
+} t_new;
 
 
 

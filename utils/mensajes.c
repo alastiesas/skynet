@@ -52,6 +52,8 @@ int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 	return result;
 }
 
+
+
 int32_t send_catch(t_catch* catch, uint32_t socket, t_log* logger){
 
 	t_paquete* paquete = serialize_catch(catch);
@@ -69,6 +71,120 @@ int32_t send_catch(t_catch* catch, uint32_t socket, t_log* logger){
 //	receive_ACK();
 
 	return result;
+
+}
+
+int32_t send_ID(int32_t ID, uint32_t socket, t_log* logger){
+
+
+	int32_t result;
+	log_info(logger, "Intentando enviar");
+	if((result = send(socket, ID, sizeof(int32_t), 0)) == -1)
+		log_error(logger, "Error al enviar");
+	else
+		log_info(logger, "Se enviaron %d bytes", result);
+
+	return result;
+
+}
+
+int32_t receive_ID(uint32_t socket, t_log* logger){
+	int32_t ID;
+
+	int32_t resultado;
+	if((resultado = recv(socket, &ID, sizeof(int32_t), MSG_WAITALL)) == -1)
+		log_error(logger, "Error al recibir el ID de mensaje\n");
+	else
+		log_info(logger, "Se recibio el ID de mensaje: %d\n", ID);
+
+	return ID;
+}
+
+int32_t send_ACK(uint32_t socket, t_log* logger){
+
+	int32_t ACK = 1;
+	int32_t result;
+	log_info(logger, "Intentando enviar");
+	if((result = send(socket, ACK, sizeof(int32_t), 0)) == -1)
+		log_error(logger, "Error al enviar");
+	else
+		log_info(logger, "Se enviaron %d bytes", result);
+
+	return result;
+
+}
+
+void receive_ACK(uint32_t socket, t_log* logger){
+	int32_t ACK;
+
+	int32_t resultado;
+	if((resultado = recv(socket, &ACK, sizeof(int32_t), MSG_WAITALL)) == -1)
+		log_error(logger, "Error al recibir la confirmacion del mensaje\n");
+	else
+		log_info(logger, "Se recibio la confirmacion del mensaje enviado\n");
+
+	if(ACK != 1)
+		log_warning(logger, "La confirmacion debe ser 1, no %d", ACK);
+
+
+}
+
+t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+
+	t_new* new = malloc(sizeof(t_new));
+
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+
+	//recibir id de new
+	if(recv(socket_cliente, &(new->id), sizeof(new->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de new");
+	else
+		log_info(logger, "id de new recibido: %d", new->id);
+
+	//recibir size_nombre de new
+	if(recv(socket_cliente, &(new->size_nombre), sizeof(new->size_nombre), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el size_nombre de new");
+	else
+		log_info(logger, "size_nombre de new recibido: %d", new->size_nombre);
+
+	new->nombre = malloc(sizeof(new->size_nombre));
+
+	//recibir nombre de new
+	if(recv(socket_cliente, new->nombre, new->size_nombre, MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el nombre de new");
+	else
+		log_info(logger, "nombre de new recibido: %s", new->nombre);
+
+	//recibir posX de new
+	if(recv(socket_cliente, &(new->posX), sizeof(new->posX), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir la posX de new");
+	else
+		log_info(logger, "posX de new recibida: %d", new->posX);
+
+	//recibir posY de new
+	if(recv(socket_cliente, &(new->posY), sizeof(new->posY), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir la posY de new");
+	else
+		log_info(logger, "posY de new recibida: %d\n", new->posY);
+
+	//recibir cantidad de new
+	if(recv(socket_cliente, &(new->cantidad), sizeof(new->cantidad), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir la cantidad de new");
+	else
+		log_info(logger, "cantidad de new recibida: %d\n", new->cantidad);
+
+
+	if(*size != sizeof(new->id) + sizeof(new->size_nombre) + strlen(new->nombre)+1 + sizeof(new->posX) + sizeof(new->posY) + sizeof(new->cantidad))
+		log_error(logger, "Tamanio erroneo");
+
+	return new;
 
 }
 
@@ -135,7 +251,7 @@ t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t 
 		string_append(&file, mi_nombre);
 		string_append(&file, "_");
 		string_append(&file, proceso_a_conectar);
-		string_append(&file, ".txt");
+		string_append(&file, ".log");
 	char * nombre_logger = string_new();
 		string_append(&nombre_logger, "Conexion_con_");
 		string_append(&nombre_logger, proceso_a_conectar);
@@ -195,7 +311,7 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 		char* buffer;
 		t_catch* catch2 = malloc(sizeof(t_catch));
 		switch(codigo){
-		case MENSAJE:
+		case SALUDO:
 
 			log_info(logger, "Se recibe un paquete de tipo mensaje");
 

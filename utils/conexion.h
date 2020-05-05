@@ -32,10 +32,11 @@ struct thread_args {
 
 void iniciar_servidor(char* puerto, t_log* logger);
 void esperar_cliente(int32_t socket_servidor, t_log* logger);
+void broker_serves_client(void* input);
 void recibir_muchos_mensajes(void* input);
 void process_request(op_code cod_op, int32_t cliente_fd, t_log* logger);
 
-
+void process_NEW(int32_t socket_cliente, t_log* logger);
 
 
 uint32_t connect_to_server(char * ip, char * puerto, t_log* logger);

@@ -9,22 +9,37 @@
  */
 
 #include<commons/config.h>
+#include<commons/collections/queue.h>
 #include <conexion.h>
 #include <mensajes.h>
 
 #define IP "127.0.0.1"
 
 
-
-pthread_t hilo1;
-pthread_t hilo2;
-pthread_t hilo3;
+pthread_t hilo_LISTEN;
+pthread_t hilo_NEW;
+pthread_t hilo_APPEARED;
+pthread_t hilo_GET;
+pthread_t hilo_LOCALIZED;
+pthread_t hilo_CATCH;
+pthread_t hilo_CAUGHT;
 
 t_config* config;
 
-void cliente_game_card();
-void cliente_team();
-void cliente_game_boy();
+void broker_LISTEN();
+void cola_NEW();
+void cola_APPEARED();
+void cola_GET();
+void cola_LOCALIZED();
+void cola_CATCH();
+void cola_CAUGHT();
+
+t_queue* queue_NEW;
+t_queue* queue_APPEARED;
+t_queue* queue_GET;
+t_queue* queue_LOCALIZED;
+t_queue* queue_CATCH;
+t_queue* queue_CAUGHT;
 
 
 int main(void) {
@@ -47,51 +62,41 @@ int main(void) {
 			log_info(obligatorio, "config creada");
 
 
-	printf("\n\n");
-	log_info(obligatorio, "Absolutamente todos los mensajes que 'recibe' broker, son en el servidor principal");
-	log_info(obligatorio, "Puede ser una solicitud de suscripcion a una cola.");
-	log_info(obligatorio, "O puede ser un mensaje.");
-	log_info(obligatorio, "Se crea un nuevo hilo para esa conexion, y el proceso original vuelve a la escucha de conexiones.\n");
+	pthread_create(&hilo_NEW, NULL, (void*) cola_NEW, NULL);
+	pthread_create(&hilo_APPEARED, NULL, (void*) cola_APPEARED, NULL);
+	pthread_create(&hilo_GET, NULL, (void*) cola_GET, NULL);
+	pthread_create(&hilo_LOCALIZED, NULL, (void*) cola_LOCALIZED, NULL);
+	pthread_create(&hilo_CATCH, NULL, (void*) cola_CATCH, NULL);
+	pthread_create(&hilo_CAUGHT, NULL, (void*) cola_CAUGHT, NULL);
 
-	log_info(obligatorio, "En el caso de recibir solitud de suscripcion a una cola, el proceso que se conecta informa cual, (solo una por conexion)");
-	log_info(obligatorio, "Al atender la conexion, hace un receive para ver cual cola solicita.");
-	log_info(obligatorio, "El broker guarda el socket del cliente en la lista global de suscriptores correspondiente (que debe ser sincronizada con semaforos)");
-	log_info(obligatorio, "Le responde al proceso que ya esta suscrito");
-	log_info(obligatorio, "De tener mensajes cacheados previos, se los puede mandar en este hilo?. Luego se cierra el hilo.\n");
+	pthread_create(&hilo_LISTEN, NULL, (void*) broker_LISTEN, NULL);
 
 
-	log_info(obligatorio, "En el caso de recibir un mensaje, genera el ID del mensaje");
-	log_info(obligatorio, "Le responde al proceso el ID del mensaje");
-	log_info(obligatorio, "Espera la confirmacion de haber recibido el ID");
-	log_info(obligatorio, "Guarda el mensaje en la cache, y guarda el mensaje en la cola global correspondiente(que debe ser sincronizada con semaforos)\n");
-
-
-	log_info(obligatorio, "Otro hilo del broker, toma el primer mensaje de la cola, y lo manda a todos los suscriptores.");
-	log_info(obligatorio, "-Deberia-, tener un hilo por cada cola, para no tener que esperar que se vacie una cola para seguir con la otra. Ademas, Los clientes tienen un hilo y socket de escucha por cada suscripcion.");
-	log_info(obligatorio, "Ya conoce la cola global de mensajes, y ya conoce la lista global de sockets, no le falta informacion.");
-	log_info(obligatorio, "Ahora le falta hacer el send del mensaje iterando en todos los sockets");
-	log_info(obligatorio, "El envio no va a fallar nunca. El otro proceso tiene un hilo de escucha exclusivo para esa cola, y el broker solo envia un mensaje de esa cola a la vez");
-	log_info(obligatorio, "En el caso de fallar, si el send da 0 o una cantidad incompleta de bytes, es que se desconecto el TEAM, no es responsabilidad del broker arreglarlo. (Si quiere, el otro proceso puede volver a suscribirse, y empezar de 0)\n");
-
-	log_info(obligatorio, "Debe recibir la confirmacion de recepcion del mensaje. Anota en su cache que el mensaje fue enviado satisfactoriamente (Para ese mensaje, para ese socket)");
-	log_info(obligatorio, "Para no demorar el envio del siguiente mensaje (a la espera de la confirmacion del actual), se podria crear un nuevo hilo para cada send.\n");
-
-	log_warning(obligatorio, "Falta crear una cola para cada tipo de mensaje\n\n");
-
-
-	log_info(obligatorio, "Aqui se crearon tres hilos que no sirven:");
-	log_info(obligatorio, "Presione enter para continuar");
-    int test; scanf("%d", &test);
-
-
-	pthread_create(&hilo1, NULL, (void*) cliente_game_card, NULL);
-
-	pthread_create(&hilo2, NULL, (void*) cliente_team, NULL);
-
-	pthread_create(&hilo3, NULL, (void*) cliente_game_boy, NULL);
+	int elementos;
+	while(1){
+		//wait semaforo para decir la cantidad de elementos en la cola de new
+		elementos = queue_size(queue_NEW);
+		log_info(obligatorio, "La cola de NEW tiene, %d elementos\n", elementos);
+	}
 
 
 
+
+
+
+
+
+
+
+
+
+
+	queue_destroy(queue_NEW);
+	queue_destroy(queue_APPEARED);
+	queue_destroy(queue_GET);
+	queue_destroy(queue_LOCALIZED);
+	queue_destroy(queue_CATCH);
+	queue_destroy(queue_CAUGHT);
 	for(;;);
 	puts("Fin\n");
 
@@ -100,12 +105,12 @@ int main(void) {
 
 //--------Funciones de prueba
 
-void cliente_game_card(){
+void broker_LISTEN(){
 	char* yo = "Broker";
-	char* el = "GameCard";
+	char* el = "Todos";
 
 	t_log* logger;
-	logger = initialize_thread(yo, el, hilo1);
+	logger = initialize_thread(yo, el, hilo_LISTEN);
 
 	char* puerto;
 puerto="6001";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
@@ -116,35 +121,22 @@ puerto="6001";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
 
 }
 
-void cliente_team(){
-	char* yo = "Broker";
-	char* el = "Team";
-
-	t_log* logger;
-	logger = initialize_thread(yo, el, hilo2);
-
-	char* puerto;
-	puerto="6002";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
-
-	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
-
-	iniciar_servidor(puerto, logger);
+void cola_NEW(){
 
 }
+void cola_APPEARED(){
 
-void cliente_game_boy(){
-	char* yo = "Broker";
-	char* el = "GameBoy";
+}
+void cola_GET(){
 
-	t_log* logger;
-	logger = initialize_thread(yo, el, hilo3);
+}
+void cola_LOCALIZED(){
 
-	char* puerto;
-	puerto="6003";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
+}
+void cola_CATCH(){
 
-	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
-
-	iniciar_servidor(puerto, logger);
+}
+void cola_CAUGHT(){
 
 }
 
