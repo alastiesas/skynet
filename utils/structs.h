@@ -10,6 +10,8 @@
 
 
 #include <stdint.h>		//para uint32_t
+#include<commons/collections/queue.h>
+#include <semaphore.h>
 
 typedef enum
 {
@@ -60,7 +62,42 @@ typedef struct
 
 } t_new;
 
+typedef struct
+{
+	t_queue* NEW;
+	t_queue* APPEARED;
+	t_queue* GET;
+	t_queue* LOCALIZED;
+	t_queue* CATCH;
+	t_queue* CAUGHT;
 
+} t_colas;
+
+typedef struct
+{
+	t_list* NEW;
+	t_list* APPEARED;
+	t_list* GET;
+	t_list* LOCALIZED;
+	t_list* CATCH;
+	t_list* CAUGHT;
+
+} t_suscriptores;
+
+typedef struct
+{
+	pthread_mutex_t mutex_cola_new;
+	sem_t nuevo_new;
+
+} t_semaforos;
+
+typedef struct
+{
+	t_list* procesos_enviado;
+	t_list* procesos_confirmado;
+	t_new* new;
+
+} t_mensaje;
 
 
 

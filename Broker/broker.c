@@ -8,38 +8,7 @@
  ============================================================================
  */
 
-#include<commons/config.h>
-#include<commons/collections/queue.h>
-#include <conexion.h>
-#include <mensajes.h>
-
-#define IP "127.0.0.1"
-
-
-pthread_t hilo_LISTEN;
-pthread_t hilo_NEW;
-pthread_t hilo_APPEARED;
-pthread_t hilo_GET;
-pthread_t hilo_LOCALIZED;
-pthread_t hilo_CATCH;
-pthread_t hilo_CAUGHT;
-
-t_config* config;
-
-void broker_LISTEN();
-void cola_NEW();
-void cola_APPEARED();
-void cola_GET();
-void cola_LOCALIZED();
-void cola_CATCH();
-void cola_CAUGHT();
-
-t_queue* queue_NEW;
-t_queue* queue_APPEARED;
-t_queue* queue_GET;
-t_queue* queue_LOCALIZED;
-t_queue* queue_CATCH;
-t_queue* queue_CAUGHT;
+#include "broker.h"
 
 
 int main(void) {
@@ -62,6 +31,13 @@ int main(void) {
 			log_info(obligatorio, "config creada");
 
 
+		colas = malloc(sizeof(t_colas));
+		suscriptores = malloc(sizeof(t_suscriptores));
+		semaforos = malloc(sizeof(t_semaforos));
+
+		pthread_mutex_init(&(semaforos->mutex_cola_new), NULL);
+		sem_init(&(semaforos->nuevo_new), 0, 0);
+
 	pthread_create(&hilo_NEW, NULL, (void*) cola_NEW, NULL);
 	pthread_create(&hilo_APPEARED, NULL, (void*) cola_APPEARED, NULL);
 	pthread_create(&hilo_GET, NULL, (void*) cola_GET, NULL);
@@ -74,8 +50,11 @@ int main(void) {
 
 	int elementos;
 	while(1){
+
+		sem_wait(&(semaforos->nuevo_new));
 		//wait semaforo para decir la cantidad de elementos en la cola de new
-		elementos = queue_size(queue_NEW);
+
+		elementos = queue_size(colas->NEW);
 		log_info(obligatorio, "La cola de NEW tiene, %d elementos\n", elementos);
 	}
 
@@ -88,15 +67,14 @@ int main(void) {
 
 
 
-
-
-
-	queue_destroy(queue_NEW);
-	queue_destroy(queue_APPEARED);
-	queue_destroy(queue_GET);
-	queue_destroy(queue_LOCALIZED);
-	queue_destroy(queue_CATCH);
-	queue_destroy(queue_CAUGHT);
+	queue_destroy(colas->NEW);
+	queue_destroy(colas->APPEARED);
+	queue_destroy(colas->GET);
+	queue_destroy(colas->LOCALIZED);
+	queue_destroy(colas->CATCH);
+	queue_destroy(colas->CAUGHT);
+	free(colas);
+	free(suscriptores);
 	for(;;);
 	puts("Fin\n");
 
@@ -117,7 +95,13 @@ puerto="6001";//	puerto = config_get_string_value(config, "PUERTO_BROKER");
 
 	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
 
-	iniciar_servidor(puerto, logger);
+	iniciar_servidor_broker(puerto, logger, colas, suscriptores, semaforos);
+
+
+
+
+
+
 
 }
 

@@ -18,14 +18,18 @@
 
 #define LOG_CONSOLE true
 
+#define IP "127.0.0.1"
+
 pthread_t hilo1;
 pthread_t hilo2;
 pthread_t hilo3;
 
 t_config* config;
 
+char* puerto;
 
 void server_broker();
+void case_NEW(char* argv[], t_log* logger);
 
 
 
@@ -56,8 +60,10 @@ int main(int argc, char* argv[]) {
 		}
 
 	int proceso;
-	if (strcmp(argv[1], "BROKER") == 0)
+	if (strcmp(argv[1], "BROKER") == 0){
 		proceso = 1;
+		puerto = "6001"; //Leer puerto de config
+	}
 	else{
 		proceso = 0;
 		printf("Solo envio al broker\n\n");
@@ -77,30 +83,8 @@ int main(int argc, char* argv[]) {
 	case 1:
 		switch(mensaje){
 		case 1:
-			t_new* new = malloc(sizeof(t_new));		//mover a una funcion aparte asi puedo declarar la estructura
-			new->id = 0;
-			char* name;
-			strcpy(name, argv[3]);
-			strcpy(new->nombre, argv[3]);
-			uint32_t size_name = strlen(name)+1;
-			new->size_nombre = size_name;
-			new->posX = argv[4];				//convertir string a int?
-			new->posY = argv[5];
-			new->cantidad = argv[6];
 
-			//serializar
-			t_paquete* paquete = malloc(sizeof(t_paquete));
-			paquete = serialize_new(t_new* new);
-			//conectar al broker para enviar
-			connect_to_server(ip, puerto, logger);
-			//enviar
-			send_paquete(socket, paquete);
-			//recibir ID
-			receive_ID(socket, logger);
-				//no usa para nada el ID
-			//enviar confirmacion
-			send_ACK(socket, logger);
-
+			case_NEW(argv, obligatorio);
 			//fin de proceso gameboy
 
 			break;
@@ -120,12 +104,55 @@ int main(int argc, char* argv[]) {
 
 
 
-	for(;;);
+
 	config_destroy(config);
 	puts("Fin\n");
 
 	return EXIT_SUCCESS;
 }
+
+void case_NEW(char* argv[], t_log* logger){
+
+	printf("se llego al caso NEW\n");
+	printf("argv[4] como char*: %s\n", argv[4]);
+	printf("argv[4] como int: %d\n", argv[4]);
+
+	int32_t posX = atoi(argv[4]);
+	printf("argv[4] como int luego de convertir: %d\n", posX);
+
+	int32_t posY = atoi(argv[5]);
+	int32_t cantidad = atoi(argv[6]);
+
+
+	t_new* new = malloc(sizeof(t_new));
+	new->id = 0;
+	strcpy(new->nombre, argv[3]);
+	uint32_t size_name = strlen(new->nombre)+1;
+	new->size_nombre = size_name;
+	new->posX = posX;				//convertir string a int?
+	new->posY = posY;
+	new->cantidad = cantidad;
+
+
+	//serializar
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete = serialize_new(new);
+	//conectar al broker para enviar
+	int32_t socket_server;
+	printf("va a conectar en el puerto: %s", puerto);
+	socket_server = connect_to_server(IP, puerto, logger);
+	//enviar
+	send_paquete(socket_server, paquete);
+	//recibir ID
+	receive_ID(socket_server, logger);
+	//no usa para nada el ID
+	//enviar confirmacion
+	send_ACK(socket_server, logger);
+
+
+
+}
+
 
 //--------Funciones de prueba
 

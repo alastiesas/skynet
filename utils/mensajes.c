@@ -79,7 +79,7 @@ int32_t send_ID(int32_t ID, uint32_t socket, t_log* logger){
 
 	int32_t result;
 	log_info(logger, "Intentando enviar");
-	if((result = send(socket, ID, sizeof(int32_t), 0)) == -1)
+	if((result = send(socket, &ID, sizeof(int32_t), 0)) == -1)
 		log_error(logger, "Error al enviar");
 	else
 		log_info(logger, "Se enviaron %d bytes", result);
@@ -105,7 +105,7 @@ int32_t send_ACK(uint32_t socket, t_log* logger){
 	int32_t ACK = 1;
 	int32_t result;
 	log_info(logger, "Intentando enviar");
-	if((result = send(socket, ACK, sizeof(int32_t), 0)) == -1)
+	if((result = send(socket, &ACK, sizeof(int32_t), 0)) == -1)
 		log_error(logger, "Error al enviar");
 	else
 		log_info(logger, "Se enviaron %d bytes", result);

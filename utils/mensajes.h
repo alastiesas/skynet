@@ -48,6 +48,8 @@ int32_t receive_ID(uint32_t socket, t_log* logger);
 int32_t send_ACK(uint32_t socket, t_log* logger);
 void receive_ACK(uint32_t socket, t_log* logger);
 
+t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger);
+
 t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t mi_thread);
 void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger);
 op_code receive_cod_op(uint32_t socket, t_log* logger);

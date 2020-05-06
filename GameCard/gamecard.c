@@ -26,8 +26,11 @@ pthread_t hilo2;
 
 t_config* config;
 
+
+
 void server_broker();
 void cliente_game_boy();
+
 
 
 int main(void) {

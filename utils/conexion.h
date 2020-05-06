@@ -28,18 +28,25 @@ pthread_t thread;
 struct thread_args {
     int32_t socket;
     t_log* logger;
+    t_colas* colas;
+    t_suscriptores* suscriptores;
+    t_semaforos* semaforos;
 };
 
 void iniciar_servidor(char* puerto, t_log* logger);
+void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos);
 void esperar_cliente(int32_t socket_servidor, t_log* logger);
+void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos);
 void broker_serves_client(void* input);
 void recibir_muchos_mensajes(void* input);
 void process_request(op_code cod_op, int32_t cliente_fd, t_log* logger);
+void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores, t_semaforos* semaforos);
+void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos);
 
-void process_NEW(int32_t socket_cliente, t_log* logger);
+void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
 
 
-uint32_t connect_to_server(char * ip, char * puerto, t_log* logger);
+int32_t connect_to_server(char * ip, char * puerto, t_log* logger);
 
 
 #endif /* CONEXION_H_ */
