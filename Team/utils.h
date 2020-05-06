@@ -28,6 +28,8 @@ typedef struct
 	t_buffer* buffer;
 } t_paquete;
 
+int char_count(char* array, char parameter);
+int size_array_config(char** array);
 int crear_conexion(char* ip, char* puerto);
 void enviar_mensaje(char* mensaje, int socket_cliente);
 char* recibir_mensaje(int socket_cliente);
