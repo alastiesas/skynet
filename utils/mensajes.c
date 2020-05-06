@@ -78,11 +78,11 @@ int32_t send_ID(int32_t ID, uint32_t socket, t_log* logger){
 
 
 	int32_t result;
-	log_info(logger, "Intentando enviar");
+	log_debug(logger, "Intentando enviar ID del mensaje");
 	if((result = send(socket, &ID, sizeof(int32_t), 0)) == -1)
-		log_error(logger, "Error al enviar");
+		log_error(logger, "Error al enviar ID del mensaje");
 	else
-		log_info(logger, "Se enviaron %d bytes", result);
+		log_info(logger, "Se envio el ID %d, (%d bytes)", ID, result);
 
 	return result;
 
@@ -104,11 +104,11 @@ int32_t send_ACK(uint32_t socket, t_log* logger){
 
 	int32_t ACK = 1;
 	int32_t result;
-	log_info(logger, "Intentando enviar");
+	log_debug(logger, "Intentando enviar confirmacion");
 	if((result = send(socket, &ACK, sizeof(int32_t), 0)) == -1)
-		log_error(logger, "Error al enviar");
+		log_error(logger, "Error al enviar confirmacion");
 	else
-		log_info(logger, "Se enviaron %d bytes", result);
+		log_info(logger, "Se envio la confirmacion (%d bytes)", result);
 
 	return result;
 
@@ -154,7 +154,7 @@ t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 	else
 		log_info(logger, "size_nombre de new recibido: %d", new->size_nombre);
 
-	new->nombre = malloc(sizeof(new->size_nombre));
+	new->nombre = malloc(new->size_nombre);
 
 	//recibir nombre de new
 	if(recv(socket_cliente, new->nombre, new->size_nombre, MSG_WAITALL) == -1)
@@ -213,7 +213,7 @@ t_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 	else
 		log_info(logger, "size_nombre de catch recibido: %d", catch->size_nombre);
 
-catch->nombre = malloc(sizeof(catch->size_nombre));
+catch->nombre = malloc(catch->size_nombre);
 
 	//recibir nombre de catch
 	if(recv(socket_cliente, catch->nombre, catch->size_nombre, MSG_WAITALL) == -1)

@@ -35,7 +35,7 @@ int main(void) {
 
 	//Se crea el logger	obligatorio
 		t_log* obligatorio;		//ver que pide loguear el tp
-		if((obligatorio = log_create("Team.txt", "Team", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+		if((obligatorio = log_create("Team.log", "Team", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
 			puts("No se pudo crear el log");
 		}
 		else

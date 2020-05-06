@@ -16,7 +16,7 @@ int main(void) {
 
 	//Se crea el logger	obligatorio
 		t_log* obligatorio;		//ver que pide loguear el tp
-		if((obligatorio = log_create("Broker.txt", "Broker", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+		if((obligatorio = log_create("Broker.log", "Broker", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
 			puts("No se pudo crear el log");
 		}
 		else
@@ -37,6 +37,7 @@ int main(void) {
 
 		pthread_mutex_init(&(semaforos->mutex_cola_new), NULL);
 		sem_init(&(semaforos->nuevo_new), 0, 0);
+		colas->NEW = queue_create();
 
 	pthread_create(&hilo_NEW, NULL, (void*) cola_NEW, NULL);
 	pthread_create(&hilo_APPEARED, NULL, (void*) cola_APPEARED, NULL);

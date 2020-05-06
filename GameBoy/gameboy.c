@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
 //Se crea el logger	obligatorio
 	t_log* obligatorio;		//ver que pide loguear el tp
-	if((obligatorio = log_create("GameBoy.txt", "GameBoy", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
+	if((obligatorio = log_create("GameBoy.log", "GameBoy", LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
 		puts("No se pudo crear el log");
 	}
 	else
@@ -126,7 +126,7 @@ void case_NEW(char* argv[], t_log* logger){
 
 	t_new* new = malloc(sizeof(t_new));
 	new->id = 0;
-	strcpy(new->nombre, argv[3]);
+	strcpy(new->nombre, argv[3]);				//valgrind dice "use of uninitialized value of size 4 en strcpy." Pero no aclara si es esta linea
 	uint32_t size_name = strlen(new->nombre)+1;
 	new->size_nombre = size_name;
 	new->posX = posX;				//convertir string a int?
@@ -145,7 +145,7 @@ void case_NEW(char* argv[], t_log* logger){
 	send_paquete(socket_server, paquete);
 	//recibir ID
 	receive_ID(socket_server, logger);
-	//no usa para nada el ID
+		//no usa para nada el ID
 	//enviar confirmacion
 	send_ACK(socket_server, logger);
 

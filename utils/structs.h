@@ -93,8 +93,8 @@ typedef struct
 
 typedef struct
 {
-	t_list* procesos_enviado;
-	t_list* procesos_confirmado;
+	t_list* procesos_enviados;
+	t_list* procesos_confirmados;
 	t_new* new;
 
 } t_mensaje;
