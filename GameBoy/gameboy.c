@@ -24,12 +24,15 @@ pthread_t hilo1;
 pthread_t hilo2;
 pthread_t hilo3;
 
+pthread_t hilo_suscripcion;
+
 t_config* config;
 
 char* puerto;
 
-void server_broker();
+//void server_broker();
 void case_NEW(char* argv[], t_log* logger);
+void modo_suscriptor(queue_code mensaje, int tiempo, t_log* logger);
 
 
 
@@ -53,37 +56,42 @@ int main(int argc, char* argv[]) {
 		log_info(obligatorio, "config creada");
 
 	//./gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]
+	//./gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
 
-	if(argc != 7){
-			printf("Solo recibo mensaje NEW con 6 argumentos\n./gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]\n");
-			exit(EXIT_SUCCESS);
-		}
 
-	int proceso;
+
+	process_code proceso;
 	if (strcmp(argv[1], "BROKER") == 0){
-		proceso = 1;
+		proceso = BROKER;
+		puerto = "6001"; //Leer puerto de config
+	}else if(strcmp(argv[1], "SUSCRIPTOR") == 0){
+		proceso = SUSCRIPTOR;
 		puerto = "6001"; //Leer puerto de config
 	}
 	else{
 		proceso = 0;
-		printf("Solo envio al broker\n\n");
-		exit(EXIT_SUCCESS);
+		printf("Solo envio al broker, o modo suscripcion\n\n");
+		exit(EXIT_FAILURE);
 	}
 
-	int mensaje;
+
+	queue_code mensaje;
 	if (strcmp(argv[2], "NEW_POKEMON") == 0)
-		mensaje = 1;
+		mensaje = COLA_NEW;
 	else{
 		mensaje = 0;
-		printf("Solo envio mensaje NEW\n\n");
-		exit(EXIT_SUCCESS);
+		printf("Solo envio mensaje NEW o me suscribo a NEW\n\n");
+		exit(EXIT_FAILURE);
 	}
 
 	switch(proceso){
-	case 1:
+	case BROKER:
 		switch(mensaje){
-		case 1:
-
+		case COLA_NEW:
+			if(argc != 7){
+				printf("Error de cantidad de argumentos\n");
+				exit(EXIT_FAILURE);
+				}
 			case_NEW(argv, obligatorio);
 			//fin de proceso gameboy
 
@@ -93,8 +101,18 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 		break;
+
+	case SUSCRIPTOR:
+		if(argc != 4){
+			printf("Error de cantidad de argumentos\n");
+			exit(EXIT_FAILURE);
+			}
+		int tiempo = atoi(argv[3]);
+		modo_suscriptor(mensaje, tiempo, obligatorio);
+
+		break;
 	default:
-		printf("Error de argumento\n");
+		printf("Error de primer argumento\n");
 		break;
 	}
 
@@ -114,11 +132,8 @@ int main(int argc, char* argv[]) {
 void case_NEW(char* argv[], t_log* logger){
 
 	printf("se llego al caso NEW\n");
-	printf("argv[4] como char*: %s\n", argv[4]);
-	printf("argv[4] como int: %d\n", argv[4]);
 
-	int32_t posX = atoi(argv[4]);
-	printf("argv[4] como int luego de convertir: %d\n", posX);
+	int32_t posX = atoi(argv[4]);	//convierte a int el argumento de main
 
 	int32_t posY = atoi(argv[5]);
 	int32_t cantidad = atoi(argv[6]);
@@ -149,13 +164,65 @@ void case_NEW(char* argv[], t_log* logger){
 	//enviar confirmacion
 	send_ACK(socket_server, logger);
 
+	free(new->nombre);
+	free(new);
+	//	el send_paquete ya libera el paquete
 
+}
+
+void modo_suscriptor(queue_code cola, int tiempo, t_log* logger){
+
+	//informar que me estoy suscribiendo y a que cola
+	//serializar
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete = serialize_suscripcion(cola);
+	//conectarse al broker
+	int32_t socket_server;
+	printf("va a conectar en el puerto: %s", puerto);
+	socket_server = connect_to_server(IP, puerto, logger);
+	//enviar
+	send_paquete(socket_server, paquete);
+
+	//esperar confirmacion de suscripcion
+	if(receive_ACK(socket_server, logger) == -1){
+		log_error(logger, "No se pudo suscribir\n");
+		exit(EXIT_FAILURE);
+	}
+
+	log_info(logger, "Ya estoy suscrito por %d segundos.\n", tiempo);
+
+	//crear un nuevo hilo para quedarse en escucha
+
+
+    struct thread_args* args = malloc(sizeof(struct thread_args));
+    args->socket = socket_server;
+    args->logger = logger;
+	pthread_create(&hilo_suscripcion, NULL, (void*) recibir_muchos_mensajes, args);
+
+	//hacer un sleep en el hilo principal esperando para cerrar el hilo. (O terminar el proceso mas facil)
+		//(al cerrar el hilo puede quedar memoria sin liberar, pero tambien se cierra el proceso asi que no importa)
+
+	sleep(tiempo);
+	log_info(logger, "Termino la suscripcion\n");
 
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 //--------Funciones de prueba
 
+/*
 void server_broker(){
 	char* yo = "GameBoy";
 	char* el = "Broker";
@@ -187,5 +254,5 @@ puerto="6003";//		puerto = config_get_string_value(config, "PUERTO_BROKER");
 	log_destroy(logger);
 
 }
-
+*/
 

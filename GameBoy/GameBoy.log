@@ -1,0 +1,104 @@
+[INFO] 19:25:27:982 GameBoy/(11964:11964): Log del GameBoy creado
+[INFO] 19:25:30:79 GameBoy/(11964:11964): config creada
+[INFO] 19:26:41:673 GameBoy/(12056:12056): Log del GameBoy creado
+[INFO] 19:26:42:114 GameBoy/(12056:12056): config creada
+[INFO] 19:27:11:912 GameBoy/(12056:12056): Conexion creada
+
+[INFO] 19:27:11:913 GameBoy/(12056:12056): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:27:11:913 GameBoy/(12056:12056): Ya estoy suscrito por 999 segundos.
+
+[INFO] 19:29:55:762 GameBoy/(12220:12220): Log del GameBoy creado
+[INFO] 19:29:56:693 GameBoy/(12220:12220): config creada
+[INFO] 19:30:33:705 GameBoy/(12220:12220): Conexion creada
+
+[INFO] 19:30:41:519 GameBoy/(12220:12220): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:30:41:5 GameBoy/(12220:12220): Ya estoy suscrito por 999 segundos.
+
+[INFO] 19:31:41:247 GameBoy/(12394:12394): Log del GameBoy creado
+[INFO] 19:31:41:656 GameBoy/(12394:12394): config creada
+[INFO] 19:31:50:721 GameBoy/(12394:12394): Conexion creada
+
+[INFO] 19:31:51:238 GameBoy/(12394:12394): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:31:51:510 GameBoy/(12394:12394): Ya estoy suscrito por 999 segundos.
+
+[INFO] 19:33:16:141 GameBoy/(12658:12658): Log del GameBoy creado
+[INFO] 19:33:17:285 GameBoy/(12658:12658): config creada
+[INFO] 19:33:30:598 GameBoy/(12658:12658): Conexion creada
+
+[INFO] 19:33:30:997 GameBoy/(12658:12658): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:33:31:408 GameBoy/(12658:12658): Ya estoy suscrito por 999 segundos.
+
+[INFO] 19:40:43:506 GameBoy/(13006:13006): Log del GameBoy creado
+[INFO] 19:40:43:847 GameBoy/(13006:13006): config creada
+[INFO] 19:42:02:174 GameBoy/(13006:13006): Conexion creada
+
+[INFO] 19:43:06:831 GameBoy/(13006:13006): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:43:13:301 GameBoy/(13006:13006): Ya estoy suscrito por 999 segundos.
+
+[INFO] 19:43:26:321 GameBoy/(13006:13115): Se creo un thread -1210217664 para atender la conexion del 4
+
+[INFO] 19:43:26:321 GameBoy/(13006:13115): 
+esperando recibir cod_op, por vez numero 1
+
+[INFO] 19:58:03:225 GameBoy/(14239:14239): Log del GameBoy creado
+[INFO] 19:58:03:592 GameBoy/(14239:14239): config creada
+[INFO] 19:59:21:547 GameBoy/(14239:14239): Conexion creada
+
+[INFO] 20:04:54:426 GameBoy/(14537:14537): Log del GameBoy creado
+[INFO] 20:04:54:827 GameBoy/(14537:14537): config creada
+[INFO] 20:05:17:543 GameBoy/(14595:14595): Log del GameBoy creado
+[INFO] 20:05:18:59 GameBoy/(14595:14595): config creada
+[INFO] 20:06:26:469 GameBoy/(14595:14595): Conexion creada
+
+[INFO] 20:06:33:590 GameBoy/(14595:14595): Se recibio el ID de mensaje: 99
+
+[INFO] 20:06:34:798 GameBoy/(14595:14595): Se envio la confirmacion (4 bytes)
+[INFO] 20:08:11:997 GameBoy/(14796:14796): Log del GameBoy creado
+[INFO] 20:08:12:492 GameBoy/(14796:14796): config creada
+[INFO] 20:08:17:303 GameBoy/(14796:14796): Conexion creada
+
+[INFO] 20:08:17:304 GameBoy/(14796:14796): Se recibio el ID de mensaje: 99
+
+[INFO] 20:08:17:304 GameBoy/(14796:14796): Se envio la confirmacion (4 bytes)
+[INFO] 20:08:34:497 GameBoy/(14854:14854): Log del GameBoy creado
+[INFO] 20:08:36:58 GameBoy/(14854:14854): config creada
+[INFO] 20:08:47:4 GameBoy/(14854:14854): Conexion creada
+
+[INFO] 20:08:48:700 GameBoy/(14854:14854): Se recibio el ID de mensaje: 99
+
+[INFO] 20:08:49:214 GameBoy/(14854:14854): Se envio la confirmacion (4 bytes)
+[INFO] 20:10:49:141 GameBoy/(15055:15055): Log del GameBoy creado
+[INFO] 20:10:49:722 GameBoy/(15055:15055): config creada
+[INFO] 20:11:00:419 GameBoy/(15055:15055): Conexion creada
+
+[INFO] 20:11:01:843 GameBoy/(15055:15055): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:11:03:27 GameBoy/(15055:15055): Ya estoy suscrito por 3 segundos.
+
+[INFO] 20:11:16:181 GameBoy/(15055:15121): Se creo un thread -1210217664 para atender la conexion del 4
+
+[INFO] 20:11:16:181 GameBoy/(15055:15121): 
+esperando recibir cod_op, por vez numero 1
+
+[INFO] 20:11:34:493 GameBoy/(15055:15055): Termino la suscripcion
+
+[INFO] 20:13:15:108 GameBoy/(15216:15216): Log del GameBoy creado
+[INFO] 20:13:15:669 GameBoy/(15216:15216): config creada
+[INFO] 20:13:26:121 GameBoy/(15216:15216): Conexion creada
+
+[INFO] 20:13:26:630 GameBoy/(15216:15216): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:13:26:0 GameBoy/(15216:15216): Ya estoy suscrito por 3 segundos.
+
+[INFO] 20:13:28:928 GameBoy/(15216:15274): Se creo un thread -1210217664 para atender la conexion del 4
+
+[INFO] 20:13:34:584 GameBoy/(15216:15274): 
+esperando recibir cod_op, por vez numero 1
+
+[INFO] 20:13:37:660 GameBoy/(15216:15216): Termino la suscripcion
+

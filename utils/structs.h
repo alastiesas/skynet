@@ -15,16 +15,37 @@
 
 typedef enum
 {
-	SALUDO=1,
-	NEW=2,
-	APPEARED=3,
-	GET=4,
-	LOCALIZED=5,
-	CATCH=6,
-	CAUGHT=7,
-	SUSCRIPCION=8,
-	CONFIRMACION=9
+	NEW=1,
+	APPEARED=2,
+	GET=3,
+	LOCALIZED=4,
+	CATCH=5,
+	CAUGHT=6,
+	SUSCRIPCION=7,
+	CONFIRMACION=8,
+	SALUDO=9
 }op_code;
+
+typedef enum
+{
+	COLA_NEW=1,
+	COLA_APPEARED=2,
+	COLA_GET=3,
+	COLA_LOCALIZED=4,
+	COLA_CATCH=5,
+	COLA_CAUGHT=6,
+
+}queue_code;
+
+typedef enum
+{
+	BROKER=1,
+	TEAM=2,
+	GAMECARD=3,
+	GAMEBOY=4,
+	SUSCRIPTOR=5 //lo usa el gameboy para suscribirse al broker
+
+}process_code;
 
 typedef struct
 {
@@ -87,17 +108,18 @@ typedef struct
 typedef struct
 {
 	pthread_mutex_t mutex_cola_new;
+	pthread_mutex_t mutex_subs_new;
 	sem_t nuevo_new;
 
 } t_semaforos;
 
 typedef struct
 {
-	t_list* procesos_enviados;
-	t_list* procesos_confirmados;
-	t_new* new;
+	t_list* subs_enviados;
+	t_list* subs_confirmados;
+	void* t_mensaje;
 
-} t_mensaje;
+} t_pending;
 
 
 

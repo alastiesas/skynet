@@ -56,6 +56,24 @@ t_paquete* serialize_message(char* mensaje){
 	return paquete;
 }
 
+t_paquete* serialize_suscripcion(queue_code cola){
+
+	t_buffer* ptr_buffer = malloc(sizeof(t_buffer));
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+
+	//meto la cod_op en el paquete
+	paquete->codigo_operacion = SUSCRIPCION;
+	//asigno el buffer que previamente reserve memoria
+	paquete->buffer = ptr_buffer;
+	//asigno el size del buffer
+	paquete->buffer->size = sizeof(queue_code);
+	//Con el size calculado, reservo memoria para el payload
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+	//con memcpy() lleno el stream
+	memcpy(paquete->buffer->stream, &cola, paquete->buffer->size);
+
+	return paquete;
+}
 
 t_paquete* serialize_new(t_new* new){
 

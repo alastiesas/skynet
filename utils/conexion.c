@@ -49,75 +49,7 @@ void iniciar_servidor(char* puerto, t_log* logger)
     	esperar_cliente(socket_servidor, logger);
 }
 
-void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos)
-{
-	pthread_t thread = pthread_self();
-	int32_t socket_servidor;
 
-
-    struct addrinfo hints, *servinfo, *p;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    getaddrinfo(IP, puerto, &hints, &servinfo);
-
-    for (p=servinfo; p != NULL; p = p->ai_next)
-    {
-        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	log_error(logger, "Error de socket()");
-        	continue;
-        }
-
-        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
-            close(socket_servidor);
-            log_error(logger, "Error de bind (el puerto esta ocupado), reinicie el programa");
-            for(;;);
-            continue;
-        }
-        break;
-    }
-
-	listen(socket_servidor, SOMAXCONN);
-	log_info(logger, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
-
-    freeaddrinfo(servinfo);
-
-    while(1)
-    	esperar_clientes(socket_servidor, logger, colas, suscriptores, semaforos);
-}
-
-void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos)
-{
-	pthread_t self = pthread_self();
-	struct sockaddr_in dir_cliente;
-
-	uint32_t tam_direccion = sizeof(struct sockaddr_in);
-
-	log_info(logger, "Esperando conexion en el thread %d", self);
-
-	int32_t socket_cliente;
-	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
-		log_error(logger, "Error al aceptar cliente");
-	else
-		log_info(logger, "Conexion aceptada");
-
-
-    struct thread_args* args = malloc(sizeof(struct thread_args));
-    args->socket = socket_cliente;
-    args->logger = logger;
-    args->colas = colas;
-    args->suscriptores = suscriptores;
-    args->semaforos = semaforos;
-
-	pthread_create(&thread,NULL,(void*)broker_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
-
-//	pthread_detach(thread);
-//	free(args);		//liberar args una vez cerrado el hilo
-
-}
 
 void esperar_cliente(int32_t socket_servidor, t_log* logger)
 {
@@ -147,57 +79,22 @@ void esperar_cliente(int32_t socket_servidor, t_log* logger)
 
 
 
-void broker_serves_client(void* input){
-	int32_t socket = ((struct thread_args*)input)->socket;
-	t_log*	logger = ((struct thread_args*)input)->logger;
-	t_colas* colas = ((struct thread_args*)input)->colas;
-	t_suscriptores*	suscriptores = ((struct thread_args*)input)->suscriptores;
-	t_semaforos* semaforos = ((struct thread_args*)input)->semaforos;
-
-	pthread_t self = pthread_self();
-	log_info(logger, "Se creo un thread %d para atender la conexion del cliente %d\n", self, socket);
-
-	char modulo[16];
-	pthread_getname_np(self, modulo, 16);
-
-	op_code cod_op;
-
-	int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
-	if(recibido == -1)
-		log_error(logger, "Error del recv()");
-	if(recibido == 0)
-		log_error(logger, "Se recibieron 0 bytes, se cierra el recv()");
-
-	log_info(logger, "se recibieron %d bytes", recibido);
-
-	log_info(logger, "se recibio la cod op: %d\n", cod_op);
-
-	if(cod_op == SUSCRIPCION)
-		process_suscripcion(cod_op, socket, logger, suscriptores, semaforos);
-	else
-		process_mensaje(cod_op, socket, logger, colas, semaforos);
-
-
-
-
-}
-
 void recibir_muchos_mensajes(void* input)
 {
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;
 
 	pthread_t self = pthread_self();
-	log_info(logger, "Se creo un thread %d para atender la conexion del cliente %d\n", self, socket);
+	log_info(logger, "Se creo un thread %d para atender la conexion del %d\n", self, socket);
 
 	char modulo[16];
 	pthread_getname_np(self, modulo, 16);
 
 	int vez = 1;
 	while(1){
-	log_info(logger, "esperando cod_op del %s, por vez numero %d\n", modulo, vez);
+	log_info(logger, "\nesperando recibir cod_op, por vez numero %d\n", vez);
 	op_code cod_op;
-
+			//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
 	int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 	if(recibido == -1)
 		log_error(logger, "Error del recv()");
@@ -213,82 +110,43 @@ void recibir_muchos_mensajes(void* input)
 
 }
 
-void process_request(op_code cod_op, int32_t socket_cliente, t_log* logger) {
+void process_request(op_code cod_op, int32_t socket, t_log* logger) {
 	uint32_t size;
 	void* msg;
 	t_catch* catch = malloc(sizeof(t_catch));
+	t_new* new = malloc(sizeof(t_new));
 		switch (cod_op) {
 		case SALUDO:
 
-			msg = recibir_mensaje(socket_cliente, &size, logger);
-			enviar_mensaje(msg, socket_cliente, logger);
-			free(msg);
+			msg = recibir_mensaje(socket, &size, logger);
+
+			log_info(logger, "Se recibio el mensaje: %s", msg);
 			break;
 
 		case NEW:
-	//		process_NEW(socket_cliente, logger);
+			log_info(logger, "Se recibe el mensaje:\n");
+			new = receive_new(socket, &size, logger);
+			//imprimir_new();	//el recv ya imprime
+			free(new->nombre);
 			break;
 
 		case CATCH:
-
-			catch = receive_catch(socket_cliente, &size, logger);
-			send_catch(catch, socket_cliente, logger);
-			free(catch);
-			log_warning(logger, "Falta hacer el free() de catch->nombre");
+			log_info(logger, "Se recibe el mensaje:\n");
+			catch = receive_catch(socket, &size, logger);
+			//imprimir_catch();		//el recv ya imprime
+			free(catch->nombre);
 			break;
 
 		default:
 			log_warning(logger, "Aun no recibio la cod_op %d, intente otro dia, finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);
 		}
-}
-
-void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores, t_semaforos* semaforos) {
-
-}
-
-void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos) {
-	//uint32_t size;
-
-		switch (cod_op) {
-
-		case NEW:
-			process_NEW(socket_cliente, logger, colas->NEW, semaforos);
-			break;
-
-		default:
-			log_warning(logger, "Error de numero de cod_op, finaliza el thread de conexion", cod_op);
-			pthread_exit(NULL);
-		}
+		free(msg);
+		free(catch);
+		free(new);
 }
 
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos){
-	uint32_t size;
-	t_new* new = malloc(sizeof(t_new));
-
-	new = receive_new(socket_cliente, &size, logger);
-
-	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
-	new->id = 99;
-
-	send_ID(new->id, socket_cliente, logger);
-
-	receive_ACK(socket_cliente, logger);
-
-
-	pthread_mutex_lock(&(semaforos->mutex_cola_new));
-	queue_push(queue_NEW, new);			//falta crear estructura t_mensaje
-    pthread_mutex_unlock(&(semaforos->mutex_cola_new));
-
-
-    int elementos = queue_size(queue_NEW);
-    log_info(logger, "La cola de NEW tiene, %d elementos\n", elementos);
-    sem_post(&(semaforos->nuevo_new));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
-}
 
 int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 {

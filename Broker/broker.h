@@ -13,9 +13,6 @@
 #include <mensajes.h>
 
 
-#define IP "127.0.0.1"
-
-
 
 t_colas* colas;
 t_suscriptores* suscriptores;
@@ -42,7 +39,29 @@ void cola_LOCALIZED();
 void cola_CATCH();
 void cola_CAUGHT();
 
+//inicia el servidor del broker con las referencias a colas y semaforos necesarias
+void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos);
+
+//atiende clientes en un nuevo hilo con la funcion broker_server_client()
+void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos);
+
+//verifica si lo que se recibe es una suscripcion o un mensaje, y lo procesa segun corresponda
+void broker_serves_client(void* input);
 
 
+void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores, t_semaforos* semaforos);
+
+
+void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos);
+
+//mutex funciona sin pasarlo como puntero??
+void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
+
+//agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
+//mutex funciona sin pasarlo como puntero??
+void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log* logger);
+
+
+queue_code receive_cola(uint32_t socket, t_log* logger);
 
 #endif /* BROKER_H_ */

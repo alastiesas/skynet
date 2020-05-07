@@ -1,0 +1,11 @@
+[INFO] 19:32:44:474 Conexion_con_Broker/(12564:12577): Log del GameCard creado
+[INFO] 19:32:44:474 Conexion_con_Broker/(12564:12577): Proceso a conectar: Broker
+
+[INFO] 19:32:44:474 Conexion_con_Broker/(12564:12577): Puerto del Broker: 6001
+[INFO] 19:32:44:474 Conexion_con_Broker/(12564:12577): IP del Broker: 127.0.0.1
+[INFO] 19:32:44:475 Conexion_con_Broker/(12564:12577): Conexion creada
+
+[INFO] 19:32:44:475 Conexion_con_Broker/(12564:12577): Intentando enviar
+[INFO] 19:32:44:475 Conexion_con_Broker/(12564:12577): Se enviaron 31 bytes
+[INFO] 19:32:44:475 Conexion_con_Broker/(12564:12577): Intentando recibir el paquete por vez numero 1
+

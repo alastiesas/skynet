@@ -114,20 +114,27 @@ int32_t send_ACK(uint32_t socket, t_log* logger){
 
 }
 
-void receive_ACK(uint32_t socket, t_log* logger){
+int32_t receive_ACK(uint32_t socket, t_log* logger){
 	int32_t ACK;
 
 	int32_t resultado;
-	if((resultado = recv(socket, &ACK, sizeof(int32_t), MSG_WAITALL)) == -1)
+	if((resultado = recv(socket, &ACK, sizeof(int32_t), MSG_WAITALL)) == -1){
 		log_error(logger, "Error al recibir la confirmacion del mensaje\n");
+		return -1; //failure
+	}
 	else
 		log_info(logger, "Se recibio la confirmacion del mensaje enviado\n");
 
-	if(ACK != 1)
+	if(ACK != 1){
 		log_warning(logger, "La confirmacion debe ser 1, no %d", ACK);
-
+		return -1; //failure
+	}
+	else
+		return 0; //success
 
 }
+
+
 
 t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 

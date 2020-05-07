@@ -23,6 +23,10 @@ uint32_t send_paquete(int32_t socket, t_paquete* paquete);
 //Recibe un char* y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
 t_paquete* serialize_message(char* mensaje);
 
+//recibe una cola a suscribirse y lo convierte a paquete
+//se
+t_paquete* serialize_suscripcion(queue_code cola);
+
 //Recibe un t_new y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
 t_paquete* serialize_new(t_new* new);
 
