@@ -114,6 +114,7 @@ t_appeared* construct_appeared_long(uint32_t message_id, char* pokemon, uint32_t
 t_get* construct_get(uint32_t message_id, char* pokemon);
 //retorna un mensaje LOCALIZED.
 t_localized* construct_localized(uint32_t message_id, uint32_t correlative_id, char* pokemon, uint32_t position_amount, t_position* positions);
+//t_localized* construct_localized_long(uint32_t message_id, uint32_t correlative_id, char* pokemon, uint32_t position_amount, uint32_t** positions);
 //retorna un mensaje CATCH.
 t_catch* construct_catch(uint32_t message_id, char* pokemon, t_position position);
 //retorna un mensaje CAUGHT.
@@ -123,19 +124,26 @@ t_caught* construct_caught(uint32_t message_id, uint32_t correlative_id, uint32_
 
 //serializadores
 void* serialize(t_package package, uint32_t *bytes);//NO SE USA
-void* serielize_new(t_new message, uint32_t *bytes);
-void* serialize_appeared(t_appeared message, uint32_t *bytes);
-void* serialize_get(t_get message, uint32_t *bytes);
-void* serialize_localized(t_localized message, uint32_t *bytes);
-void* serialize_catch(t_catch message, uint32_t *bytes);
-void* serialize_caught(t_caught message, uint32_t *bytes);
+void* serialize_new(t_new* message, uint32_t *bytes);
+void* serialize_appeared(t_appeared* message, uint32_t *bytes);
+void* serialize_get(t_get* message, uint32_t *bytes);
+void* serialize_localized(t_localized* message, uint32_t *bytes);
+void* serialize_catch(t_catch* message, uint32_t *bytes);
+void* serialize_caught(t_caught* message, uint32_t *bytes);
+//fin serializadores
 
 //deserializadores
-t_new deserielize_new(void* stream, uint32_t bytes);
-t_appeared deserialize_appeared(void* stream, uint32_t bytes);
-t_get deserialize_get(void* stream, uint32_t bytes);
-t_localized deserialize_localized(void* stream, uint32_t bytes);
-t_catch deserialize_catch(void* stream, uint32_t bytes);
-t_caught deserialize_caught(void* stream, uint32_t bytes);
+uint32_t deserialize(void* from, uint32_t* to);
+char* deserializestring(void* from, char* to, uint32_t size);
+void deserialize_new_message_id(void* from, t_new* to);
+void deserialize_new_size_pokemon(void* from, t_new* to);
+void deserialize_new_pokemon(void* from, t_new* to);
+t_new* deserialize_new(void* stream, uint32_t* bytes);
+t_appeared* deserialize_appeared(void* stream, uint32_t* bytes);
+t_get* deserialize_get(void* stream, uint32_t* bytes);
+t_localized* deserialize_localized(void* stream, uint32_t* bytes);
+t_catch* deserialize_catch(void* stream, uint32_t* bytes);
+t_caught* deserialize_caught(void* stream, uint32_t* bytes);
+//findeserializadores
 
 #endif /* SERIALIZER_H_ */
