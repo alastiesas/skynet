@@ -61,7 +61,7 @@ void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_
 //mutex funciona sin pasarlo como puntero??
 void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log* logger);
 
-
+//Recibe el size del stream. Recibe un queue_code.
 queue_code receive_cola(uint32_t socket, t_log* logger);
 
 #endif /* BROKER_H_ */

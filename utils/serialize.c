@@ -9,7 +9,8 @@
 #include <stdint.h>		//para uint32_t
 
 
-uint32_t send_paquete(int32_t socket, t_paquete* paquete){
+//Recibe un paquete. Envia el cod_op, seguido del size_stream, seguido del stream
+int32_t send_paquete(int32_t socket, t_paquete* paquete){
 	int32_t result;
 	uint32_t bytes = sizeof(int32_t)*2 + paquete->buffer->size;
 	printf("Bytes a enviar: %d\n", bytes);

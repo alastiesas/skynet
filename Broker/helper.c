@@ -108,7 +108,9 @@ void broker_serves_client(void* input){
 void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores, t_semaforos* semaforos) {
 
 	//ya recibi la cod_op
-	//falta recibir la cola a suscribirse
+	//recibir el size del stream
+
+	//recibir la cola a suscribirse
 	queue_code cola;
 	cola = receive_cola(socket_cliente, logger);
 
@@ -116,10 +118,11 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 
 	switch(cola){
 	case COLA_NEW:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
 		agregar_Asubs(socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
 		break;
 	default:
-		log_error(logger, "Aun no recibo esa cola\n");
+		log_error(logger, "Aun no puedo suscribir a nadie en ese tipo de cola\n");
 		return;
 	}
 
@@ -172,9 +175,12 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_se
 }
 
 void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
+
 	pthread_mutex_lock(&mutex);
 	list_add(lista_subs, &socket);
 	pthread_mutex_unlock(&mutex);
+	log_info(logger, "Se agrego el socket '%d' a suscriptores\n", socket);
+
 }
 
 void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log* logger){
@@ -190,8 +196,17 @@ void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log*
 }
 
 queue_code receive_cola(uint32_t socket, t_log* logger){
-	queue_code cola;
 
+	uint32_t size;
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket, &size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", size);
+
+
+	queue_code cola;
 	int32_t resultado;
 	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == -1){
 		log_error(logger, "Error al recibir la cola a suscribirse\n");

@@ -41,6 +41,7 @@ int main(void) {
 		pthread_mutex_init(&(semaforos->mutex_cola_new), NULL);
 		sem_init(&(semaforos->nuevo_new), 0, 0);
 		colas->NEW = queue_create();
+		suscriptores->NEW = list_create();
 
 	pthread_create(&hilo_NEW, NULL, (void*) cola_NEW, NULL);
 	pthread_create(&hilo_APPEARED, NULL, (void*) cola_APPEARED, NULL);

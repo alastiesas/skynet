@@ -18,7 +18,7 @@
 
 
 //Recibe una estructura t_paquete. Lo convierte en el stream |cod_op|size_buffer|buffer| y lo manda. Libera el paquete.
-uint32_t send_paquete(int32_t socket, t_paquete* paquete);
+int32_t send_paquete(int32_t socket, t_paquete* paquete);
 
 //Recibe un char* y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
 t_paquete* serialize_message(char* mensaje);

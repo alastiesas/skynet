@@ -203,7 +203,7 @@ void modo_suscriptor(queue_code cola, int tiempo, t_log* logger){
 		//(al cerrar el hilo puede quedar memoria sin liberar, pero tambien se cierra el proceso asi que no importa)
 
 	sleep(tiempo);
-	log_info(logger, "Termino la suscripcion\n");
+	log_info(logger, "Termino la suscripcion de %d segundos\n", tiempo);
 
 }
 
