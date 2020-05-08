@@ -139,7 +139,8 @@ void* serialize_new(t_new* new, uint32_t* bytes) {
 	return serialized;
 }
 
-/*void* serialize_appeared(t_appeared* message, uint32_t *bytes);
+/*
+void* serialize_appeared(t_appeared* message, uint32_t *bytes);
 
 void* serialize_get(t_get* message, uint32_t *bytes);
 
@@ -150,7 +151,11 @@ void* serialize_catch(t_catch* message, uint32_t *bytes);
 void* serialize_caught(t_caught* message, uint32_t *bytes);//*/
 //fin serializadores
 
-//deserializadores
+
+
+
+
+//deserializadores ESTOS SE VAN A BORRAR, ESTAN HACIENDO EL RCV DIRECTO DONDE LO QUIEREN
 uint32_t deserializeint(void* from, uint32_t* to) {
 	memcpy(to, from, sizeof(uint32_t));
 	return *to;
@@ -159,7 +164,7 @@ uint32_t deserializeint(void* from, uint32_t* to) {
 char* deserializestring(void* from, char* to, uint32_t size) {
 	to = malloc(sizeof(char)*size);
 	memcpy(to, from, size*sizeof(char));
-	printf("deserializestring string = %s\n", to);
+	//printf("deserializestring string = %s\n", to);
 	return to;
 }
 void deserialize_new_message_id(void* from, t_new* to) {
@@ -167,11 +172,12 @@ void deserialize_new_message_id(void* from, t_new* to) {
 }
 void deserialize_new_size_pokemon(void* from, t_new* to) {
 	memcpy(&to->size_pokemon, from, sizeof(uint32_t));
+	printf("deserialize_new_size_pokemon = %d\n", to->size_pokemon);
 }
 void deserialize_new_pokemon(void* from, t_new* to) {
 	uint32_t size = to->size_pokemon * sizeof(char);
 	realloc(to->pokemon, size);
-	memcpy(&to->size_pokemon, from, size);
+	memcpy(to->pokemon, from, size);
 }
 
 

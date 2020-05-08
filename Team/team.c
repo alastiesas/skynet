@@ -108,6 +108,9 @@ int main(void) {
 
 
 
+
+
+
 	printf("tamaño del stream = %d\n", bytes);
 	uint32_t offset = 0;
 	//operation code
@@ -145,12 +148,25 @@ int main(void) {
 
 
 
-	t_new *new_test = construct_new_long(0, "0", 1, 2, 3);
-	deserialize_new_message_id(stream_new, new_test);
-	printf("test, debe dar 1 = %d\n", new_test->message_id);
-	deserialize_new_size_pokemon(stream_new + (2*sizeof(uint32_t)), new_test);
+	t_new *new_test = construct_new_long(1, "pepe", 1, 2, 3);
+	printf("pepe = %s\n", new_test->pokemon);
+
+	deserialize_new_message_id(stream_new+sizeof(uint32_t), new_test);
+	printf("test, id debe dar 0 = %d\n", new_test->message_id);
+
+	deserialize_new_size_pokemon(stream_new + sizeof(uint32_t) + sizeof(uint32_t), new_test);
+	printf("llega hasta aca1\n");
+	printf("deserialize_new_size_pokemon = %d\n", new_test->size_pokemon);
 	deserialize_new_pokemon(stream_new + offset, new_test);
+	printf("llega hasta aca6\n");
+	printf("test size = %d\n", new_test->size_pokemon);
 	printf("test, debe dar pikachu = %s\n", new_test->pokemon);
+	printf("llega hasta aca7\n");//*/
+
+
+
+
+
 
 
 
