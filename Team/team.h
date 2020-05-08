@@ -17,6 +17,7 @@
 #include<readline/readline.h>
 #include "serializer.h"
 #include "utils.h"
+#include <stdbool.h>
 
 typedef struct
 {
@@ -26,12 +27,26 @@ typedef struct
 	char** pokemons;
 } t_trainer;
 
+typedef struct
+{
+	char* pokemon;
+	uint32_t count;
+	uint32_t caught;
+} t_objective;
+
+typedef struct
+{
+	char* string;
+	t_objective* objective;
+} t_index;
+
 int size_array (char*);
 t_trainer* construct_trainer(char* positions, char**, char**);
 t_position* construct_position(char*);
 t_list * initialize_trainers(char**,char**,char**);
 void state_change(int index, t_list* from,t_list* to);
-
+bool check (t_objective*);
+t_index* check2(t_index* index ,t_objective* objective);
 
 
 
@@ -68,7 +83,7 @@ t_position* construct_position(char* positions)
 	return position;
 }
 
-t_list * initialize_trainers(char** positions_config,char** objectives_config,char** pokemons_config)
+t_list* initialize_trainers(char** positions_config,char** objectives_config,char** pokemons_config)
 {
 	int k = 0;
 	t_list * trainers_list = list_create();
@@ -86,6 +101,55 @@ void state_change(int index, t_list* from,t_list* to)
 	void* element = list_remove(from, index);
 	list_add(to, element);
 }
+
+//void *list_find(t_list *, bool(*closure)(void*));
+
+bool check (t_objective* objective){
+	bool response = false;
+	if(0 == strcmp(objective->pokemon, "pikachu"))
+		response = true;
+
+	return response;
+}
+
+t_index* check2(t_index* index ,t_objective* objective)
+{
+	if(0 == strcmp(objective->pokemon, index->string)){
+		index->objective = objective;
+	}
+	return index;
+}
+
+t_objective* find_key(t_list* list, char* key)
+{
+	t_index* index = malloc(sizeof(t_index));
+	index->string = key;
+	index->objective = NULL;
+	void*(*function)(void*, void*) = &check2;
+	index = (t_index*) list_fold(list,(void*)index,(void*)&check2);
+	t_objective* objective = index->objective;
+	free(index);
+	return objective;
+}
+
+void add_objective(t_list* list, char* pokemon)
+{
+	t_objective* objective = find_key(list, pokemon);
+	if(objective != NULL)
+		objective->count++;
+	else{
+		objective = malloc(sizeof(t_objective));
+		objective->pokemon = pokemon;
+		objective->count = 1;
+		objective->caught = 0;
+		list_add(list,(void*)objective);
+	}
+
+}
+
+
+
+//void* list_fold(t_list* self, void* seed, void*(*operation)(void*, void*));
 
 
 #endif /* TEAM_H_ */

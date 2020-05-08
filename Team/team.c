@@ -82,6 +82,49 @@ int main(void)
 
 	printf("el debug de los entrenador %s\n", trainer->objectives[2]);
 
+	t_objective* objective1 = malloc(sizeof(t_objective));
+
+	objective1->pokemon = "pikachu";
+	objective1->count = 1;
+
+	t_objective* objective2 = malloc(sizeof(t_objective));
+
+	objective2->pokemon = "charmander";
+	objective2->count = 1;
+
+	t_objective* objective3 = malloc(sizeof(t_objective));
+
+	objective3->pokemon = "snorlax";
+	objective3->count = 1;
+	//printf("debug del bool %d\n",testing_bool);
+
+	//
+
+	t_list* objetives_list = list_create();
+
+	list_add(objetives_list, objective1);
+	list_add(objetives_list, objective2);
+	list_add(objetives_list, objective3);
+
+	t_objective* objective4 = find_key(objetives_list, "charmander");
+
+
+	printf("el debug de objective4 %s\n", objective2->pokemon);
+	printf("el debug de objective4 %s\n", objective4->pokemon);
+
+	add_objective(objetives_list,"charmander");
+	add_objective(objetives_list,"charmander");
+	add_objective(objetives_list,"charmander");
+	add_objective(objetives_list,"charmander");
+	add_objective(objetives_list,"hunter");
+	printf("el debug de objective4 %s\n", objective2->pokemon);
+	printf("el debug de objective4 %d\n", objective2->count);
+
+	t_objective* objective10 = find_key(objetives_list, "hunter");
+
+	printf("el debug de objective4 %s\n", objective10->pokemon);
+	printf("el debug de objective4 %d\n", objective10->count);
+	printf("el debug de objective4 %d\n", objective10->caught);
 	//FIFO funcion generica que recibe tipo de planificador, "fifo" agarra el primero en la cola
 	//agarra lista ready y se fija cual es el que pasa a lista exec
 
