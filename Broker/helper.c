@@ -220,4 +220,3 @@ queue_code receive_cola(uint32_t socket, t_log* logger){
 	return cola;
 
 }
-

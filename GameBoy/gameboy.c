@@ -226,33 +226,21 @@ void modo_suscriptor(queue_code cola, int tiempo, t_log* logger){
 void server_broker(){
 	char* yo = "GameBoy";
 	char* el = "Broker";
-
 	t_log* logger;
 	logger = initialize_thread(yo, el, hilo1);
-
-
 	char* puerto; //config_get_string reserva la memoria necesaria
 	char* ip;
 puerto="6003";//		puerto = config_get_string_value(config, "PUERTO_BROKER");
 		ip = config_get_string_value(config, "IP_BROKER");
 			log_info(logger, "Puerto del Broker: %s", puerto);
 			log_info(logger, "IP del Broker: %s", ip);
-
 	uint32_t socket;
-
 	//crear conexion
 	socket = connect_to_server(ip, puerto, logger);
-
-
 	//enviar muchos mensajes
 	enviar_muchos_mensajes(yo, el, socket, logger);
-
-
-
 	log_info(logger, "Fin del la conexion con el Broker\n");
 	close(socket);
 	log_destroy(logger);
-
 }
 */
-
