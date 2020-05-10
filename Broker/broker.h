@@ -13,10 +13,12 @@
 #include <mensajes.h>
 
 
+t_log* log;
+t_config* config;
 
-t_colas* colas;
-t_suscriptores* suscriptores;
-t_semaforos* semaforos;
+t_colas* queues;
+t_suscriptores* suscribers;
+t_semaforos* semaphores;
 
 pthread_t hilo_LISTEN;
 
@@ -31,7 +33,6 @@ pthread_t hilo_CAUGHT;
 
 t_config* config;
 
-void broker_LISTEN();
 void cola_NEW();
 void cola_APPEARED();
 void cola_GET();
@@ -63,5 +64,21 @@ void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log*
 
 //Recibe el size del stream. Recibe un queue_code.
 queue_code receive_cola(uint32_t socket, t_log* logger);
+
+void initialization();
+
+void general_initialization(char* process_name);
+
+void specific_initialization();
+
+void behavior();
+
+void listening();
+
+void sending();
+
+void termination();
+
+void specific_termination();
 
 #endif /* BROKER_H_ */
