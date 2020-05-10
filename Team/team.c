@@ -8,8 +8,12 @@
 #include "team.h"
 #include <stdint.h>
 
+
+
+
 //#include <libs/conexion.h>
 //atoi(test_split[0])
+
 
 void *myThreadFun(void *vargp)
 {
@@ -17,6 +21,7 @@ void *myThreadFun(void *vargp)
     printf("Printing GeeksQuiz from Thread \n");
     return NULL;
 }
+
 
 int main(void)
 {
@@ -87,7 +92,7 @@ int main(void)
 
 	state_change(1,new_list, ready_list);
 	t_trainer* trainer = (t_trainer*) list_get(ready_list,0);
-
+	t_trainer* trainer2 = (t_trainer*) list_get(new_list,0);
 	printf("el debug de los entrenador %s\n", trainer->objectives[2]);
 
 	t_objective* objective1 = malloc(sizeof(t_objective));
@@ -150,14 +155,30 @@ int main(void)
 	//FIFO funcion generica que recibe tipo de planificador, "fifo" agarra el primero en la cola
 	//agarra lista ready y se fija cual es el que pasa a lista exec
 
+
+	//pthread_mutex_init(trainer->semThread,NULL);
+
+	sem_init(&trainer->sem_thread, 0, 0);
+	sem_init(&trainer2->sem_thread, 0, 0);
+	//trainer->semThread = 0;
+	//trainer2->semThread = 0;
 	pthread_t tid;
+	pthread_t tid2;
 	pthread_attr_t attr;
 
-	pthread_t thread_id;
 	printf("Before Thread\n");
-	pthread_create(&thread_id, NULL, myThreadFun, NULL);
+	pthread_create(&tid, NULL, trainer_thread, trainer);
+	pthread_create(&tid2, NULL, trainer_thread, trainer2);
 	printf("algoo\n");
-	pthread_join(thread_id, NULL);
+
+		//trainer->semThread = 1;
+	//pthread_mutex_init(trainer->semThread,NULL);
+	sem_post(&trainer2->sem_thread);
+	sleep(1);
+	sem_post(&trainer->sem_thread);
+
+	pthread_join(tid, NULL);
+	pthread_join(tid2, NULL);
 	printf("After Thread\n");
 
 	//5 colas para los estados
@@ -183,4 +204,5 @@ int main(void)
 	printf("el peso es %d. \n", peso);
   */
 	exit(0);
+
 }

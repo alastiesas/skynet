@@ -19,18 +19,20 @@
 #include "utils.h"
 #include <stdbool.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 typedef enum {
+	NEWBIE= 0,
 	MOVE = 1,
 	CATCHING = 2,
-	TRADE = 3
-} t_action;
+	TRADE = 3,
+}t_action;
 
 typedef struct
 {
 	pthread_t tid;
 	//pthread_attr_t attr;
-	int32_t semThread;
+	sem_t sem_thread;
 	t_action action;
 	uint32_t quantum;
 	uint32_t burst;
@@ -67,6 +69,7 @@ t_list* initialize_global_objectives(t_list* list);
 void add_caught(t_list* list, char* pokemon);
 bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
+void *trainer_thread(t_trainer* trainer);
 
 
 int size_array (char* array)
@@ -78,10 +81,12 @@ int size_array (char* array)
 t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons)
 {
 	t_trainer* trainer = malloc(sizeof(t_trainer));
-
+	trainer->action = NEWBIE;
+	sem_init(&trainer->sem_thread, 0, 0);
 	trainer->position = construct_position(positions);
 	trainer->objectives = string_split(objectives, "|");
 	trainer->pokemons = string_split(pokemons, "|");
+
 	/*
 	printf("test debug pokemon %d\n",trainer->position->x);
 	printf("test debug pokemon %d\n",trainer->position->y);
@@ -197,6 +202,30 @@ bool success_objective(t_objective* objective)
 bool success_global_objective(t_list* global_objectives)
 {
 	return list_all_satisfy(global_objectives,&success_objective);
+}
+
+void *trainer_thread(t_trainer* trainer)
+{
+	//pthread_mutex_lock(trainer->semThread);
+	sem_wait(&trainer->sem_thread);
+	switch(trainer->action){
+		case MOVE:
+			printf("Me estoy moviendo, comando MOVE\n");
+			break;
+		case CATCHING:
+			printf("Estoy atrapando pokemon, comando CATCHING\n");
+			break;
+		case TRADE:
+			printf("Estoy tradeando pokemon, comando TRADE\n");
+			break;
+		default:
+			printf("No hago nada\n");
+			break;
+	}
+	printf("HILO debug del entrenador %s\n", trainer->objectives[2]);
+	//pthread_mutex_unlock(trainer->semThread);
+	//sem_post(&trainer->sem_thread);
+	return NULL;
 }
 
 //void* list_fold(t_list* self, void* seed, void*(*operation)(void*, void*));
