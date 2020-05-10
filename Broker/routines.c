@@ -8,8 +8,8 @@ void initialization() {
 
 void general_initialization(char* process_name) {
 
-	log = log_create(process_name + ".log", process_name, LOG_CONSOLE, LOG_LEVEL_INFO);
-	config = config_create(process_name + ".config");
+	log = log_create(strcat(process_name, ".log"), process_name, LOG_CONSOLE, LOG_LEVEL_INFO);
+	config = config_create(strcat(process_name, ".config"));
 }
 
 void specific_initialization() {
@@ -22,7 +22,6 @@ void specific_initialization() {
 	pthread_mutex_init(&(semaphores->mutex_cola_new), NULL);
 	sem_init(&(semaphores->nuevo_new), 0, 0);
 }
-
 
 void behavior() {
 
@@ -47,6 +46,11 @@ void listening() {
 	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
 	iniciar_servidor_broker(puerto, logger, queues, suscribers, semaphores);
 	/**/
+}
+
+void termination() {
+
+	void specific_termination();
 }
 
 void specific_termination() {
