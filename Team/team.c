@@ -77,11 +77,12 @@ int main(void)
 	t_list* block_list = list_create();
 	t_list* exec_list = list_create();
 	t_list* exit_list = list_create();
+	/*
 	state_change(1,new_list, ready_list);
 	t_trainer* trainer = (t_trainer*) list_get(ready_list,0);
 
 	printf("el debug de los entrenador %s\n", trainer->objectives[2]);
-
+	*/
 	t_objective* objective1 = malloc(sizeof(t_objective));
 
 	objective1->pokemon = "pikachu";
@@ -102,6 +103,7 @@ int main(void)
 
 	t_list* objetives_list = list_create();
 
+	/*
 	list_add(objetives_list, objective1);
 	list_add(objetives_list, objective2);
 	list_add(objetives_list, objective3);
@@ -125,6 +127,16 @@ int main(void)
 	printf("el debug de objective4 %s\n", objective10->pokemon);
 	printf("el debug de objective4 %d\n", objective10->count);
 	printf("el debug de objective4 %d\n", objective10->caught);
+	*/
+	/*
+	objetives_list = add_trainer_to_objective(objetives_list,trainer);
+	t_objective* test_obj = (t_objective*) list_get(objetives_list,1);
+	printf("the objective list has %s\n", test_obj->pokemon);
+	*/
+	objetives_list = initialize_global_objectives(new_list);
+	t_objective* test_obj = (t_objective*) list_get(objetives_list,2);
+	printf("the objective list has %s\n", test_obj->pokemon);
+	printf("the objective list has %d\n", test_obj->count);
 	//FIFO funcion generica que recibe tipo de planificador, "fifo" agarra el primero en la cola
 	//agarra lista ready y se fija cual es el que pasa a lista exec
 

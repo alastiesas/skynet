@@ -45,8 +45,9 @@ t_trainer* construct_trainer(char* positions, char**, char**);
 t_position* construct_position(char*);
 t_list * initialize_trainers(char**,char**,char**);
 void state_change(int index, t_list* from,t_list* to);
-bool check (t_objective*);
-t_index* check2(t_index* index ,t_objective* objective);
+t_index* search_index(t_index* index ,t_objective* objective);
+t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
+t_list* initialize_global_objectives(t_list* list);
 
 
 
@@ -104,15 +105,7 @@ void state_change(int index, t_list* from,t_list* to)
 
 //void *list_find(t_list *, bool(*closure)(void*));
 
-bool check (t_objective* objective){
-	bool response = false;
-	if(0 == strcmp(objective->pokemon, "pikachu"))
-		response = true;
-
-	return response;
-}
-
-t_index* check2(t_index* index ,t_objective* objective)
+t_index* search_index(t_index* index ,t_objective* objective)
 {
 	if(0 == strcmp(objective->pokemon, index->string)){
 		index->objective = objective;
@@ -125,8 +118,8 @@ t_objective* find_key(t_list* list, char* key)
 	t_index* index = malloc(sizeof(t_index));
 	index->string = key;
 	index->objective = NULL;
-	void*(*function)(void*, void*) = &check2;
-	index = (t_index*) list_fold(list,(void*)index,(void*)&check2);
+	//void*(*function)(void*, void*) = &search_index;
+	index = (t_index*) list_fold(list,(void*)index,(void*)&search_index);
 	t_objective* objective = index->objective;
 	free(index);
 	return objective;
@@ -147,7 +140,27 @@ void add_objective(t_list* list, char* pokemon)
 
 }
 
+t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* trainer)
+{
+	int i = 0;
+	while(trainer->objectives[i]!= NULL){
+		add_objective(list_global_objectives, trainer->objectives[i]);
+		i++;
+	}
+	return list_global_objectives;
+}
 
+
+t_list* initialize_global_objectives(t_list* list)
+{
+
+	t_list* list_global_objectives = list_create();
+	//void*(*function)(void*, void*) = &add_trainer_to_objective;
+	list_global_objectives = (t_list*) list_fold( list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
+	//t_objective global_objectives = malloc(sizeof(t_objective));
+	//list_iterate(list, void(*closure)(void*))
+	return list_global_objectives;
+}
 
 //void* list_fold(t_list* self, void* seed, void*(*operation)(void*, void*));
 
