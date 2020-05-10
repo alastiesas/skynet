@@ -18,10 +18,26 @@
 #include "serializer.h"
 #include "utils.h"
 #include <stdbool.h>
+#include <pthread.h>
+
+typedef enum {
+	MOVE = 1,
+	CATCHING = 2,
+	TRADE = 3
+} t_action;
 
 typedef struct
 {
-	uint32_t id;
+	pthread_t tid;
+	//pthread_attr_t attr;
+	int32_t semThread;
+	t_action action;
+	uint32_t quantum;
+	uint32_t burst;
+	uint32_t action_burst;
+	t_position* action_position;
+	char* action_pokemon;
+
 	t_position* position;
 	char** objectives;
 	char** pokemons;
@@ -48,7 +64,9 @@ void state_change(int index, t_list* from,t_list* to);
 t_index* search_index(t_index* index ,t_objective* objective);
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
 t_list* initialize_global_objectives(t_list* list);
-
+void add_caught(t_list* list, char* pokemon);
+bool success_objective(t_objective* objective);
+bool success_global_objective(t_list* global_objectives);
 
 
 int size_array (char* array)
@@ -137,7 +155,15 @@ void add_objective(t_list* list, char* pokemon)
 		objective->caught = 0;
 		list_add(list,(void*)objective);
 	}
+}
 
+void add_caught(t_list* list, char* pokemon)
+{
+	t_objective* objective = find_key(list, pokemon);
+	if(objective != NULL)
+		objective->caught++;
+	else
+		printf("Lo rompiste todo, maldito idiota\n");
 }
 
 t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* trainer)
@@ -147,19 +173,30 @@ t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* train
 		add_objective(list_global_objectives, trainer->objectives[i]);
 		i++;
 	}
+	i = 0;
+	while(trainer->pokemons[i]!= NULL){
+		add_caught(list_global_objectives, trainer->pokemons[i]);
+		i++;
+	}
 	return list_global_objectives;
 }
 
 
 t_list* initialize_global_objectives(t_list* list)
 {
-
 	t_list* list_global_objectives = list_create();
-	//void*(*function)(void*, void*) = &add_trainer_to_objective;
 	list_global_objectives = (t_list*) list_fold( list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
-	//t_objective global_objectives = malloc(sizeof(t_objective));
-	//list_iterate(list, void(*closure)(void*))
 	return list_global_objectives;
+}
+
+bool success_objective(t_objective* objective)
+{
+	return objective->count == objective->caught;
+}
+
+bool success_global_objective(t_list* global_objectives)
+{
+	return list_all_satisfy(global_objectives,&success_objective);
 }
 
 //void* list_fold(t_list* self, void* seed, void*(*operation)(void*, void*));

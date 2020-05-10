@@ -16,7 +16,7 @@
 int main(void)
 {
 	int p = 2;
-
+//
 	iniciar_servidor();
 
 	return EXIT_SUCCESS;

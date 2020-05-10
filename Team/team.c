@@ -11,6 +11,13 @@
 //#include <libs/conexion.h>
 //atoi(test_split[0])
 
+void *myThreadFun(void *vargp)
+{
+    sleep(1);
+    printf("Printing GeeksQuiz from Thread \n");
+    return NULL;
+}
+
 int main(void)
 {
 	uint32_t a = 123;
@@ -77,12 +84,12 @@ int main(void)
 	t_list* block_list = list_create();
 	t_list* exec_list = list_create();
 	t_list* exit_list = list_create();
-	/*
+
 	state_change(1,new_list, ready_list);
 	t_trainer* trainer = (t_trainer*) list_get(ready_list,0);
 
 	printf("el debug de los entrenador %s\n", trainer->objectives[2]);
-	*/
+
 	t_objective* objective1 = malloc(sizeof(t_objective));
 
 	objective1->pokemon = "pikachu";
@@ -134,12 +141,24 @@ int main(void)
 	printf("the objective list has %s\n", test_obj->pokemon);
 	*/
 	objetives_list = initialize_global_objectives(new_list);
-	t_objective* test_obj = (t_objective*) list_get(objetives_list,2);
+	t_objective* test_obj = (t_objective*) list_get(objetives_list,0);
 	printf("the objective list has %s\n", test_obj->pokemon);
 	printf("the objective list has %d\n", test_obj->count);
+	printf("the objective list has %d\n", test_obj->caught);
+	printf("the objective bool is %d\n", success_objective(test_obj));
+	printf("the objective bool is %d\n", success_global_objective(new_list));
 	//FIFO funcion generica que recibe tipo de planificador, "fifo" agarra el primero en la cola
 	//agarra lista ready y se fija cual es el que pasa a lista exec
 
+	pthread_t tid;
+	pthread_attr_t attr;
+
+	pthread_t thread_id;
+	printf("Before Thread\n");
+	pthread_create(&thread_id, NULL, myThreadFun, NULL);
+	printf("algoo\n");
+	pthread_join(thread_id, NULL);
+	printf("After Thread\n");
 
 	//5 colas para los estados
 
@@ -163,4 +182,5 @@ int main(void)
 
 	printf("el peso es %d. \n", peso);
   */
+	exit(0);
 }
