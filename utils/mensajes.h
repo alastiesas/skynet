@@ -23,8 +23,6 @@
 
 
 
-#define IP "127.0.0.1"
-#define PUERTO "4444"
 
 #define TIEMPO_CHECK 15
 #define LOG_CONSOLE true

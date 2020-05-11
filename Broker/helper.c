@@ -14,7 +14,7 @@ void iniciar_servidor_broker()
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(IP, config_get_string_value(config, "PORT"), &hints, &servinfo);
+    getaddrinfo(IP_BROKER, PORT, &hints, &servinfo);
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {

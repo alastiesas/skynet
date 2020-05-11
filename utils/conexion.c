@@ -8,7 +8,7 @@
 #include "mensajes.h"
 #define _GNU_SOURCE		//para pthread_setname_np
 #include<pthread.h>
-
+/*
 void iniciar_servidor(char* puerto, t_log* logger)
 {
 	pthread_t thread = pthread_self();
@@ -48,7 +48,7 @@ void iniciar_servidor(char* puerto, t_log* logger)
     while(1)
     	esperar_cliente(socket_servidor, logger);
 }
-
+*/
 
 
 void esperar_cliente(int32_t socket_servidor, t_log* logger)

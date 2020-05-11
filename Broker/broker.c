@@ -10,7 +10,6 @@
 
 #include "broker.h"
 
-#define IP "127.0.0.1"
 
 int main(void) {
 
