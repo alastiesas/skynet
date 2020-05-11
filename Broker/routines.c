@@ -2,14 +2,14 @@
 
 void initialization() {
 
-	general_initialization("broker");
+	generic_initialization();
 	specific_initialization();
 }
 
-void general_initialization(char* process_name) {
+void generic_initialization() {
 
-	log = log_create(strcat(process_name, ".log"), process_name, LOG_CONSOLE, LOG_LEVEL_INFO);
-	config = config_create(strcat(process_name, ".config"));
+	log = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_INFO); //pending clean
+	config = config_create("broker.config"); //pending clean
 }
 
 void specific_initialization() {
@@ -25,32 +25,18 @@ void specific_initialization() {
 
 void behavior() {
 
-	pthread_create(&hilo_LISTEN, NULL, (void*) listening, NULL);
-	/**/
-	int elementos;
-	while (1) {
-		sem_wait(&(semaphores->nuevo_new));
-		//wait semaforo para decir la cantidad de elementos en la cola de new
-		elementos = queue_size(queues->NEW);
-		log_info(log, "La cola de NEW tiene, %d elementos\n", elementos);
-	}
-	/**/
+	pthread_create(&listening_thread, NULL, (void*) listening, NULL);
+	while (1) {} //pending clean
 }
 
 void listening() {
 
-	/**/
-	t_log* logger = initialize_thread("Broker", "Todos", hilo_LISTEN);
-	char* puerto;
-	puerto = "6001"; //	puerto = config_get_string_value(config, "PUERTO_BROKER");
-	log_info(logger, "Iniciando servidor en el puerto: %s", puerto);
-	iniciar_servidor_broker(puerto, logger, queues, suscribers, semaphores);
-	/**/
+	iniciar_servidor_broker(); //pending clean
 }
 
 void termination() {
 
-	void specific_termination();
+	specific_termination();
 }
 
 void specific_termination() {

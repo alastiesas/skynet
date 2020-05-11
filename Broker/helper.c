@@ -1,7 +1,7 @@
 #include "broker.h"
 
 
-void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos)
+void iniciar_servidor_broker()
 {
 	pthread_t thread = pthread_self();
 	int32_t socket_servidor;
@@ -14,18 +14,18 @@ void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_susc
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(IP, puerto, &hints, &servinfo);
+    getaddrinfo(IP, config_get_string_value(config, "PORT"), &hints, &servinfo);
 
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
         if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	log_error(logger, "Error de socket()");
+        	log_error(log, "Error de socket()");
         	continue;
         }
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
             close(socket_servidor);
-            log_error(logger, "Error de bind (el puerto esta ocupado), reinicie el programa");
+            log_error(log, "Error de bind (el puerto esta ocupado), reinicie el programa");
             for(;;);
             continue;
         }
@@ -33,12 +33,12 @@ void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_susc
     }
 
 	listen(socket_servidor, SOMAXCONN);
-	log_info(logger, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
+	log_info(log, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
 
     freeaddrinfo(servinfo);
 
     while(1)
-    	esperar_clientes(socket_servidor, logger, colas, suscriptores, semaforos);
+    	esperar_clientes(socket_servidor, log, queues, suscribers, semaphores);
 }
 
 void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos)
@@ -134,7 +134,6 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 }
 
 void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos) {
-	//uint32_t size;
 
 		switch (cod_op) {
 

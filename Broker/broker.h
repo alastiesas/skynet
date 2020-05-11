@@ -20,18 +20,7 @@ t_colas* queues;
 t_suscriptores* suscribers;
 t_semaforos* semaphores;
 
-pthread_t hilo_LISTEN;
-
-pthread_t hilo_NEW;
-pthread_t hilo_APPEARED;
-
-pthread_t hilo_GET;
-pthread_t hilo_LOCALIZED;
-
-pthread_t hilo_CATCH;
-pthread_t hilo_CAUGHT;
-
-t_config* config;
+pthread_t listening_thread;
 
 void cola_NEW();
 void cola_APPEARED();
@@ -41,7 +30,7 @@ void cola_CATCH();
 void cola_CAUGHT();
 
 //inicia el servidor del broker con las referencias a colas y semaforos necesarias
-void iniciar_servidor_broker(char* puerto, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos);
+void iniciar_servidor_broker();
 
 //atiende clientes en un nuevo hilo con la funcion broker_server_client()
 void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos);
@@ -67,7 +56,7 @@ queue_code receive_cola(uint32_t socket, t_log* logger);
 
 void initialization();
 
-void general_initialization(char* process_name);
+void generic_initialization();
 
 void specific_initialization();
 
