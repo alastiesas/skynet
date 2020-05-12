@@ -11,7 +11,7 @@
 
 
 //constructores
-t_new *construct_new(uint32_t message_id, char* pokemon, t_location location) {
+t_new *construct_new(uint32_t message_id, char* pokemon, t_location* location) {
 	//DONE
 	t_new* new = malloc(sizeof(t_new));
 	new->operation_code = 1;//codigo de operacion de NEW
@@ -24,15 +24,21 @@ t_new *construct_new(uint32_t message_id, char* pokemon, t_location location) {
 
 }
 t_new *construct_new_long(uint32_t message_id, char* pokemon, uint32_t posx,uint32_t posy,uint32_t amount) {
-	t_location location;
-	location.position.x = posx;
-	location.position.y = posy;
-	location.amount = amount;
+	printf("ACA1\n");
+	t_location* location = malloc(sizeof(t_location));
+	location->position = malloc(sizeof(t_position));
+	printf("ACA2\n");
+	location->position->x = posx;
+	printf("ACA4\n");
+	location->position->y = posy;
+	printf("ACA5\n");
+	location->amount = amount;
+	printf("ACA6\n");
 	return construct_new(message_id, pokemon, location);
 	//return new;
 }
 
-t_appeared* construct_appeared(uint32_t message_id, char* pokemon, t_position position) {
+t_appeared* construct_appeared(uint32_t message_id, char* pokemon, t_position* position) {
 	t_appeared* appeared = malloc(sizeof(t_appeared));
 	appeared->operation_code = 2;//codigo de operacion de APPEARED
 	appeared->message_id = 0;//El Broker se encarga de generar este dato
@@ -43,9 +49,9 @@ t_appeared* construct_appeared(uint32_t message_id, char* pokemon, t_position po
 	return appeared;
 }
 t_appeared* construct_appeared_long(uint32_t message_id, char* pokemon, uint32_t posx, uint32_t posy) {
-	t_position position;
-	position.x = posx;
-	position.y = posy;
+	t_position* position = malloc(sizeof(t_position));
+	position->x = posx;
+	position->y = posy;
 	return construct_appeared(message_id, pokemon, position);
 
 }
@@ -76,7 +82,7 @@ t_localized* construct_localized(uint32_t message_id, uint32_t correlative_id, c
 
 }
 
-t_catch* construct_catch(uint32_t message_id, char* pokemon, t_position position) {
+t_catch* construct_catch(uint32_t message_id, char* pokemon, t_position* position) {
 	t_catch* catch = malloc(sizeof(t_catch));
 	catch->operation_code = 5;//codigo de operacion de LOCALIZED
 	catch->message_id = 0;//El Broker se encarga de generar este dato
@@ -87,9 +93,9 @@ t_catch* construct_catch(uint32_t message_id, char* pokemon, t_position position
 	return catch;
 }
 t_catch* construct_catch_long(uint32_t message_id, char* pokemon, uint32_t posx, uint32_t posy) {
-	t_position position;
-		position.x = posx;
-		position.y = posy;
+	t_position *position = malloc(sizeof(t_position));
+		position->x = posx;
+		position->y = posy;
 		return construct_catch(message_id, pokemon, position);
 }
 
@@ -105,43 +111,71 @@ t_caught* construct_caught(uint32_t message_id, uint32_t correlative_id, uint32_
 
 
 //serializadores
-void* serialize_new(t_new* new, uint32_t* bytes) {
-	*bytes = sizeof(uint32_t)*6 + sizeof(char) * (new->size_pokemon);
+void* serialize_new(t_new* message, uint32_t* bytes) {
+	*bytes = sizeof(uint32_t)*6 + sizeof(char) * (message->size_pokemon);
 	void* serialized = malloc(*bytes);
 	uint32_t offset = 0;
 	uint32_t size = 0;
 	//operation code
 	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &new->operation_code, size);
+	memcpy(serialized + offset, &message->operation_code, size);
 	offset += size;
 	//message_id
-	memcpy(serialized + offset, &new->message_id, size);
+	memcpy(serialized + offset, &message->message_id, size);
 	offset += size;
 	//size_pokemon
-	memcpy(serialized + offset, &new->size_pokemon, size);
+	memcpy(serialized + offset, &message->size_pokemon, size);
 	offset += size;
 	//pokemon
-	size = sizeof(char) * new->size_pokemon;
-	memcpy(serialized + offset, new->pokemon, size);
-	/*printf("--------->pokemon = %s\n", new->pokemon);//DEBUG*/
+	size = sizeof(char) * message->size_pokemon;
+	memcpy(serialized + offset, message->pokemon, size);
+	/*printf("--------->pokemon =message%s\n", new->pokemon);//DEBUG*/
 	offset += size;
 	//position x
 	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &new->location.position.x, size);
+	memcpy(serialized + offset, &message->location->position->x, size);
 	offset += size;
 	//position y
-	memcpy(serialized + offset, &new->location.position.y, size);
+	memcpy(serialized + offset, &message->location->position->y, size);
 	offset += size;
 	//cantidad
-	memcpy(serialized + offset, &new->location.amount, size);
+	memcpy(serialized + offset, &message->location->amount, size);
+	offset += size;
+
+	return serialized;
+}
+
+void* serialize_appeared(t_appeared* message, uint32_t *bytes) {
+	*bytes = sizeof(uint32_t)*5 + sizeof(char) * (message->size_pokemon);
+	void* serialized = malloc(*bytes);
+	uint32_t offset = 0;
+	uint32_t size = 0;
+	//operation code
+	size = sizeof(uint32_t);
+	memcpy(serialized + offset, &message->operation_code, size);
+	offset += size;
+	//message_id
+	memcpy(serialized + offset, &message->message_id, size);
+	offset += size;
+	//size_pokemon
+	memcpy(serialized + offset, &message->size_pokemon, size);
+	offset += size;
+	//pokemon
+	size = sizeof(char) * message->size_pokemon;
+	memcpy(serialized + offset, message->pokemon, size);
+	offset += size;
+	//position x
+	size = sizeof(uint32_t);
+	memcpy(serialized + offset, &message->position->x, size);
+	offset += size;
+	//position y
+	memcpy(serialized + offset, &message->position->y, size);
 	offset += size;
 
 	return serialized;
 }
 
 /*
-void* serialize_appeared(t_appeared* message, uint32_t *bytes);
-
 void* serialize_get(t_get* message, uint32_t *bytes);
 
 void* serialize_localized(t_localized* message, uint32_t *bytes);

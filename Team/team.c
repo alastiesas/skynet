@@ -14,24 +14,18 @@
 
 int main(void) {
 
+	printf("HOLA MANOLA\n");
 
-	t_position pos1;// = malloc(sizeof(t_position));
-	t_position pos2;// = malloc(sizeof(t_position));
-	pos1.x = 1;
-	pos1.y = 2;
-	printf("\nx = %d\ty = %d", pos1.x, pos1.y);
-
-	pos2 = pos1;
-	printf("\nx = %d\ty = %d\n\n", pos2.x, pos2.y);
 
 	printf("struct 1 - NEW\n");
+	printf("ACA\n");
 	t_new *new = construct_new_long(0, "pikachu", 1, 2, 3);
 	printf("operation_code = %d\n", new->operation_code);
 	printf("message_id = %d\n", new->message_id);
 	printf("size_pokemon = %d\n", new->size_pokemon);
 	printf("pokemon = %s\n", new->pokemon);
-	printf("position = (%d, %d)\n", new->location.position.x, new->location.position.y);
-	printf("amount = %d\n", new->location.amount);
+	printf("position = (%d, %d)\n", new->location->position->x, new->location->position->y);
+	printf("amount = %d\n", new->location->amount);
 
 
 	printf("new2 = new;\n");
@@ -41,8 +35,8 @@ int main(void) {
 	printf("2message_id = %d\n", new2->message_id);
 	printf("2size_pokemon = %d\n", new2->size_pokemon);
 	printf("2pokemon = %s\n", new->pokemon);
-	printf("2position = (%d, %d)\n", new2->location.position.x, new->location.position.y);
-	printf("2amount = %d\n\n\n", new2->location.amount);
+	printf("2position = (%d, %d)\n", new2->location->position->x, new->location->position->y);
+	printf("2amount = %d\n\n\n", new2->location->amount);
 
 
 	printf("struct 2 - APPEARED\n");
@@ -51,7 +45,7 @@ int main(void) {
 	printf("message_id = %d\n", appeared->message_id);
 	printf("size_pokemon = %d\n", appeared->size_pokemon);
 	printf("pokemon = %s\n", appeared->pokemon);
-	printf("position = (%d, %d)\n\n\n", appeared->position.x, appeared->position.y);
+	printf("position = (%d, %d)\n\n\n", appeared->position->x, appeared->position->y);
 
 
 	printf("struct 3 - GET\n");
@@ -88,7 +82,7 @@ int main(void) {
 	printf("message_id = %d\n", catch->message_id);
 	printf("size_pokemon = %d\n", catch->size_pokemon);
 	printf("pokemon = %s\n", catch->pokemon);
-	printf("position = (%d, %d)\n", catch->position.x, catch->position.y);
+	printf("position = (%d, %d)\n", catch->position->x, catch->position->y);
 
 
 	printf("struct 6 - CAUGHT\n");
@@ -184,10 +178,10 @@ int main(void) {
 	offset += size;
 	//position x
 	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &new->location.position.x, size);
+	memcpy(serialized + offset, &new->location->position->x, size);
 	offset += size;
 	//position y
-	memcpy(serialized + offset, &new->location.position.y, size);
+	memcpy(serialized + offset, &new->location->position->y, size);
 	offset += size;
 	//cantidad
 	memcpy(serialized + offset, &new->location.amount, size);
