@@ -29,6 +29,7 @@ pthread_t hilo_suscripcion;
 t_config* config;
 
 char* puerto;
+char* ID_PROPIO;
 
 //void server_broker();
 void case_NEW(char* argv[], t_log* logger);
@@ -58,15 +59,17 @@ int main(int argc, char* argv[]) {
 	//./gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]
 	//./gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
 
+	ID_PROPIO = config_get_string_value(config, "ID_GAMEBOY");
+
 
 
 	process_code proceso;
 	if (strcmp(argv[1], "BROKER") == 0){
 		proceso = BROKER;
-		puerto = "6001"; //Leer puerto de config
+		puerto = config_get_string_value(config, "PUERTO_BROKER");
 	}else if(strcmp(argv[1], "SUSCRIPTOR") == 0){
 		proceso = SUSCRIPTOR;
-		puerto = "6001"; //Leer puerto de config
+		puerto = config_get_string_value(config, "PUERTO_BROKER");
 	}
 	else{
 		proceso = 0;
@@ -175,7 +178,7 @@ void modo_suscriptor(queue_code cola, int tiempo, t_log* logger){
 	//informar que me estoy suscribiendo y a que cola
 	//serializar
 	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete = serialize_suscripcion(cola);
+	paquete = serialize_suscripcion(atoi(ID_PROPIO), cola);
 	//conectarse al broker
 	int32_t socket_server;
 	printf("va a conectar en el puerto: %s", puerto);

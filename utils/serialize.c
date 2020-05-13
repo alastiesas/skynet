@@ -57,7 +57,7 @@ t_paquete* serialize_message(char* mensaje){
 	return paquete;
 }
 
-t_paquete* serialize_suscripcion(queue_code cola){
+t_paquete* serialize_suscripcion(uint32_t ID_proceso, queue_code cola){
 
 	t_buffer* ptr_buffer = malloc(sizeof(t_buffer));
 	t_paquete* paquete = malloc(sizeof(t_paquete));
@@ -67,11 +67,12 @@ t_paquete* serialize_suscripcion(queue_code cola){
 	//asigno el buffer que previamente reserve memoria
 	paquete->buffer = ptr_buffer;
 	//asigno el size del buffer
-	paquete->buffer->size = sizeof(queue_code);
+	paquete->buffer->size = sizeof(uint32_t) + sizeof(queue_code);
 	//Con el size calculado, reservo memoria para el payload
 	paquete->buffer->stream = malloc(paquete->buffer->size);
 	//con memcpy() lleno el stream
-	memcpy(paquete->buffer->stream, &cola, paquete->buffer->size);
+	memcpy(paquete->buffer->stream, &ID_proceso, sizeof(uint32_t));
+	memcpy(paquete->buffer->stream + sizeof(uint32_t), &cola, sizeof(queue_code));
 
 	return paquete;
 }
@@ -127,7 +128,7 @@ t_paquete* serialize_catch(t_catch* catch){
 	int32_t buffer_size = sizeof(catch->id) + sizeof(catch->size_nombre) + catch->size_nombre + sizeof(catch->posX) + sizeof(catch->posY);
 
 	//meto la cod_op en el paquete
-	paquete->codigo_operacion = CATCH;
+	paquete->codigo_operacion = CATCHS;
 	//asigno el buffer que previamente reserve memoria
 	paquete->buffer = buffer;
 	//asigno el size del buffer

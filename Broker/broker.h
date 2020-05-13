@@ -16,7 +16,7 @@
 char* IP_BROKER;
 char* PORT;
 
-t_log* log;		//dice que log es el nombre de una funcion, no se puede usar
+t_log* logger;		//dice que log es el nombre de una funcion, no se puede usar
 t_config* config;
 
 t_colas* queues;

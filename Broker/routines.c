@@ -8,24 +8,24 @@ void initialization() {
 
 void generic_initialization() {
 
-	log = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_INFO); //pending clean
+	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_INFO); //pending clean
 	config = config_create("broker.config"); //pending clean
 	IP_BROKER = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PORT");
 }
 
 void initialize_queues() {
-	queues->APPEARED = queue_create();
+	queues->APPEARED_POKEMON = queue_create();
 	suscribers->APPEARED = list_create();
-	queues->CATCH = queue_create();
+	queues->CATCH_POKEMON = queue_create();
 	suscribers->CATCH = list_create();
-	queues->CAUGHT = queue_create();
+	queues->CAUGHT_POKEMON = queue_create();
 	suscribers->CAUGHT = list_create();
-	queues->GET = queue_create();
+	queues->GET_POKEMON = queue_create();
 	suscribers->GET = list_create();
-	queues->LOCALIZED = queue_create();
+	queues->LOCALIZED_POKEMON = queue_create();
 	suscribers->LOCALIZED = list_create();
-	queues->NEW = queue_create();
+	queues->NEW_POKEMON = queue_create();
 	suscribers->NEW = list_create();
 }
 
@@ -59,7 +59,7 @@ void termination() {
 
 void specific_termination() {
 
-	queue_destroy(queues->NEW);
+	queue_destroy(queues->NEW_POKEMON);
 	free(queues);
 	free(suscribers);
 	free(semaphores);

@@ -130,7 +130,7 @@ void process_request(op_code cod_op, int32_t socket, t_log* logger) {
 			free(new->nombre);
 			break;
 
-		case CATCH:
+		case CATCHS:
 			log_info(logger, "Se recibe el mensaje:\n");
 			catch = receive_catch(socket, &size, logger);
 			//imprimir_catch();		//el recv ya imprime

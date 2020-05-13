@@ -19,7 +19,7 @@ typedef enum
 	APPEARED=2,
 	GET=3,
 	LOCALIZED=4,
-	CATCH=5,
+	CATCHS=5,
 	CAUGHT=6,
 	SUSCRIPCION=7,
 	CONFIRMACION=8,
@@ -85,12 +85,12 @@ typedef struct
 
 typedef struct
 {
-	t_queue* NEW;
-	t_queue* APPEARED;
-	t_queue* GET;
-	t_queue* LOCALIZED;
-	t_queue* CATCH;
-	t_queue* CAUGHT;
+	t_queue* NEW_POKEMON;		//asi nombra a las colas en t0do el TP
+	t_queue* APPEARED_POKEMON;
+	t_queue* GET_POKEMON;
+	t_queue* LOCALIZED_POKEMON;
+	t_queue* CATCH_POKEMON;
+	t_queue* CAUGHT_POKEMON;
 
 } t_colas;
 

@@ -19,13 +19,13 @@ void iniciar_servidor_broker()
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
         if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	log_error(log, "Error de socket()");
+        	log_error(logger, "Error de socket()");
         	continue;
         }
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
             close(socket_servidor);
-            log_error(log, "Error de bind (el puerto esta ocupado), reinicie el programa");
+            log_error(logger, "Error de bind (el puerto esta ocupado), reinicie el programa");
             for(;;);
             continue;
         }
@@ -33,12 +33,12 @@ void iniciar_servidor_broker()
     }
 
 	listen(socket_servidor, SOMAXCONN);
-	log_info(log, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
+	log_info(logger, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
 
     freeaddrinfo(servinfo);
 
     while(1)
-    	esperar_clientes(socket_servidor, log, queues, suscribers, semaphores);
+    	esperar_clientes(socket_servidor, logger, queues, suscribers, semaphores);
 }
 
 void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos)
@@ -109,6 +109,12 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 
 	//ya recibi la cod_op
 	//recibir el size del stream
+	uint32_t size;
+	size = receive_size(socket_cliente, logger);
+
+	//recibir el ID del proceso
+	uint32_t ID_proceso;
+	ID_proceso = receive_ID_proceso(socket_cliente, logger);
 
 	//recibir la cola a suscribirse
 	queue_code cola;
@@ -117,6 +123,11 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 	//guardar al socket_cliente en la cola de suscritos
 
 	switch(cola){
+
+	case COLA_NEW:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
+		agregar_Asubs(socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
+		break;
 
 	case COLA_APPEARED:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
@@ -143,11 +154,6 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 		agregar_Asubs(socket_cliente, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
 		break;
 
-	case COLA_NEW:
-		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
-		break;
-
 	default:
 		log_error(logger, "Aun no puedo suscribir a nadie en ese tipo de cola\n");
 		return;
@@ -165,27 +171,27 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 		switch (cod_op) {
 
 		case APPEARED:
-			process_APPEARED(socket_cliente, logger, colas->APPEARED, semaforos);
+		//	process_APPEARED(socket_cliente, logger, colas->APPEARED, semaforos);
 			break;
 
 		case GET:
-			process_GET(socket_cliente, logger, colas->GET, semaforos);
+		//	process_GET(socket_cliente, logger, colas->GET, semaforos);
 			break;
 
 		case LOCALIZED:
-			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED, semaforos);
+		//	process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED, semaforos);
 			break;
 
-		case CATCH:
-			process_CATCH(socket_cliente, logger, colas->CATCH, semaforos);
+		case CATCHS:
+		//	process_CATCH(socket_cliente, logger, colas->CATCH, semaforos);
 			break;
 
 		case CAUGHT:
-			process_CAUGHT(socket_cliente, logger, colas->CAUGHT, semaforos);
+		//	process_CAUGHT(socket_cliente, logger, colas->CAUGHT, semaforos);
 			break;
 
 		case NEW:
-			process_NEW(socket_cliente, logger, colas->NEW, semaforos);
+			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, semaforos);
 			break;
 
 		default:
@@ -194,7 +200,7 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 		}
 }
 
-
+/*
 void process_APPEARED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_appeared* appeared = malloc(sizeof(t_appeared));
@@ -295,6 +301,31 @@ void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_queue* queue, t_sem
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
+void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+	uint32_t size;
+	t_catch* catch = malloc(sizeof(t_catch));
+
+	catch = receive_catch(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	catch->id = 99;
+
+	send_ID(catch->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+
+	agregar_Acola(queue, catch, semaforos->mutex_cola_catch, logger);
+
+
+    int elementos = queue_size(queue);
+    log_info(logger, "La cola de CATCH tiene, %d elementos\n", elementos);
+    sem_post(&(semaforos->nuevo_catch));
+
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
+*/
 void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_new* new = malloc(sizeof(t_new));
@@ -320,30 +351,7 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semafo
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
-	uint32_t size;
-	t_catch* catch = malloc(sizeof(t_catch));
 
-	catch = receive_catch(socket_cliente, &size, logger);
-
-	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
-	catch->id = 99;
-
-	send_ID(catch->id, socket_cliente, logger);
-
-	receive_ACK(socket_cliente, logger);
-
-
-	agregar_Acola(queue, catch, semaforos->mutex_cola_catch, logger);
-
-
-    int elementos = queue_size(queue);
-    log_info(logger, "La cola de CATCH tiene, %d elementos\n", elementos);
-    sem_post(&(semaforos->nuevo_catch));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
-}
 
 void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
 
@@ -367,14 +375,6 @@ void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log*
 }
 
 queue_code receive_cola(uint32_t socket, t_log* logger){
-
-	uint32_t size;
-	log_info(logger, "Esperando recibir tamanio del stream\n");
-
-	if(recv(socket, &size, sizeof(uint32_t), MSG_WAITALL) == -1)
-		log_error(logger, "Error al recibir el tamanio del stream");
-	else
-		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", size);
 
 
 	queue_code cola;

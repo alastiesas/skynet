@@ -134,6 +134,37 @@ int32_t receive_ACK(uint32_t socket, t_log* logger){
 
 }
 
+uint32_t receive_size(uint32_t socket, t_log* logger){
+
+	uint32_t size;
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket, &size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", size);
+
+
+		return size;
+
+}
+
+uint32_t receive_ID_proceso(uint32_t socket, t_log* logger){
+	uint32_t ID_proceso;
+
+	int32_t resultado;
+	if((resultado = recv(socket, &ID_proceso, sizeof(uint32_t), MSG_WAITALL)) == -1){
+		log_error(logger, "Error al recibir el ID del proceso\n");
+		return -1; //failure
+	}
+	else
+		log_info(logger, "Se recibio el ID del proceso: %d\n", ID_proceso);
+
+
+		return 0; //success
+
+}
+
 
 
 t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
@@ -330,7 +361,7 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 			free(buffer);
 			break;
 
-		case CATCH:
+		case CATCHS:
 
 			log_info(logger, "Se recibe un paquete de tipo CATCH");
 
