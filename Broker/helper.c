@@ -128,32 +128,32 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 
 	case COLA_NEW:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
 		break;
 
 	case COLA_APPEARED:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->APPEARED, semaforos->mutex_subs_appeared, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->APPEARED, semaforos->mutex_subs_appeared, logger);
 		break;
 
 	case COLA_CATCH:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CATCH", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->CATCH, semaforos->mutex_subs_catch, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->CATCH, semaforos->mutex_subs_catch, logger);
 		break;
 
 	case COLA_CAUGHT:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CAUGHT", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->CAUGHT, semaforos->mutex_subs_caught, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->CAUGHT, semaforos->mutex_subs_caught, logger);
 		break;
 
 	case COLA_GET:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de GET", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->GET, semaforos->mutex_subs_get, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->GET, semaforos->mutex_subs_get, logger);
 		break;
 
 	case COLA_LOCALIZED:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de LOCALIZED", socket_cliente);
-		agregar_Asubs(socket_cliente, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
 		break;
 
 	default:
@@ -396,10 +396,14 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 	return t_mensaje;
 }
 
-void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
+void agregar_Asubs(uint32_t ID_proceso, int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
+	t_suscriber* suscriber = malloc(sizeof(t_suscriber));
+	suscriber->ID_suscriber = ID_proceso;
+	suscriber->connected = true;
+	suscriber->socket = socket;
 
 	pthread_mutex_lock(&mutex);
-	list_add(lista_subs, &socket);
+	list_add(lista_subs, suscriber);
 	pthread_mutex_unlock(&mutex);
 	log_info(logger, "Se agrego el socket '%d' a suscriptores\n", socket);
 

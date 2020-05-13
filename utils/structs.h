@@ -12,6 +12,7 @@
 #include <stdint.h>		//para uint32_t
 #include<commons/collections/queue.h>
 #include <semaphore.h>
+#include <stdbool.h>
 
 typedef enum
 {
@@ -104,6 +105,14 @@ typedef struct
 	t_list* CAUGHT;
 
 } t_suscriptores;
+
+typedef struct
+{
+	uint32_t ID_suscriber;
+	bool connected;
+	int32_t socket;
+
+} t_suscriber;
 
 typedef struct
 {

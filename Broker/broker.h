@@ -50,7 +50,7 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos);
 
 //mutex funciona sin pasarlo como puntero??
-void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
+void agregar_Asubs(uint32_t ID_proceso, int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
 
 //agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
 //mutex funciona sin pasarlo como puntero??
