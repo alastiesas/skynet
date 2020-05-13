@@ -85,6 +85,7 @@ int main(void)
 	block_list = list_create();
 	exec_list = list_create();
 	exit_list = list_create();
+	poke_map = dictionary_create();
 	//ciclo para cargar una lista de entrenadores.
 	//t_trainer* test_entrenador = construct_trainer(test_postions[0], test_objetivos[0], test_pokemons[0]);
 	initialize_trainers(test_postions, test_objetivos, test_pokemons);
@@ -109,6 +110,8 @@ int main(void)
 
 	*/
 	//state_change(0,new_list, ready_list);
+
+	//ESTO TIENE QUE ESTAR EN UN HILO DE EJECUCION
 	transition_new_to_ready(1);
 	transition_new_to_ready(0);
 	transition_new_to_ready(0);

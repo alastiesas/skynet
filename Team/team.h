@@ -30,6 +30,7 @@ uint32_t context_changes = 0;
 uint32_t cpu_cycles = 0;
 t_list* objetives_list;
 uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
+t_dictionary* poke_map;
 
 typedef enum {
 	EMPTY = 0,
@@ -42,7 +43,7 @@ typedef enum {
 t_algorithm algorithm = FIFO;
 
 typedef enum {
-	NEWBIE= 0,
+	FREE= 0,
 	MOVE = 1,
 	CATCHING = 2,
 	TRADE = 3,
@@ -79,6 +80,7 @@ typedef struct
 	t_objective* objective;
 } t_index;
 
+
 int size_array (char*);
 int char_count(char* array, char parameter);
 int size_array_config(char** array);
@@ -94,7 +96,7 @@ bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
 void *trainer_thread(t_trainer* trainer);
 uint32_t dinstance(t_position* current, t_position* destiny);
-t_trainer* closest_trainer(t_list* entrenadores, t_position* posicion);
+int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
 bool trainer_full(t_trainer* trainer);
 bool trainer_free_space(t_trainer* trainer);
 void transition_new_to_ready(uint32_t index);
@@ -143,7 +145,7 @@ int size_array_config(char** array)
 t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons)
 {
 	t_trainer* trainer = malloc(sizeof(t_trainer));
-	trainer->action = NEWBIE;
+	trainer->action = FREE;
 	trainer->move_destiny = NULL;
 	trainer->burst = 0;
 	trainer->quantum = 0;
@@ -300,22 +302,103 @@ uint32_t dinstance(t_position* current, t_position* destiny)
 	return distance_x + distance_y;
 }
 
-t_trainer* closest_trainer(t_list* list_trainer, t_position* destiny)
+int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 {
 	//printf("elements count %d\",list_trainer->elements_count);
 	t_link_element* element = list_trainer->head;
 	uint32_t distance = dinstance(((t_trainer*)element->data)->position, destiny);
 	t_trainer* trainer = (t_trainer*) element->data;
+	int32_t i = -1;
 	while(element != NULL) {
 		uint32_t distance_aux = dinstance(((t_trainer*)element->data)->position, destiny);
-		if(distance_aux < distance){
+		if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && distance_aux < distance){
 			distance = distance_aux;
 			trainer = (t_trainer*) element->data;
 		}
 		element = element->next;
+		i++;
 	}
-	return trainer;
+	return i;
 }
+
+//encuentra al entrenador mas cerca de la posicion en ambas listas
+
+//compara la posicion de los 2 entrenadores y la lista.
+
+//setea al entrenador, el pokemon y la distancia objetivo
+
+//dependiendo de la lista en la que este hace el transition.
+
+//VAMOS POR ACA FEDE!!!!!!!!! 13/05/2020
+
+bool large_term_scheduler(char* pokemon)
+{
+	// supongamos que ya nos lo trae del mapa con su posicion
+	t_position* destiny = malloc(sizeof(t_position));
+	destiny->x = 1;
+	destiny->y = 5;
+	// se remplaza la position por lo que devuelva del diccionario
+	int32_t closest_from_new = closest_free_trainer(new_list, destiny);
+	int32_t closest_from_block = closest_free_trainer(block_list, destiny);
+
+	if(closest_from_new != -1 && closest_from_block != -1){
+		if(closest_from_new <= closest_from_block){
+			//transicion de new a ready
+			t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
+			trainer->action_pokemon = pokemon;
+			trainer->move_destiny = destiny;
+			transition_new_to_ready(closest_from_new);
+		}
+		else
+		{
+			// transicion de block a ready
+			t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
+			trainer->action_pokemon = pokemon;
+			trainer->move_destiny = destiny;
+			transition_block_to_ready(closest_from_block);
+		}
+	}
+	else if(closest_from_new != -1){
+		//transicion de new a ready
+		t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
+		trainer->action_pokemon = pokemon;
+		trainer->move_destiny = destiny;
+		transition_new_to_ready(closest_from_new);
+	}
+	else if(closest_from_block != -1){
+		//transicion de block a ready
+		t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
+		trainer->action_pokemon = pokemon;
+		trainer->move_destiny = destiny;
+		transition_block_to_ready(closest_from_block);
+	}
+	else{
+		//nada
+		printf("no hay entrenadores en las listas de new ni block \n");
+	}
+
+}
+
+void add_to_poke_map(char* pokemon, t_position* position)
+{
+	//CASO DE QUE NO ESTE EL POKEMON EN EL MAP
+	if(!dictionary_has_key(poke_map, pokemon)){
+		t_list* positions = list_create();
+		list_add(positions, position);
+		dictionary_put(poke_map, pokemon, positions);
+	}
+	else
+	{
+		t_list* positions = (t_list*) dictionary_get(poke_map,pokemon);
+		list_add(positions, position);
+	}
+
+	//EL CASO DE QUE ESTE EL POKEMON EN EL MAPA
+	//buscar el pokemon en la lista y retornar el indice
+
+
+}
+
 
 bool trainer_full(t_trainer* trainer)
 {
