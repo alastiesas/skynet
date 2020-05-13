@@ -10,7 +10,6 @@
 
 
 
-
 //#include <libs/conexion.h>
 //atoi(test_split[0])
 
@@ -81,106 +80,80 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-
+	new_list = list_create();
+	ready_list = list_create();
+	block_list = list_create();
+	exec_list = list_create();
+	exit_list = list_create();
 	//ciclo para cargar una lista de entrenadores.
 	//t_trainer* test_entrenador = construct_trainer(test_postions[0], test_objetivos[0], test_pokemons[0]);
-	t_list* new_list = initialize_trainers(test_postions, test_objetivos, test_pokemons);
-	t_list* ready_list = list_create();
-	t_list* block_list = list_create();
-	t_list* exec_list = list_create();
-	t_list* exit_list = list_create();
+	initialize_trainers(test_postions, test_objetivos, test_pokemons);
 
-	state_change(1,new_list, ready_list);
-	t_trainer* trainer = (t_trainer*) list_get(ready_list,0);
-	t_trainer* trainer2 = (t_trainer*) list_get(new_list,0);
-	printf("el debug de los entrenador %s\n", trainer->objectives[2]);
+	objetives_list = list_create();
 
-	t_objective* objective1 = malloc(sizeof(t_objective));
-
-	objective1->pokemon = "pikachu";
-	objective1->count = 1;
-
-	t_objective* objective2 = malloc(sizeof(t_objective));
-
-	objective2->pokemon = "charmander";
-	objective2->count = 1;
-
-	t_objective* objective3 = malloc(sizeof(t_objective));
-
-	objective3->pokemon = "snorlax";
-	objective3->count = 1;
-	//printf("debug del bool %d\n",testing_bool);
-
-	//
-
-	t_list* objetives_list = list_create();
-
-	/*
-	list_add(objetives_list, objective1);
-	list_add(objetives_list, objective2);
-	list_add(objetives_list, objective3);
-
-	t_objective* objective4 = find_key(objetives_list, "charmander");
-
-
-	printf("el debug de objective4 %s\n", objective2->pokemon);
-	printf("el debug de objective4 %s\n", objective4->pokemon);
-
-	add_objective(objetives_list,"charmander");
-	add_objective(objetives_list,"charmander");
-	add_objective(objetives_list,"charmander");
-	add_objective(objetives_list,"charmander");
-	add_objective(objetives_list,"hunter");
-	printf("el debug de objective4 %s\n", objective2->pokemon);
-	printf("el debug de objective4 %d\n", objective2->count);
-
-	t_objective* objective10 = find_key(objetives_list, "hunter");
-
-	printf("el debug de objective4 %s\n", objective10->pokemon);
-	printf("el debug de objective4 %d\n", objective10->count);
-	printf("el debug de objective4 %d\n", objective10->caught);
-	*/
-	/*
-	objetives_list = add_trainer_to_objective(objetives_list,trainer);
-	t_objective* test_obj = (t_objective*) list_get(objetives_list,1);
-	printf("the objective list has %s\n", test_obj->pokemon);
-	*/
 	objetives_list = initialize_global_objectives(new_list);
-	t_objective* test_obj = (t_objective*) list_get(objetives_list,0);
-	printf("the objective list has %s\n", test_obj->pokemon);
-	printf("the objective list has %d\n", test_obj->count);
-	printf("the objective list has %d\n", test_obj->caught);
-	printf("the objective bool is %d\n", success_objective(test_obj));
-	printf("the objective bool is %d\n", success_global_objective(new_list));
-	//FIFO funcion generica que recibe tipo de planificador, "fifo" agarra el primero en la cola
-	//agarra lista ready y se fija cual es el que pasa a lista exec
 
 
-	//pthread_mutex_init(trainer->semThread,NULL);
-
-	sem_init(&trainer->sem_thread, 0, 0);
-	sem_init(&trainer2->sem_thread, 0, 0);
-	//trainer->semThread = 0;
-	//trainer2->semThread = 0;
 	pthread_t tid;
 	pthread_t tid2;
 	pthread_attr_t attr;
 
-	printf("Before Thread\n");
-	pthread_create(&tid, NULL, trainer_thread, trainer);
-	pthread_create(&tid2, NULL, trainer_thread, trainer2);
-	printf("algoo\n");
 
-		//trainer->semThread = 1;
-	//pthread_mutex_init(trainer->semThread,NULL);
-	sem_post(&trainer2->sem_thread);
-	sleep(1);
+	/*
 	sem_post(&trainer->sem_thread);
+	sleep(1);
+	sem_post(&trainer2->sem_thread);
 
 	pthread_join(tid, NULL);
 	pthread_join(tid2, NULL);
-	printf("After Thread\n");
 
+	*/
+	//state_change(0,new_list, ready_list);
+	transition_new_to_ready(1);
+	transition_new_to_ready(0);
+	transition_new_to_ready(0);
+	short_term_scheduler();
+
+	t_trainer* trainer_test = list_get(exec_list,0);
+	pthread_join(trainer_test->tid, NULL);
+	short_term_scheduler();
+	trainer_test = list_get(exec_list,0);
+	sleep(1);
+	pthread_join(trainer_test->tid, NULL);
+
+
+
+	trainer_test = list_get(ready_list,0);
+	trainer_test->move_destiny = malloc(sizeof(t_position));
+	trainer_test->move_destiny->x = 1;
+	trainer_test->move_destiny->y = 9;
+	trainer_test->action = MOVE;
+
+	short_term_scheduler();
+	trainer_test = list_get(exec_list,0);
+	sleep(1);
+	pthread_join(trainer_test->tid, NULL);
+	list_get(exit_list,0);
+
+	printf("cantidad de CPU %d\n", cpu_cycles);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//printf("el debug de los entrenador %d\n", ((t_trainer*) list_get(exec_list,0))->position->y);
 	//5 colas para los estados
 
 	/*

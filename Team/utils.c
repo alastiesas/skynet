@@ -14,25 +14,6 @@
  * el tamaño del stream de bytes serializados que devuelve
  */
 
-int char_count(char* array, char parameter)
-{
-	int size_test =  strlen (array);
-	int count = 1;
-	for(int i = 0; i< size_test ; i++)
-		if(array[i] == parameter)
-					count++;
-	return count;
-}
-
-int size_array_config(char** array)
-{
-	int j = 0;
-		while(array[j] != NULL){
-			printf("test_objetivos %s\n", array[j]);
-			j++;
-		}
-		return j;
-}
 
 void* serializar_paquete(t_paquete* paquete, int *bytes)
 {
