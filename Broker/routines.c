@@ -39,6 +39,11 @@ void specific_initialization() {
 	initialize_queues();
 
 	pthread_mutex_init(&(semaphores->mutex_cola_new), NULL);
+	pthread_mutex_init(&(semaphores->mutex_cola_appeared), NULL);
+	pthread_mutex_init(&(semaphores->mutex_cola_get), NULL);
+	pthread_mutex_init(&(semaphores->mutex_cola_localized), NULL);
+	pthread_mutex_init(&(semaphores->mutex_cola_catch), NULL);
+	pthread_mutex_init(&(semaphores->mutex_cola_caught), NULL);
 	sem_init(&(semaphores->nuevo_new), 0, 0);
 }
 
@@ -61,6 +66,11 @@ void termination() {
 void specific_termination() {
 
 	queue_destroy(queues->NEW_POKEMON);
+	queue_destroy(queues->APPEARED_POKEMON);
+	queue_destroy(queues->GET_POKEMON);
+	queue_destroy(queues->LOCALIZED_POKEMON);
+	queue_destroy(queues->CATCH_POKEMON);
+	queue_destroy(queues->CAUGHT_POKEMON);
 	free(queues);
 	free(suscribers);
 	free(semaphores);

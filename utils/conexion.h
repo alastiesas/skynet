@@ -41,12 +41,7 @@ void recibir_muchos_mensajes(void* input);
 void process_request(op_code cod_op, int32_t socket, t_log* logger);
 
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
-void process_GET(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos);
+
 
 
 int32_t connect_to_server(char * ip, char * puerto, t_log* logger);
