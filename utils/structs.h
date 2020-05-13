@@ -107,6 +107,26 @@ typedef struct
 
 typedef struct
 {
+	pthread_mutex_t mutex_cola_appeared;
+	pthread_mutex_t mutex_subs_appeared;
+	sem_t nuevo_appeared;
+
+	pthread_mutex_t mutex_cola_catch;
+	pthread_mutex_t mutex_subs_catch;
+	sem_t nuevo_catch;
+
+	pthread_mutex_t mutex_cola_caught;
+	pthread_mutex_t mutex_subs_caught;
+	sem_t nuevo_caught;
+
+	pthread_mutex_t mutex_cola_get;
+	pthread_mutex_t mutex_subs_get;
+	sem_t nuevo_get;
+
+	pthread_mutex_t mutex_cola_localized;
+	pthread_mutex_t mutex_subs_localized;
+	sem_t nuevo_localized;
+
 	pthread_mutex_t mutex_cola_new;
 	pthread_mutex_t mutex_subs_new;
 	sem_t nuevo_new;

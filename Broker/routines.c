@@ -14,13 +14,29 @@ void generic_initialization() {
 	PORT = config_get_string_value(config, "PORT");
 }
 
+void initialize_queues() {
+	queues->APPEARED = queue_create();
+	suscribers->APPEARED = list_create();
+	queues->CATCH = queue_create();
+	suscribers->CATCH = list_create();
+	queues->CAUGHT = queue_create();
+	suscribers->CAUGHT = list_create();
+	queues->GET = queue_create();
+	suscribers->GET = list_create();
+	queues->LOCALIZED = queue_create();
+	suscribers->LOCALIZED = list_create();
+	queues->NEW = queue_create();
+	suscribers->NEW = list_create();
+}
+
 void specific_initialization() {
 
 	queues = malloc(sizeof(t_colas));
 	suscribers = malloc(sizeof(t_suscriptores));
 	semaphores = malloc(sizeof(t_semaforos));
-	queues->NEW = queue_create();
-	suscribers->NEW = list_create();
+
+	initialize_queues();
+
 	pthread_mutex_init(&(semaphores->mutex_cola_new), NULL);
 	sem_init(&(semaphores->nuevo_new), 0, 0);
 }

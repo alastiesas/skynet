@@ -117,10 +117,37 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 	//guardar al socket_cliente en la cola de suscritos
 
 	switch(cola){
+
+	case COLA_APPEARED:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
+		agregar_Asubs(socket_cliente, suscriptores->APPEARED, semaforos->mutex_subs_appeared, logger);
+		break;
+
+	case COLA_CATCH:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de CATCH", socket_cliente);
+		agregar_Asubs(socket_cliente, suscriptores->CATCH, semaforos->mutex_subs_catch, logger);
+		break;
+
+	case COLA_CAUGHT:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de CAUGHT", socket_cliente);
+		agregar_Asubs(socket_cliente, suscriptores->CAUGHT, semaforos->mutex_subs_caught, logger);
+		break;
+
+	case COLA_GET:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de GET", socket_cliente);
+		agregar_Asubs(socket_cliente, suscriptores->GET, semaforos->mutex_subs_get, logger);
+		break;
+
+	case COLA_LOCALIZED:
+		log_info(logger, "Por suscribir al socket '%d' a la cola de LOCALIZED", socket_cliente);
+		agregar_Asubs(socket_cliente, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
+		break;
+
 	case COLA_NEW:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
 		agregar_Asubs(socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
 		break;
+
 	default:
 		log_error(logger, "Aun no puedo suscribir a nadie en ese tipo de cola\n");
 		return;
@@ -137,6 +164,26 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 		switch (cod_op) {
 
+		case APPEARED:
+			process_APPEARED(socket_cliente, logger, colas->APPEARED, semaforos);
+			break;
+
+		case GET:
+			process_GET(socket_cliente, logger, colas->GET, semaforos);
+			break;
+
+		case LOCALIZED:
+			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED, semaforos);
+			break;
+
+		case CATCH:
+			process_CATCH(socket_cliente, logger, colas->CATCH, semaforos);
+			break;
+
+		case CAUGHT:
+			process_CAUGHT(socket_cliente, logger, colas->CAUGHT, semaforos);
+			break;
+
 		case NEW:
 			process_NEW(socket_cliente, logger, colas->NEW, semaforos);
 			break;
@@ -148,7 +195,107 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 }
 
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_semaforos* semaforos){
+void process_APPEARED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+	uint32_t size;
+	t_appeared* appeared = malloc(sizeof(t_appeared));
+
+	appeared = receive_appeared(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	appeared->id = 99;
+
+	send_ID(appeared->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+
+	agregar_Acola(queue, appeared, semaforos->mutex_cola_appeared, logger);
+
+
+    int elementos = queue_size(queue);
+    log_info(logger, "La cola de APPEARED tiene, %d elementos\n", elementos);
+    sem_post(&(semaforos->nuevo_appeared));
+
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
+
+void process_GET(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+	uint32_t size;
+	t_get* get = malloc(sizeof(t_get));
+
+	get = receive_get(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	get->id = 99;
+
+	send_ID(get->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+
+	agregar_Acola(queue, get, semaforos->mutex_cola_get, logger);
+
+
+    int elementos = queue_size(queue);
+    log_info(logger, "La cola de GET tiene, %d elementos\n", elementos);
+    sem_post(&(semaforos->nuevo_get));
+
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
+
+void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+	uint32_t size;
+	t_localized* localized = malloc(sizeof(t_localized));
+
+	localized = receive_localized(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	localized->id = 99;
+
+	send_ID(localized->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+
+	agregar_Acola(queue, localized, semaforos->mutex_cola_localized, logger);
+
+
+    int elementos = queue_size(queue);
+    log_info(logger, "La cola de LOCALIZED tiene, %d elementos\n", elementos);
+    sem_post(&(semaforos->nuevo_localized));
+
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
+
+void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+	uint32_t size;
+	t_caught* caught = malloc(sizeof(t_caught));
+
+	caught = receive_caught(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	caught->id = 99;
+
+	send_ID(caught->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+
+	agregar_Acola(queue, caught, semaforos->mutex_cola_caught, logger);
+
+
+    int elementos = queue_size(queue);
+    log_info(logger, "La cola de CAUGHT tiene, %d elementos\n", elementos);
+    sem_post(&(semaforos->nuevo_caught));
+
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
+
+void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_new* new = malloc(sizeof(t_new));
 
@@ -162,12 +309,37 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue_NEW, t_se
 	receive_ACK(socket_cliente, logger);
 
 
-	agregar_Acola(queue_NEW, new, semaforos->mutex_cola_new, logger);
+	agregar_Acola(queue, new, semaforos->mutex_cola_new, logger);
 
 
-    int elementos = queue_size(queue_NEW);
+    int elementos = queue_size(queue);
     log_info(logger, "La cola de NEW tiene, %d elementos\n", elementos);
     sem_post(&(semaforos->nuevo_new));
+
+
+	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
+}
+
+void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+	uint32_t size;
+	t_catch* catch = malloc(sizeof(t_catch));
+
+	catch = receive_catch(socket_cliente, &size, logger);
+
+	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
+	catch->id = 99;
+
+	send_ID(catch->id, socket_cliente, logger);
+
+	receive_ACK(socket_cliente, logger);
+
+
+	agregar_Acola(queue, catch, semaforos->mutex_cola_catch, logger);
+
+
+    int elementos = queue_size(queue);
+    log_info(logger, "La cola de CATCH tiene, %d elementos\n", elementos);
+    sem_post(&(semaforos->nuevo_catch));
 
 
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
