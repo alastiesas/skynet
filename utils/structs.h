@@ -107,6 +107,8 @@ typedef struct
 
 typedef struct
 {
+	pthread_mutex_t mutex_ID_global;
+
 	pthread_mutex_t mutex_cola_appeared;
 	pthread_mutex_t mutex_subs_appeared;
 	sem_t nuevo_appeared;
@@ -135,9 +137,10 @@ typedef struct
 
 typedef struct
 {
+	uint32_t ID_mensaje;
 	t_list* subs_enviados;
 	t_list* subs_confirmados;
-	void* t_mensaje;
+	void* datos_mensaje;
 
 } t_pending;
 

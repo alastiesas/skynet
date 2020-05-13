@@ -102,3 +102,31 @@ esperando recibir cod_op, por vez numero 1
 
 [INFO] 20:13:37:660 GameBoy/(15216:15216): Termino la suscripcion
 
+[INFO] 11:27:34:651 GameBoy/(11693:11693): Log del GameBoy creado
+[INFO] 11:27:34:651 GameBoy/(11693:11693): config creada
+[INFO] 11:28:13:98 GameBoy/(11766:11766): Log del GameBoy creado
+[INFO] 11:28:13:98 GameBoy/(11766:11766): config creada
+[INFO] 11:33:24:807 GameBoy/(3448:3448): Log del GameBoy creado
+[INFO] 11:33:24:807 GameBoy/(3448:3448): config creada
+[WARNING] 11:33:24:807 GameBoy/(3448:3448): Error de conexion con el gameBoy
+
+[INFO] 11:33:24:807 GameBoy/(3448:3448): Reintentando en 10 segundos
+
+[WARNING] 11:33:34:808 GameBoy/(3448:3448): Error de conexion con el gameBoy
+
+[INFO] 11:33:34:808 GameBoy/(3448:3448): Reintentando en 10 segundos
+
+[INFO] 11:34:36:65 GameBoy/(3522:3522): Log del GameBoy creado
+[INFO] 11:34:36:65 GameBoy/(3522:3522): config creada
+[INFO] 11:34:36:66 GameBoy/(3522:3522): Conexion creada
+
+[INFO] 11:34:36:69 GameBoy/(3522:3522): Se recibio el ID de mensaje: 1
+
+[INFO] 11:34:36:69 GameBoy/(3522:3522): Se envio la confirmacion (4 bytes)
+[INFO] 11:35:45:689 GameBoy/(3601:3601): Log del GameBoy creado
+[INFO] 11:35:45:689 GameBoy/(3601:3601): config creada
+[INFO] 11:35:45:690 GameBoy/(3601:3601): Conexion creada
+
+[INFO] 11:35:45:691 GameBoy/(3601:3601): Se recibio el ID de mensaje: 2
+
+[INFO] 11:35:45:691 GameBoy/(3601:3601): Se envio la confirmacion (4 bytes)

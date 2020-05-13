@@ -97,6 +97,8 @@ void broker_serves_client(void* input){
 
 	log_info(logger, "se recibio la cod op: %d\n", cod_op);
 
+
+
 	if(cod_op == SUSCRIPCION)
 		process_suscripcion(cod_op, socket, logger, suscriptores, semaforos);
 	else
@@ -170,6 +172,10 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 		switch (cod_op) {
 
+		case NEW:
+			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, semaforos);
+			break;
+
 		case APPEARED:
 		//	process_APPEARED(socket_cliente, logger, colas->APPEARED, semaforos);
 			break;
@@ -188,10 +194,6 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 		case CAUGHT:
 		//	process_CAUGHT(socket_cliente, logger, colas->CAUGHT, semaforos);
-			break;
-
-		case NEW:
-			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, semaforos);
 			break;
 
 		default:
@@ -328,19 +330,24 @@ void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_sema
 */
 void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
 	uint32_t size;
-	t_new* new = malloc(sizeof(t_new));
+	t_pending* t_mensaje;
 
-	new = receive_new(socket_cliente, &size, logger);
+	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
-	//TODO GENERAR ID Y METERLO EN EL MENSAJE (tengo una variable global con mutex, luego de usarla se incrementa en 1)
-	new->id = 99;
+	//Generar ID del mensaje
+	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	t_mensaje->ID_mensaje = ID_GLOBAL;
+	ID_GLOBAL++;
+	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
 
-	send_ID(new->id, socket_cliente, logger);
+	//Enviar ID del mensaje
+	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
 
+	//Recibir confirmacion de haber recibido la ID
 	receive_ACK(socket_cliente, logger);
 
-
-	agregar_Acola(queue, new, semaforos->mutex_cola_new, logger);
+	//Agregar mensaje a cola correspondiente
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_new, logger);
 
 
     int elementos = queue_size(queue);
@@ -351,7 +358,43 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semafo
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
+t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
+	t_pending* t_mensaje = malloc(sizeof(t_pending));
+	t_mensaje->subs_confirmados = list_create();
+	t_mensaje->subs_enviados = list_create();
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+	//recibir id de new. (El cual va a ignorar, porque setea el suyo propio luego)
+	if(recv(socket_cliente, &(t_mensaje->ID_mensaje), sizeof(t_mensaje->ID_mensaje), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de new");
+	else
+		log_info(logger, "id de new recibido: %d (no se usa ese ID)", t_mensaje->ID_mensaje);
+
+	uint32_t size_ID = sizeof(uint32_t);
+	uint32_t size_datos = *size - size_ID;
+	t_mensaje->datos_mensaje = malloc(size_datos);
+
+	//recibir t0do el resto de datos del mensaje
+	int32_t bytes_received = recv(socket_cliente, &(t_mensaje->datos_mensaje), size_datos, MSG_WAITALL);
+	if(bytes_received == -1)
+		log_error(logger, "Error al recibir los datos del mensaje");
+	else
+		log_info(logger, "Datos del mensaje recibidos. (%d bytes de un total de %d)", bytes_received, size_datos);
+
+
+
+	if(*size != size_ID + size_datos)
+		log_error(logger, "Tamanio erroneo");
+
+	return t_mensaje;
+}
 
 void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
 
@@ -362,14 +405,10 @@ void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_
 
 }
 
-void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log* logger){
-	t_pending* elemento_de_la_cola = malloc(sizeof(t_pending));
-	elemento_de_la_cola->subs_enviados = list_create();
-	elemento_de_la_cola->subs_confirmados = list_create();
-	elemento_de_la_cola->t_mensaje = t_mensaje;
+void agregar_Acola(t_queue* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
 
 	pthread_mutex_lock(&mutex);
-	queue_push(cola, elemento_de_la_cola);
+	queue_push(cola, t_mensaje);
 	pthread_mutex_unlock(&mutex);
 
 }

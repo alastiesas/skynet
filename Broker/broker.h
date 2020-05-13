@@ -16,6 +16,8 @@
 char* IP_BROKER;
 char* PORT;
 
+uint32_t ID_GLOBAL;
+
 t_log* logger;		//dice que log es el nombre de una funcion, no se puede usar
 t_config* config;
 
@@ -52,10 +54,12 @@ void agregar_Asubs(int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_
 
 //agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
 //mutex funciona sin pasarlo como puntero??
-void agregar_Acola(t_queue* cola, void* t_mensaje, pthread_mutex_t mutex, t_log* logger);
+void agregar_Acola(t_queue* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger);
 
 //Recibe el size del stream. Recibe un queue_code.
 queue_code receive_cola(uint32_t socket, t_log* logger);
+
+t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger);
 
 void initialization();
 

@@ -62,7 +62,6 @@ int main(int argc, char* argv[]) {
 	ID_PROPIO = config_get_string_value(config, "ID_GAMEBOY");
 
 
-
 	process_code proceso;
 	if (strcmp(argv[1], "BROKER") == 0){
 		proceso = BROKER;
@@ -150,7 +149,7 @@ void case_NEW(char* argv[], t_log* logger){
 	new->posX = posX;				//convertir string a int?
 	new->posY = posY;
 	new->cantidad = cantidad;
-
+	printf("Se guardaron todos los datos en la estructura a serializar\n");
 
 	//serializar
 	t_paquete* paquete = malloc(sizeof(t_paquete));
