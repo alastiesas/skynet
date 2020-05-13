@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 // HAY QUE PASAR LOS uint32_t A Uuint32_t_32 que no se en que librería está. . .
 typedef enum {
@@ -97,7 +98,7 @@ typedef struct {
 	op_code operation_code;
 	uint32_t message_id;
 	uint32_t correlative_id;
-	uint32_t result;//1 = si, 0 = no
+	bool result;//1 = si, 0 = no
 }t_caught;
 //--fin estructuras de mensajes
 
@@ -105,20 +106,20 @@ typedef struct {
 
 //constructores de mensajes, no requieren tamaños ni codigo de operación, lo calculan uint32_ternamente.
 //retorna un mensaje NEW.
-t_new* construct_new(uint32_t message_id, char* pokemon, t_location* location);
-t_new* construct_new_long(uint32_t message_id, char* pokemon, uint32_t posx,uint32_t posy,uint32_t amount);
+t_new* construct_new(char* pokemon, t_location* location);
+t_new* construct_new_long(char* pokemon, uint32_t posx,uint32_t posy,uint32_t amount);
 //retorna un mensaje APPEARED.
-t_appeared* construct_appeared(uint32_t message_id, char* pokemon, t_position* position);
-t_appeared* construct_appeared_long(uint32_t message_id, char* pokemon, uint32_t posx, uint32_t posy);
+t_appeared* construct_appeared(char* pokemon, t_position* position);
+t_appeared* construct_appeared_long(char* pokemon, uint32_t posx, uint32_t posy);
 //retorna un mensaje GET.
-t_get* construct_get(uint32_t message_id, char* pokemon);
+t_get* construct_get(char* pokemon);
 //retorna un mensaje LOCALIZED.
-t_localized* construct_localized(uint32_t message_id, uint32_t correlative_id, char* pokemon, uint32_t position_amount, t_position* positions);
+t_localized* construct_localized(uint32_t correlative_id, char* pokemon, uint32_t position_amount, t_position* positions);
 //t_localized* construct_localized_long(uint32_t message_id, uint32_t correlative_id, char* pokemon, uint32_t position_amount, uint32_t** positions);
 //retorna un mensaje CATCH.
-t_catch* construct_catch(uint32_t message_id, char* pokemon, t_position* position);
+t_catch* construct_catch(char* pokemon, t_position* position);
 //retorna un mensaje CAUGHT.
-t_caught* construct_caught(uint32_t message_id, uint32_t correlative_id, uint32_t result);
+t_caught* construct_caught(uint32_t correlative_id, bool result);
 //fin constructores
 
 
@@ -132,18 +133,5 @@ void* serialize_catch(t_catch* message, uint32_t *bytes);
 void* serialize_caught(t_caught* message, uint32_t *bytes);
 //fin serializadores
 
-//deserializadores
-uint32_t deserialize(void* from, uint32_t* to);
-char* deserializestring(void* from, char* to, uint32_t size);
-void deserialize_new_message_id(void* from, t_new* to);
-void deserialize_new_size_pokemon(void* from, t_new* to);
-void deserialize_new_pokemon(void* from, t_new* to);
-t_new* deserialize_new(void* stream, uint32_t* bytes);
-t_appeared* deserialize_appeared(void* stream, uint32_t* bytes);
-t_get* deserialize_get(void* stream, uint32_t* bytes);
-t_localized* deserialize_localized(void* stream, uint32_t* bytes);
-t_catch* deserialize_catch(void* stream, uint32_t* bytes);
-t_caught* deserialize_caught(void* stream, uint32_t* bytes);
-//findeserializadores
 
 #endif /* SERIALIZER_H_ */
