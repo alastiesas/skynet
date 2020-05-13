@@ -283,7 +283,40 @@ void* serialize_caught(t_caught* message, uint32_t *bytes) {
 	return serialized;
 }
 //fin serializadores
+//destructores
+void destroy_new(t_new* message) {
+	free(message->pokemon);
+	free(message);
+}
+void destroy_appeared(t_appeared* message) {
+	free(message->pokemon);
+	free(message->position);
+	free(message);
 
+}
+
+void destroy_get(t_get* message) {
+	free(message->pokemon);
+	free(message);
+}
+
+void destroy_localized(t_localized* message) {
+	free(message->pokemon);
+	free(message->positions);
+	free(message);
+}
+
+void destroy_catch(t_catch* message) {
+	free(message->pokemon);
+	free(message->position);
+	free(message);
+}
+
+void destroy_caught(t_caught* message) {
+	free(message);
+}
+
+//fin destructores
 
 
 

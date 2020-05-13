@@ -78,7 +78,7 @@ int main(void) {
 
 
 
-	printf("\n\n\nSERIALIZANDO\n");
+	printf("\n\n\DEBUG SERIALIZADORES\n");
 
 	uint32_t *bytes = malloc(sizeof(uint32_t));
 	*bytes = 0;
@@ -183,8 +183,24 @@ int main(void) {
 	offset += sizeof(uint32_t);
 	printf("correlative_id = %d\n", *(uint32_t*)(stream_caught+offset));
 	offset += sizeof(uint32_t);
-	printf("resut = %d\n", *(uint32_t*)(stream_caught+offset));
+	printf("result = %d\n", *(uint32_t*)(stream_caught+offset));
 	offset += sizeof(uint32_t);
+
+
+	printf("\nLIMPIEZA DE MEMORIA\n");
+	destroy_new(new);
+	printf("new\n");
+	destroy_appeared(appeared);
+	printf("appeared\n");
+	destroy_get(get);
+	printf("get\n");
+	destroy_localized(localized);
+	printf("localized\n");
+	destroy_catch(catch);
+	printf("catch\n");
+	destroy_caught(caught);
+	printf("caught\n");
+	printf("\nDEBUG FINALIZADO\n");
 
 	return EXIT_SUCCESS;
 }

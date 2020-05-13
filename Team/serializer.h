@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// HAY QUE PASAR LOS uint32_t A Uuint32_t_32 que no se en que librería está. . .
 typedef enum {
 	NEW = 1,
 	APPEARED = 2,
@@ -23,14 +22,14 @@ typedef enum {
 }op_code;
 
 //estructuras utiles
-typedef struct {//posicion (x, y)
+typedef struct {
 	uint32_t x;
 	uint32_t y;
-}t_position;
-typedef struct {//Localizacion (posicion + cantidad)
+}t_position;//posicion (x, y)
+typedef struct {
 	t_position* position;
 	uint32_t amount;
-}t_location;
+}t_location;//Localizacion (posicion + cantidad)
 //--fin estructuras utiles--
 
 
@@ -45,7 +44,7 @@ typedef struct {
 	t_location* location;
 }t_new;
 
-//APPEARED = {2, id_mensaje, tamaño_pokeon, pokemon, posx, posy
+//APPEARED = {2, id_mensaje, tamaño_pokeon, pokemon, posx, posy}
 typedef struct {
 	op_code operation_code;
 	uint32_t message_id;
@@ -93,22 +92,25 @@ typedef struct {
 
 
 
-//constructores de mensajes, no requieren tamaños ni codigo de operación, lo calculan uint32_ternamente.
-//retorna un mensaje NEW.
+//constructores de mensajes
 t_new* construct_new(char* pokemon, t_location* location);
 t_new* construct_new_long(char* pokemon, uint32_t posx,uint32_t posy,uint32_t amount);
-//retorna un mensaje APPEARED.
 t_appeared* construct_appeared(char* pokemon, t_position* position);
 t_appeared* construct_appeared_long(char* pokemon, uint32_t posx, uint32_t posy);
-//retorna un mensaje GET.
 t_get* construct_get(char* pokemon);
-//retorna un mensaje LOCALIZED.
 t_localized* construct_localized(uint32_t correlative_id, char* pokemon, uint32_t position_amount, t_position* positions);
 //t_localized* construct_localized_long(uint32_t message_id, uint32_t correlative_id, char* pokemon, uint32_t position_amount, uint32_t** positions);
-//retorna un mensaje CATCH.
 t_catch* construct_catch(char* pokemon, t_position* position);
-//retorna un mensaje CAUGHT.
 t_caught* construct_caught(uint32_t correlative_id, bool result);
 //fin constructores
+
+//destructores
+void destroy_new(t_new* message);
+void destroy_appeared(t_appeared* message);
+void destroy_get(t_get* message);
+void destroy_localized(t_localized* message);
+void destroy_catch(t_catch* message);
+void destroy_caught(t_caught* message);
+//fin destructores
 
 #endif /* SERIALIZER_H_ */
