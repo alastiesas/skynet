@@ -17,8 +17,14 @@ char* IP_BROKER;
 char* PORT;
 
 uint32_t ID_GLOBAL;
+uint32_t size_subs_new;			//para mantener la cantidad de suscriptores tambien hay que usar semaforos?
+uint32_t size_subs_appeared;
+uint32_t size_subs_get;
+uint32_t size_subs_localized;
+uint32_t size_subs_catch;
+uint32_t size_subs_caught;
 
-t_log* logger;		//dice que log es el nombre de una funcion, no se puede usar
+t_log* logger;
 t_config* config;
 
 t_colas* queues;
@@ -49,8 +55,11 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 
 void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos);
 
+//TODO
+void send_received_message(uint32_t ID_proceso);
+
 //mutex funciona sin pasarlo como puntero??
-void agregar_Asubs(uint32_t ID_proceso, int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
+void agregar_Asubs(uint32_t ID_proceso, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
 
 //agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
 //mutex funciona sin pasarlo como puntero??

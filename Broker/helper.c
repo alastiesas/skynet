@@ -122,38 +122,40 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 	queue_code cola;
 	cola = receive_cola(socket_cliente, logger);
 
-	//guardar al socket_cliente en la cola de suscritos
+//TODO verificar si es un proceso que ya se habia suscrito antes, y verificar que se este suscribiendo a la misma cola
+
+	//guardar al t_suscriber en la cola de suscritos
 
 	switch(cola){
 
 	case COLA_NEW:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->NEW, semaforos->mutex_subs_new, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->NEW, semaforos->mutex_subs_new, logger);
 		break;
 
 	case COLA_APPEARED:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->APPEARED, semaforos->mutex_subs_appeared, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->APPEARED, semaforos->mutex_subs_appeared, logger);
 		break;
 
 	case COLA_CATCH:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CATCH", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->CATCH, semaforos->mutex_subs_catch, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->CATCH, semaforos->mutex_subs_catch, logger);
 		break;
 
 	case COLA_CAUGHT:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CAUGHT", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->CAUGHT, semaforos->mutex_subs_caught, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->CAUGHT, semaforos->mutex_subs_caught, logger);
 		break;
 
 	case COLA_GET:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de GET", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->GET, semaforos->mutex_subs_get, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->GET, semaforos->mutex_subs_get, logger);
 		break;
 
 	case COLA_LOCALIZED:
 		log_info(logger, "Por suscribir al socket '%d' a la cola de LOCALIZED", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
+		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
 		break;
 
 	default:
@@ -164,7 +166,61 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 	//responder al proceso que ya esta suscrito
 	send_ACK(socket_cliente, logger);
 
-	//TODO enviar mensajes en la cache del broker
+//TODO enviar mensajes en la cache del broker
+
+	/*
+	while(1)
+		send_received_message(ID_proceso);
+*/
+}
+
+void send_received_message(uint32_t ID_proceso){
+				//alternativamente, el broker puede tener una lista de threads, y desbloquarlos todos ("de alguna otra forma")
+					//Si el thread no estaba en espera por bloqueo, esperar a que lo este, para avisarle que llego un nuevo mensaje.
+
+
+	//esperar a que le avisen que hay un nuevo mensaje en la cola, cualquier mensaje de esa cola
+	//sem_wait();
+	//un sleep luego de entrar para asegurar que todos los threads puedan tomar el signal
+
+
+	//chequear la lista de mensajes de esa cola, y guardarse los ID de mensaje de los que aun no envio.
+	//Iterar lo siguiente, para cada uno de los mensajes que le falte a ese suscriptor:
+	//enviar el mensaje
+		//si esta desconectado, cambiar flag de suscriptor a desconectado, y cerrar el hilo. (termina)
+
+	//marcar que ya le envie ese mensaje a ese suscriptor
+	//esperar a recibir la confirmacion y anotarlo
+
+
+	//cuando termina de enviar los mensajes, volver a checkear si se agrego un mensaje nuevo, para mandar, antes de bloquearse en el semaforo.
+		//al trabajar en el envio de mensajes, puede ser que otro thread le robe un posible signal que vaya a llegar, por eso debe checkear por su cuenta.
+		//va a haber signals de sobra si, pero no van a romper el programa.
+		//Entrara alguna vez de mas en el while, pero es mucho mejor que quedarse iterando infinitamente
+
+
+}
+
+void agregar_Asubs(uint32_t ID_proceso, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
+	t_suscriber* suscriber = malloc(sizeof(t_suscriber));
+	suscriber->ID_suscriber = ID_proceso;
+	suscriber->suscribed_queue = cola;
+	//suscriber->semaforo = semaforo depende del codigo de cola
+	suscriber->connected = true;
+	suscriber->socket = socket;
+
+	pthread_mutex_lock(&mutex);
+	list_add(lista_subs, suscriber);
+	pthread_mutex_unlock(&mutex);
+	log_info(logger, "Se agrego el socket '%d' a suscriptores\n", socket);
+
+}
+
+void agregar_Acola(t_queue* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
+
+	pthread_mutex_lock(&mutex);
+	queue_push(cola, t_mensaje);
+	pthread_mutex_unlock(&mutex);
 
 }
 
@@ -174,26 +230,34 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 		case NEW:
 			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, semaforos);
+			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola NEW
+				//for(;30;)
+				//signal
 			break;
 
 		case APPEARED:
 			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, semaforos);
+			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola APPEARED
 			break;
 
 		case GET:
 			process_GET(socket_cliente, logger, colas->GET_POKEMON, semaforos);
+			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola GET
 			break;
 
 		case LOCALIZED:
 			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, semaforos);
+			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola LOCALIZED
 			break;
 
 		case CATCHS:
 			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, semaforos);
+			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CATCH
 			break;
 
 		case CAUGHT:
 			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, semaforos);
+			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CAUGHT
 			break;
 
 		default:
@@ -425,26 +489,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 	return t_mensaje;
 }
 
-void agregar_Asubs(uint32_t ID_proceso, int32_t socket, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
-	t_suscriber* suscriber = malloc(sizeof(t_suscriber));
-	suscriber->ID_suscriber = ID_proceso;
-	suscriber->connected = true;
-	suscriber->socket = socket;
 
-	pthread_mutex_lock(&mutex);
-	list_add(lista_subs, suscriber);
-	pthread_mutex_unlock(&mutex);
-	log_info(logger, "Se agrego el socket '%d' a suscriptores\n", socket);
-
-}
-
-void agregar_Acola(t_queue* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
-
-	pthread_mutex_lock(&mutex);
-	queue_push(cola, t_mensaje);
-	pthread_mutex_unlock(&mutex);
-
-}
 
 queue_code receive_cola(uint32_t socket, t_log* logger){
 

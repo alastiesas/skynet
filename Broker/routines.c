@@ -44,6 +44,14 @@ void specific_initialization() {
 	pthread_mutex_init(&(semaphores->mutex_cola_localized), NULL);
 	pthread_mutex_init(&(semaphores->mutex_cola_catch), NULL);
 	pthread_mutex_init(&(semaphores->mutex_cola_caught), NULL);
+
+	pthread_mutex_init(&(semaphores->mutex_subs_new), NULL);
+	pthread_mutex_init(&(semaphores->mutex_subs_appeared), NULL);
+	pthread_mutex_init(&(semaphores->mutex_subs_get), NULL);
+	pthread_mutex_init(&(semaphores->mutex_subs_localized), NULL);
+	pthread_mutex_init(&(semaphores->mutex_subs_catch), NULL);
+	pthread_mutex_init(&(semaphores->mutex_subs_caught), NULL);
+
 	sem_init(&(semaphores->nuevo_new), 0, 0);
 }
 

@@ -109,6 +109,8 @@ typedef struct
 typedef struct
 {
 	uint32_t ID_suscriber;
+	queue_code suscribed_queue;
+	//sem_t semaforo;		//para esperar y enviar mensajes segun la cola
 	bool connected;
 	int32_t socket;
 

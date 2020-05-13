@@ -130,3 +130,24 @@ esperando recibir cod_op, por vez numero 1
 [INFO] 11:35:45:691 GameBoy/(3601:3601): Se recibio el ID de mensaje: 2
 
 [INFO] 11:35:45:691 GameBoy/(3601:3601): Se envio la confirmacion (4 bytes)
+[INFO] 17:06:39:669 GameBoy/(18439:18439): Log del GameBoy creado
+[INFO] 17:06:39:669 GameBoy/(18439:18439): config creada
+[INFO] 17:06:39:670 GameBoy/(18439:18439): Conexion creada
+
+[INFO] 17:06:39:674 GameBoy/(18439:18439): Se recibio el ID de mensaje: 1
+
+[INFO] 17:06:39:674 GameBoy/(18439:18439): Se envio la confirmacion (4 bytes)
+[INFO] 17:06:47:403 GameBoy/(18524:18524): Log del GameBoy creado
+[INFO] 17:06:47:403 GameBoy/(18524:18524): config creada
+[INFO] 17:06:47:404 GameBoy/(18524:18524): Conexion creada
+
+[INFO] 17:06:47:415 GameBoy/(18524:18524): Se recibio el ID de mensaje: 2
+
+[INFO] 17:06:47:415 GameBoy/(18524:18524): Se envio la confirmacion (4 bytes)
+[INFO] 17:07:23:711 GameBoy/(18666:18666): Log del GameBoy creado
+[INFO] 17:07:23:712 GameBoy/(18666:18666): config creada
+[INFO] 17:07:23:712 GameBoy/(18666:18666): Conexion creada
+
+[INFO] 17:07:23:713 GameBoy/(18666:18666): Se recibio el ID de mensaje: 1
+
+[INFO] 17:07:23:713 GameBoy/(18666:18666): Se envio la confirmacion (4 bytes)
