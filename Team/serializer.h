@@ -22,17 +22,6 @@ typedef enum {
 	CAUGHT = 6,
 }op_code;
 
-//--estrcutruas para envio y recepcion de mensajes--
-typedef struct {
-	uint32_t size;
-	void* stream;
-}t_buffer;
-typedef struct {
-	op_code operation_code;
-	t_buffer* buffer;
-}t_package;
-//--fin estrcutruas para envio y recepcion de mensajes--
-
 //estructuras utiles
 typedef struct {//posicion (x, y)
 	uint32_t x;
@@ -121,17 +110,5 @@ t_catch* construct_catch(char* pokemon, t_position* position);
 //retorna un mensaje CAUGHT.
 t_caught* construct_caught(uint32_t correlative_id, bool result);
 //fin constructores
-
-
-//serializadores
-void* serialize(t_package package, uint32_t *bytes);//NO SE USA
-void* serialize_new(t_new* message, uint32_t *bytes);
-void* serialize_appeared(t_appeared* message, uint32_t *bytes);
-void* serialize_get(t_get* message, uint32_t *bytes);
-void* serialize_localized(t_localized* message, uint32_t *bytes);
-void* serialize_catch(t_catch* message, uint32_t *bytes);
-void* serialize_caught(t_caught* message, uint32_t *bytes);
-//fin serializadores
-
 
 #endif /* SERIALIZER_H_ */
