@@ -278,7 +278,7 @@ void *trainer_thread(t_trainer* trainer)
 {
 	//if(/*si es 0 menor*/)
 		//funcion cambiar valor global de variable interrumption
-
+		//COMO SE DESALOJA A UN HILO DE ENTENADOR, COMO SE ENTERA EL PLANIFICADOR O EL HILO DE EJECUCION!!
 		sem_wait(&trainer->sem_thread);
 	switch(trainer->action){
 		case MOVE:
