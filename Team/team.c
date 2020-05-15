@@ -86,6 +86,22 @@ int main(void)
 	exec_list = list_create();
 	exit_list = list_create();
 	poke_map = dictionary_create();
+
+	t_position* test_position_1 = malloc(sizeof(t_position*));
+	test_position_1->x = 5;
+	test_position_1->y = 3;
+
+	t_position* test_position_2 = malloc(sizeof(t_position*));
+	test_position_2->x = 1;
+	test_position_2->y = 4;
+
+	t_position* test_position_3 = malloc(sizeof(t_position*));
+	test_position_3->x = 3;
+	test_position_3->y = 3;
+
+	add_to_poke_map("pikachu",(void*) test_position_1);
+	add_to_poke_map("pikachu",(void*) test_position_2);
+	//add_to_poke_map("pikachu",(void*) test_position_3);
 	//ciclo para cargar una lista de entrenadores.
 	//t_trainer* test_entrenador = construct_trainer(test_postions[0], test_objetivos[0], test_pokemons[0]);
 	initialize_trainers(test_postions, test_objetivos, test_pokemons);
@@ -112,31 +128,44 @@ int main(void)
 	//state_change(0,new_list, ready_list);
 
 	//ESTO TIENE QUE ESTAR EN UN HILO DE EJECUCION
-	transition_new_to_ready(1);
-	transition_new_to_ready(0);
-	transition_new_to_ready(0);
+	//transition_new_to_ready(1);
+	//7transition_new_to_ready(0);
+	//transition_new_to_ready(0);
+	printf("aca llego!!!\n");
+	long_term_scheduler();
+	sleep(4);
+	printf("aca NO llego!!!\n");
+	t_trainer* trainer_test = NULL;
 	short_term_scheduler();
 
-	t_trainer* trainer_test = list_get(exec_list,0);
-	pthread_join(trainer_test->tid, NULL);
-	short_term_scheduler();
 	trainer_test = list_get(exec_list,0);
+	if(trainer_test != NULL)
+		pthread_join(trainer_test->tid, NULL);
+	short_term_scheduler();
+
 	sleep(1);
-	pthread_join(trainer_test->tid, NULL);
+	t_trainer* trainer_test2= NULL;
+	trainer_test2 = list_get(exec_list,0);
+	if(trainer_test2 != NULL)
+		pthread_join(trainer_test2->tid, NULL);
 
 
 
 	trainer_test = list_get(ready_list,0);
+	/*
 	trainer_test->move_destiny = malloc(sizeof(t_position));
 	trainer_test->move_destiny->x = 1;
 	trainer_test->move_destiny->y = 9;
 	trainer_test->action = MOVE;
-
+	*/
 	short_term_scheduler();
-	trainer_test = list_get(exec_list,0);
+
 	sleep(1);
-	pthread_join(trainer_test->tid, NULL);
-	list_get(exit_list,0);
+	t_trainer* trainer_test3 = NULL;
+	trainer_test3 = list_get(exec_list,0);
+	if(trainer_test3 != NULL)
+		pthread_join(trainer_test3->tid, NULL);
+	//list_get(exit_list,0);
 
 	printf("cantidad de CPU %d\n", cpu_cycles);
 

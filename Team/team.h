@@ -115,6 +115,8 @@ void move_down(t_trainer* trainer);
 void move_right(t_trainer* trainer);
 void move_left(t_trainer* trainer);
 void move(t_trainer* trainer);
+void trainer_assign_job(char* pokemon, t_list* positions);
+void long_term_scheduler();
 
 int size_array (char* array)
 {
@@ -135,7 +137,7 @@ int size_array_config(char** array)
 {
 	int j = 0;
 		while(array[j] != NULL){
-			printf("test_objetivos %s\n", array[j]);
+			//printf("test_objetivos %s\n", array[j]);
 			j++;
 		}
 		return j;
@@ -272,11 +274,17 @@ bool success_global_objective(t_list* global_objectives)
 
 void *trainer_thread(t_trainer* trainer)
 {
-	sem_wait(&trainer->sem_thread);
+	//if(/*si es 0 menor*/)
+		//funcion cambiar valor global de variable interrumption
+
+		sem_wait(&trainer->sem_thread);
 	switch(trainer->action){
 		case MOVE:
 			printf("Me estoy moviendo, comando MOVE\n");
-			move(trainer);
+			printf("Arranca con (%d,%d)\n", trainer->position->x,trainer->position->y);
+			while(trainer->position->x != trainer->move_destiny->x || trainer->position->y != trainer->move_destiny->y)
+				move(trainer);
+			printf("Llegue a (%d,%d)\n", trainer->position->x,trainer->position->y);
 			break;
 		case CATCHING:
 			printf("Estoy atrapando pokemon, comando CATCHING\n");
@@ -288,7 +296,7 @@ void *trainer_thread(t_trainer* trainer)
 			printf("No hago nada\n");
 			break;
 	}
-	printf("HILO debug del entrenador %s\n", trainer->objectives[2]);
+	printf("HILO debug del entrenador %s\n", trainer->objectives[0]);
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
 	return NULL;
@@ -305,20 +313,43 @@ uint32_t dinstance(t_position* current, t_position* destiny)
 int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 {
 	//printf("elements count %d\",list_trainer->elements_count);
-	t_link_element* element = list_trainer->head;
-	uint32_t distance = dinstance(((t_trainer*)element->data)->position, destiny);
-	t_trainer* trainer = (t_trainer*) element->data;
 	int32_t i = -1;
-	while(element != NULL) {
-		uint32_t distance_aux = dinstance(((t_trainer*)element->data)->position, destiny);
-		if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && distance_aux < distance){
-			distance = distance_aux;
-			trainer = (t_trainer*) element->data;
+	int32_t index = -1;
+	printf("LA POSICION DE DESTINO ES (%d,%d)\n",destiny->x,destiny->y);
+	printf("el size de la lista es %d\n", list_size(list_trainer));
+
+	if(list_size(list_trainer) != 0)
+	{
+
+		t_link_element* element = list_trainer->head;
+		uint32_t distance = -1;
+		//uint32_t distance = dinstance(((t_trainer*)element->data)->position, destiny);
+		//t_trainer* trainer = (t_trainer*) element->data;
+
+		//element = element->next;
+		i = 0;
+		while(element != NULL) {
+			uint32_t distance_aux = dinstance(((t_trainer*)element->data)->position, destiny);
+			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
+			printf("distance actual %d\n" ,distance_aux);
+			printf("distance minima %d\n" ,distance);
+			printf("el actions es %d\n", ((t_trainer*)element->data)->action);
+			printf("is free  %d\n" ,trainer_free_space(((t_trainer*)element->data)));
+
+			if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && (distance_aux < distance || distance < 0)){
+				distance = distance_aux;
+				//trainer = (t_trainer*) element->data;
+				index = i;
+				printf("->SELECCIONADO %d\n",i);
+			}
+			else
+				printf("->NO SELECCIONADO %d\n",i);
+			element = element->next;
+			i++;
 		}
-		element = element->next;
-		i++;
 	}
-	return i;
+	printf("El index que retorna %d\n",index);
+	return index;
 }
 
 //encuentra al entrenador mas cerca de la posicion en ambas listas
@@ -330,51 +361,70 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 //dependiendo de la lista en la que este hace el transition.
 
 //VAMOS POR ACA FEDE!!!!!!!!! 13/05/2020
+//large_term_scheduler
+//void 		  dictionary_iterator(t_dictionary *, void(*closure)(char*,void*));
 
-bool large_term_scheduler(char* pokemon)
+void long_term_scheduler(){
+	dictionary_iterator(poke_map, &trainer_assign_job);
+}
+
+void trainer_assign_job(char* pokemon, t_list* positions)
 {
-	// supongamos que ya nos lo trae del mapa con su posicion
-	t_position* destiny = malloc(sizeof(t_position));
-	destiny->x = 1;
-	destiny->y = 5;
-	// se remplaza la position por lo que devuelva del diccionario
-	int32_t closest_from_new = closest_free_trainer(new_list, destiny);
-	int32_t closest_from_block = closest_free_trainer(block_list, destiny);
+	t_link_element* element = positions->head;
+	t_position* position;
+	int32_t i = -1;
+	while(element != NULL) {
+		position = (t_position*) element->data;
+		printf("LA POSICION SIEMPRE ES (%d,%d)\n", position->x,position->y);
+		// se remplaza la position por lo que devuelva del diccionario
+		int32_t closest_from_new = closest_free_trainer(new_list, position);
+		printf("aca llleoogoogogoogog\n");
+		int32_t closest_from_block = closest_free_trainer(block_list, position);
 
-	if(closest_from_new != -1 && closest_from_block != -1){
-		if(closest_from_new <= closest_from_block){
+		if(closest_from_new != -1 && closest_from_block != -1){
+			if(closest_from_new <= closest_from_block){
+				//transicion de new a ready
+				t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
+				trainer->action_pokemon = pokemon;
+				trainer->action = MOVE;
+				trainer->move_destiny = position;
+				transition_new_to_ready(closest_from_new);
+			}
+			else
+			{
+				// transicion de block a ready
+				t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
+				trainer->action_pokemon = pokemon;
+				trainer->action = MOVE;
+				trainer->move_destiny = position;
+				transition_block_to_ready(closest_from_block);
+			}
+		}
+		else if(closest_from_new != -1){
 			//transicion de new a ready
 			t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
 			trainer->action_pokemon = pokemon;
-			trainer->move_destiny = destiny;
+			trainer->action = MOVE;
+			trainer->move_destiny = position;
 			transition_new_to_ready(closest_from_new);
 		}
-		else
-		{
-			// transicion de block a ready
+		else if(closest_from_block != -1){
+			//transicion de block a ready
 			t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
 			trainer->action_pokemon = pokemon;
-			trainer->move_destiny = destiny;
+			trainer->action = MOVE;
+			trainer->move_destiny = position;
 			transition_block_to_ready(closest_from_block);
 		}
-	}
-	else if(closest_from_new != -1){
-		//transicion de new a ready
-		t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
-		trainer->action_pokemon = pokemon;
-		trainer->move_destiny = destiny;
-		transition_new_to_ready(closest_from_new);
-	}
-	else if(closest_from_block != -1){
-		//transicion de block a ready
-		t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
-		trainer->action_pokemon = pokemon;
-		trainer->move_destiny = destiny;
-		transition_block_to_ready(closest_from_block);
-	}
-	else{
-		//nada
-		printf("no hay entrenadores en las listas de new ni block \n");
+		else{
+			//nada
+			printf("no hay entrenadores en las listas de new ni block \n");
+		}
+
+		element = element->next;
+
+		// NO OLVIDAR BORRAR LA POSICION QUE YA SE USO
+		i++;
 	}
 
 }
@@ -460,8 +510,10 @@ transition_block_to_exit(uint32_t index)
 void fifo_algorithm()
 {
 	printf("estoy en fifo\n");
-	transition_exec_to_ready();
-	transition_ready_to_exec(0);
+	if(list_size(exec_list) > 0)
+		transition_exec_to_block();
+	if(list_size(ready_list) > 0)
+		transition_ready_to_exec(0);
 }
 
 void rr_algorithm()
@@ -539,17 +591,14 @@ void move_left(t_trainer* trainer)
 
 void move(t_trainer* trainer)
 {
-	printf("Arranca con (%d,%d)\n", trainer->position->x,trainer->position->y);
-	while(trainer->move_destiny->x > trainer->position->x)
+	if(trainer->move_destiny->x > trainer->position->x)
 		move_right(trainer);
-	while(trainer->move_destiny->x < trainer->position->x)
+	else if(trainer->move_destiny->x < trainer->position->x)
 		move_left(trainer);
-	while(trainer->move_destiny->y > trainer->position->y)
+	else if(trainer->move_destiny->y > trainer->position->y)
 		move_up(trainer);
-	while(trainer->move_destiny->y < trainer->position->y)
+	else if(trainer->move_destiny->y < trainer->position->y)
 		move_down(trainer);
-
-	printf("Llegue a (%d,%d)\n", trainer->position->x,trainer->position->y);
 }
 //void* list_fold(t_list* self, void* seed, void*(*operation)(void*, void*));
 
