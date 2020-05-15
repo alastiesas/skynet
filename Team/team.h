@@ -117,6 +117,8 @@ void move_left(t_trainer* trainer);
 void move(t_trainer* trainer);
 void trainer_assign_job(char* pokemon, t_list* positions);
 void long_term_scheduler();
+void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position);
+bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
 
 int size_array (char* array)
 {
@@ -284,6 +286,7 @@ void *trainer_thread(t_trainer* trainer)
 			printf("Arranca con (%d,%d)\n", trainer->position->x,trainer->position->y);
 			while(trainer->position->x != trainer->move_destiny->x || trainer->position->y != trainer->move_destiny->y)
 				move(trainer);
+			trainer->action = FREE;
 			printf("Llegue a (%d,%d)\n", trainer->position->x,trainer->position->y);
 			break;
 		case CATCHING:
@@ -368,6 +371,28 @@ void long_term_scheduler(){
 	dictionary_iterator(poke_map, &trainer_assign_job);
 }
 
+void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position)
+{
+	if(strcmp(type,"NEW") == 0){
+		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
+		trainer->action_pokemon = pokemon;
+		trainer->action = MOVE;
+		trainer->move_destiny = position;
+		transition_new_to_ready(index);
+	}
+	else if(strcmp(type,"BLOCK") == 0){
+		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
+		trainer->action_pokemon = pokemon;
+		trainer->action = MOVE;
+		trainer->move_destiny = position;
+		transition_block_to_ready(index);
+	}
+}
+
+bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position){
+	return  dinstance(trainer->position, position) <= dinstance(trainer2->position, position);
+}
+
 void trainer_assign_job(char* pokemon, t_list* positions)
 {
 	t_link_element* element = positions->head;
@@ -377,49 +402,34 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 		position = (t_position*) element->data;
 		printf("LA POSICION SIEMPRE ES (%d,%d)\n", position->x,position->y);
 		// se remplaza la position por lo que devuelva del diccionario
+		t_trainer* trainer_new = NULL;
+		t_trainer* trainer_block = NULL;
 		int32_t closest_from_new = closest_free_trainer(new_list, position);
 		printf("aca llleoogoogogoogog\n");
 		int32_t closest_from_block = closest_free_trainer(block_list, position);
 
-		if(closest_from_new != -1 && closest_from_block != -1){
-			if(closest_from_new <= closest_from_block){
-				//transicion de new a ready
-				t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
-				trainer->action_pokemon = pokemon;
-				trainer->action = MOVE;
-				trainer->move_destiny = position;
-				transition_new_to_ready(closest_from_new);
-			}
-			else
-			{
-				// transicion de block a ready
-				t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
-				trainer->action_pokemon = pokemon;
-				trainer->action = MOVE;
-				trainer->move_destiny = position;
-				transition_block_to_ready(closest_from_block);
-			}
+
+
+
+		if(closest_from_new >= 0){
+			trainer_new = list_get(new_list,closest_from_new);
 		}
-		else if(closest_from_new != -1){
-			//transicion de new a ready
-			t_trainer* trainer = (t_trainer*) list_get(new_list, closest_from_new);
-			trainer->action_pokemon = pokemon;
-			trainer->action = MOVE;
-			trainer->move_destiny = position;
-			transition_new_to_ready(closest_from_new);
+		if(closest_from_block >= 0){
+			trainer_block = list_get(block_list,closest_from_block);
 		}
-		else if(closest_from_block != -1){
-			//transicion de block a ready
-			t_trainer* trainer = (t_trainer*) list_get(block_list, closest_from_block);
-			trainer->action_pokemon = pokemon;
-			trainer->action = MOVE;
-			trainer->move_destiny = position;
-			transition_block_to_ready(closest_from_block);
+
+		//bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position)
+
+		if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
+			trainer_assign_move("NEW",pokemon, closest_from_new,position);
+		}
+		else if(trainer_block != NULL && (trainer_new == NULL || first_closer(trainer_block, trainer_new, position))){
+			trainer_assign_move("BLOCK",pokemon, closest_from_block,position);
 		}
 		else{
-			//nada
 			printf("no hay entrenadores en las listas de new ni block \n");
 		}
+
 
 		element = element->next;
 

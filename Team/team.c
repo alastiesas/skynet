@@ -88,8 +88,8 @@ int main(void)
 	poke_map = dictionary_create();
 
 	t_position* test_position_1 = malloc(sizeof(t_position*));
-	test_position_1->x = 5;
-	test_position_1->y = 3;
+	test_position_1->x = 4;
+	test_position_1->y = 8;
 
 	t_position* test_position_2 = malloc(sizeof(t_position*));
 	test_position_2->x = 1;
@@ -149,7 +149,36 @@ int main(void)
 	if(trainer_test2 != NULL)
 		pthread_join(trainer_test2->tid, NULL);
 
+	printf("SEGUNDA VUELTA\n");
 
+
+	t_position* test_position_5 = malloc(sizeof(t_position*));
+	test_position_5->x = 3;
+	test_position_5->y = 3;
+
+	t_position* test_position_4 = malloc(sizeof(t_position*));
+	test_position_4->x = 8;
+	test_position_4->y = 9;
+
+	add_to_poke_map("pikachu",(void*) test_position_5);
+	add_to_poke_map("pikachu",(void*) test_position_4);
+
+	long_term_scheduler();
+	sleep(4);
+	printf("aca NO llego!!!\n");
+	t_trainer* trainer_test5 = NULL;
+	short_term_scheduler();
+
+	trainer_test5 = list_get(exec_list,0);
+	if(trainer_test5 != NULL)
+		pthread_join(trainer_test5->tid, NULL);
+	short_term_scheduler();
+
+	sleep(1);
+	t_trainer* trainer_test6= NULL;
+	trainer_test6 = list_get(exec_list,0);
+	if(trainer_test6 != NULL)
+		pthread_join(trainer_test6->tid, NULL);
 
 	trainer_test = list_get(ready_list,0);
 	/*
