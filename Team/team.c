@@ -134,74 +134,31 @@ int main(void)
 	printf("aca llego!!!\n");
 	long_term_scheduler();
 	sleep(4);
+	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 	printf("aca NO llego!!!\n");
-	t_trainer* trainer_test = NULL;
-	short_term_scheduler();
-
-	trainer_test = list_get(exec_list,0);
-	if(trainer_test != NULL)
-		pthread_join(trainer_test->tid, NULL);
-	short_term_scheduler();
-
-	sleep(1);
-	t_trainer* trainer_test2= NULL;
-	trainer_test2 = list_get(exec_list,0);
-	if(trainer_test2 != NULL)
-		pthread_join(trainer_test2->tid, NULL);
-
-	printf("SEGUNDA VUELTA\n");
-
-
-	t_position* test_position_5 = malloc(sizeof(t_position*));
-	test_position_5->x = 3;
-	test_position_5->y = 3;
-
-	t_position* test_position_4 = malloc(sizeof(t_position*));
-	test_position_4->x = 8;
-	test_position_4->y = 9;
-
-	add_to_poke_map("pikachu",(void*) test_position_5);
-	add_to_poke_map("pikachu",(void*) test_position_4);
-
-	long_term_scheduler();
+	printf("aca llego!!!\n");
 	sleep(4);
 	printf("aca NO llego!!!\n");
-	t_trainer* trainer_test5 = NULL;
-	short_term_scheduler();
 
-	trainer_test5 = list_get(exec_list,0);
-	if(trainer_test5 != NULL)
-		pthread_join(trainer_test5->tid, NULL);
-	short_term_scheduler();
+	pthread_t exec_tid;
 
-	sleep(1);
-	t_trainer* trainer_test6= NULL;
-	trainer_test6 = list_get(exec_list,0);
-	if(trainer_test6 != NULL)
-		pthread_join(trainer_test6->tid, NULL);
+	pthread_create(&exec_tid, NULL, exec_thread, NULL);
 
-	trainer_test = list_get(ready_list,0);
+
+	pthread_join(exec_tid, NULL);
 	/*
-	trainer_test->move_destiny = malloc(sizeof(t_position));
-	trainer_test->move_destiny->x = 1;
-	trainer_test->move_destiny->y = 9;
-	trainer_test->action = MOVE;
+	void* map(t_trainer* trainer){
+		void iterate(pokemon){
+			calcular_distancia(trainer,pokemon);
+		}
+
+		list_iterate(poke_map,iterate);
+
+
+	}
 	*/
-	short_term_scheduler();
 
-	sleep(1);
-	t_trainer* trainer_test3 = NULL;
-	trainer_test3 = list_get(exec_list,0);
-	if(trainer_test3 != NULL)
-		pthread_join(trainer_test3->tid, NULL);
-	//list_get(exit_list,0);
-
-	printf("cantidad de CPU %d\n", cpu_cycles);
-
-
-
-
-
+	//t_list* new_list = list_map(lista,map);
 
 
 

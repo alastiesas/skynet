@@ -31,6 +31,7 @@ uint32_t cpu_cycles = 0;
 t_list* objetives_list;
 uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
 t_dictionary* poke_map;
+sem_t sem_exec;
 
 typedef enum {
 	EMPTY = 0,
@@ -38,7 +39,7 @@ typedef enum {
 	RR = 2,
 	SJFS = 3,
 	SJFC = 4,
-}t_algorithm;
+} t_algorithm;
 
 t_algorithm algorithm = FIFO;
 
@@ -47,7 +48,13 @@ typedef enum {
 	MOVE = 1,
 	CATCHING = 2,
 	TRADE = 3,
-}t_action;
+} t_action;
+
+typedef struct {
+	char* pokemon;
+	t_position* position;
+	uint32_t distance;
+} t_target;
 
 typedef struct
 {
@@ -58,9 +65,10 @@ typedef struct
 	uint32_t quantum;
 	uint32_t burst;
 	uint32_t action_burst;
-	t_position* move_destiny;
+	//esto reemplaza a target->position y target->pokemon
+	//t_objective* objetivo ( target->position, nombre del pokemon y la distancia hasta el pokemon)
 	//t_position* action_position;
-	char* action_pokemon;
+	t_target* target;
 
 	t_position* position;
 	char** objectives;
@@ -80,6 +88,12 @@ typedef struct
 	t_objective* objective;
 } t_index;
 
+typedef struct
+{
+	t_trainer* trainer;
+	void(*callback)(void*);
+
+} t_callback;
 
 int size_array (char*);
 int char_count(char* array, char parameter);
@@ -94,7 +108,7 @@ t_list* initialize_global_objectives(t_list* list);
 void add_caught(t_list* list, char* pokemon);
 bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
-void *trainer_thread(t_trainer* trainer);
+void *trainer_thread(t_callback* callback_thread);
 uint32_t dinstance(t_position* current, t_position* destiny);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
 bool trainer_full(t_trainer* trainer);
@@ -119,6 +133,10 @@ void trainer_assign_job(char* pokemon, t_list* positions);
 void long_term_scheduler();
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position);
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
+void callback_fifo(t_trainer* trainer);
+void* exec_thread();
+
+
 
 int size_array (char* array)
 {
@@ -146,11 +164,24 @@ int size_array_config(char** array)
 }
 
 
+void callback_fifo(t_trainer* trainer){
+	if(trainer->action == FREE){
+		sem_post(&sem_exec);
+		//signal a semaforo de exec
+	}
+	else
+		sem_post(&trainer->sem_thread);
+
+}
+
 t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons)
 {
 	t_trainer* trainer = malloc(sizeof(t_trainer));
 	trainer->action = FREE;
-	trainer->move_destiny = NULL;
+	trainer->target = malloc(sizeof(t_target));
+	trainer->target->position = NULL;
+	trainer->target->distance = NULL;
+	trainer->target->pokemon = NULL;
 	trainer->burst = 0;
 	trainer->quantum = 0;
 	trainer->action_burst = 0;
@@ -158,7 +189,15 @@ t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons
 	trainer->position = construct_position(positions);
 	trainer->objectives = string_split(objectives, "|");
 	trainer->pokemons = string_split(pokemons, "|");
-	pthread_create(&(trainer->tid), NULL, trainer_thread, trainer);
+	//struct x
+	// LO QUE HABLAMOS CON AYUDANTE 2
+
+	// ACA VA CALLBACK
+	t_callback* callback_thread = malloc(sizeof(t_callback));
+	callback_thread->trainer = trainer;
+	//ACA VA SEGUN ALGORITMO
+	callback_thread->callback = &callback_fifo;
+	pthread_create(&(trainer->tid), NULL, trainer_thread, callback_thread);
 
 	/*
 	printf("test debug pokemon %d\n",trainer->position->x);
@@ -274,31 +313,44 @@ bool success_global_objective(t_list* global_objectives)
 	return (bool) list_all_satisfy(global_objectives,&success_objective);
 }
 
-void *trainer_thread(t_trainer* trainer)
+void *trainer_thread(t_callback* callback_thread)
 {
 	//if(/*si es 0 menor*/)
 		//funcion cambiar valor global de variable interrumption
 		//COMO SE DESALOJA A UN HILO DE ENTENADOR, COMO SE ENTERA EL PLANIFICADOR O EL HILO DE EJECUCION!!
+		//while(1) agregar
+	t_trainer* trainer = callback_thread->trainer;
+
+	printf("hola soy el entrenador %d\n", trainer->tid);
+	printf("aca no esta llegando123\n");
+	while(1){
 		sem_wait(&trainer->sem_thread);
-	switch(trainer->action){
-		case MOVE:
-			printf("Me estoy moviendo, comando MOVE\n");
-			printf("Arranca con (%d,%d)\n", trainer->position->x,trainer->position->y);
-			while(trainer->position->x != trainer->move_destiny->x || trainer->position->y != trainer->move_destiny->y)
-				move(trainer);
-			trainer->action = FREE;
-			printf("Llegue a (%d,%d)\n", trainer->position->x,trainer->position->y);
-			break;
-		case CATCHING:
-			printf("Estoy atrapando pokemon, comando CATCHING\n");
-			break;
-		case TRADE:
-			printf("Estoy tradeando pokemon, comando TRADE\n");
-			break;
-		default:
-			printf("No hago nada\n");
-			break;
+		switch(trainer->action){
+			case MOVE:
+				printf("Me estoy moviendo, comando MOVE\n");
+				printf("Arranca con (%d,%d)\n", trainer->position->x,trainer->position->y);
+				//aca va un if, no un while
+				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y)
+					move(trainer);
+				else
+					trainer->action = FREE;
+				printf("Llegue a (%d,%d)\n", trainer->position->x,trainer->position->y);
+				break;
+			case CATCHING:
+				printf("Estoy atrapando pokemon, comando CATCHING\n");
+				break;
+			case TRADE:
+				printf("Estoy tradeando pokemon, comando TRADE\n");
+				break;
+			default:
+				printf("No hago nada\n");
+				trainer->action = FREE;
+				break;
+		}
+		//aca va el callback
+		callback_thread->callback(trainer);
 	}
+
 	printf("HILO debug del entrenador %s\n", trainer->objectives[0]);
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
@@ -375,16 +427,17 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 {
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
-		trainer->action_pokemon = pokemon;
+		trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
-		trainer->move_destiny = position;
+		trainer->target->position = position;
+		printf("aca el ACTION ES %d\n", trainer->action);
 		transition_new_to_ready(index);
 	}
 	else if(strcmp(type,"BLOCK") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
-		trainer->action_pokemon = pokemon;
+		trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
-		trainer->move_destiny = position;
+		trainer->target->position = position;
 		transition_block_to_ready(index);
 	}
 }
@@ -484,6 +537,7 @@ transition_ready_to_exec(uint32_t index)
 	state_change(index,ready_list,exec_list);
 	context_changes++;
 	t_trainer* trainer = list_get(exec_list,0);
+	printf("ACA HACEMOS EL POST DE HILO TRAINER\n");
 	sem_post(&trainer->sem_thread);
 }
 
@@ -601,14 +655,41 @@ void move_left(t_trainer* trainer)
 
 void move(t_trainer* trainer)
 {
-	if(trainer->move_destiny->x > trainer->position->x)
+	if(trainer->target->position->x > trainer->position->x)
 		move_right(trainer);
-	else if(trainer->move_destiny->x < trainer->position->x)
+	else if(trainer->target->position->x < trainer->position->x)
 		move_left(trainer);
-	else if(trainer->move_destiny->y > trainer->position->y)
+	else if(trainer->target->position->y > trainer->position->y)
 		move_up(trainer);
-	else if(trainer->move_destiny->y < trainer->position->y)
+	else if(trainer->target->position->y < trainer->position->y)
 		move_down(trainer);
+}
+
+
+void* exec_thread()
+{
+	sem_init(&sem_exec, 0, 1);
+	while(1){
+			//sem_wait(&sem_exec); Este seria el unico semaforo, despues cambiar
+			if(list_size(ready_list)>0 || list_size(exec_list)>0){
+				printf("acallego?\n");
+				sem_wait(&sem_exec);
+				short_term_scheduler();
+			}
+			else{
+				printf("aca pasa al planificador de largo plazo\n");
+				//post al planificador de largo plazo
+			}
+
+
+			//printf("la lista de block queda %d\n",list_size(block_list));
+			//printf("la lista de new queda %d\n",list_size(new_list));
+			printf("cantidad de CPU %d\n", cpu_cycles);
+			//if a funcion que consula objetivos globales
+			//BREAK PARA CORTAR WHILE CUANDO TERMINAN OBJETIVOS
+		}
+
+		printf("cantidad de CPU %d\n", cpu_cycles);
 }
 //void* list_fold(t_list* self, void* seed, void*(*operation)(void*, void*));
 
