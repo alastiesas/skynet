@@ -80,6 +80,7 @@ typedef struct
 	char* pokemon;
 	uint32_t count;
 	uint32_t caught;
+	uint32_t catching;
 } t_objective;
 
 typedef struct
@@ -135,6 +136,8 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
 void callback_fifo(t_trainer* trainer);
 void* exec_thread();
+void add_catching(t_list* list, char* pokemon);
+bool pokemon_is_needed(char* pokemon);
 
 
 
@@ -267,6 +270,7 @@ void add_objective(t_list* list, char* pokemon)
 		objective->pokemon = pokemon;
 		objective->count = 1;
 		objective->caught = 0;
+		objective->catching = 0;
 		list_add(list,(void*)objective);
 	}
 }
@@ -274,10 +278,36 @@ void add_objective(t_list* list, char* pokemon)
 void add_caught(t_list* list, char* pokemon)
 {
 	t_objective* objective = find_key(list, pokemon);
-	if(objective != NULL)
+	if(objective != NULL){
 		objective->caught++;
+		objective->catching--;
+	}
 	else
 		printf("Lo rompiste todo, maldito idiota\n");
+}
+
+void add_catching(t_list* list, char* pokemon)
+{
+	t_objective* objective = find_key(list, pokemon);
+	if(objective != NULL){
+		objective->catching++;
+	}
+	else
+		printf("Lo rompiste todo, maldito idiota\n");
+}
+
+bool pokemon_is_needed(char* pokemon)
+{
+	printf("LN 301 the pokemonn is %s\n", pokemon);
+	t_objective* test = (t_objective*) list_get(objetives_list,0);
+	printf("LN 301 the pokemon OBJECTIVE is %s\n", test->pokemon);
+	t_objective* objective = find_key(objetives_list, pokemon);
+	printf("holaaaaaaaaaa\n");
+
+	if(objective == NULL)
+		printf("la concha de la lora\n");
+	//return (objective->count > (objective->caught + objective->catching));
+	return objective->count > (objective->caught + objective->catching);
 }
 
 t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* trainer)
@@ -451,44 +481,49 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 	t_link_element* element = positions->head;
 	t_position* position;
 	int32_t i = -1;
-	while(element != NULL) {
-		position = (t_position*) element->data;
-		printf("LA POSICION SIEMPRE ES (%d,%d)\n", position->x,position->y);
-		// se remplaza la position por lo que devuelva del diccionario
-		t_trainer* trainer_new = NULL;
-		t_trainer* trainer_block = NULL;
-		int32_t closest_from_new = closest_free_trainer(new_list, position);
-		printf("aca llleoogoogogoogog\n");
-		int32_t closest_from_block = closest_free_trainer(block_list, position);
+
+	if(pokemon_is_needed(pokemon)){
+		while(element != NULL) {
+			position = (t_position*) element->data;
+			printf("LA POSICION SIEMPRE ES (%d,%d)\n", position->x,position->y);
+			// se remplaza la position por lo que devuelva del diccionario
+			t_trainer* trainer_new = NULL;
+			t_trainer* trainer_block = NULL;
+			int32_t closest_from_new = closest_free_trainer(new_list, position);
+			printf("aca llleoogoogogoogog\n");
+			int32_t closest_from_block = closest_free_trainer(block_list, position);
+
+			if(closest_from_new >= 0){
+				trainer_new = list_get(new_list,closest_from_new);
+			}
+			if(closest_from_block >= 0){
+				trainer_block = list_get(block_list,closest_from_block);
+			}
+
+			//bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position)
+
+			if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
+				add_catching(objetives_list, pokemon);
+				trainer_assign_move("NEW",pokemon, closest_from_new,position);
+			}
+			else if(trainer_block != NULL && (trainer_new == NULL || first_closer(trainer_block, trainer_new, position))){
+				add_catching(objetives_list, pokemon);
+				trainer_assign_move("BLOCK",pokemon, closest_from_block,position);
+			}
+			else{
+				printf("no hay entrenadores en las listas de new ni block \n");
+			}
 
 
+			element = element->next;
 
-
-		if(closest_from_new >= 0){
-			trainer_new = list_get(new_list,closest_from_new);
+			// NO OLVIDAR BORRAR LA POSICION QUE YA SE USO
+			i++;
 		}
-		if(closest_from_block >= 0){
-			trainer_block = list_get(block_list,closest_from_block);
-		}
-
-		//bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position)
-
-		if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
-			trainer_assign_move("NEW",pokemon, closest_from_new,position);
-		}
-		else if(trainer_block != NULL && (trainer_new == NULL || first_closer(trainer_block, trainer_new, position))){
-			trainer_assign_move("BLOCK",pokemon, closest_from_block,position);
-		}
-		else{
-			printf("no hay entrenadores en las listas de new ni block \n");
-		}
-
-
-		element = element->next;
-
-		// NO OLVIDAR BORRAR LA POSICION QUE YA SE USO
-		i++;
 	}
+	else
+		printf("The pokemon is already full\n");
+
 
 }
 
