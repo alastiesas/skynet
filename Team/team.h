@@ -481,7 +481,6 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 	t_link_element* element = positions->head;
 	t_position* position;
 	int32_t i = -1;
-
 	if(pokemon_is_needed(pokemon)){
 		while(element != NULL) {
 			position = (t_position*) element->data;
@@ -505,10 +504,14 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
 				add_catching(objetives_list, pokemon);
 				trainer_assign_move("NEW",pokemon, closest_from_new,position);
+				list_remove(positions, (i+1));
+				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
 			else if(trainer_block != NULL && (trainer_new == NULL || first_closer(trainer_block, trainer_new, position))){
 				add_catching(objetives_list, pokemon);
 				trainer_assign_move("BLOCK",pokemon, closest_from_block,position);
+				list_remove(positions, (i+1));
+				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
 			else{
 				printf("no hay entrenadores en las listas de new ni block \n");
@@ -518,6 +521,7 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			element = element->next;
 
 			// NO OLVIDAR BORRAR LA POSICION QUE YA SE USO
+			// Si tiene una sola posicion, entonces se borra el pokemon del pokemap ??
 			i++;
 		}
 	}
