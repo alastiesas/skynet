@@ -38,10 +38,10 @@ void iniciar_servidor_broker()
     freeaddrinfo(servinfo);
 
     while(1)
-    	esperar_clientes(socket_servidor, logger, queues, suscribers, semaphores);
+    	esperar_clientes(socket_servidor, logger, queues, suscribers);
 }
 
-void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores, t_semaforos* semaforos)
+void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores)
 {
 	pthread_t self = pthread_self();
 	struct sockaddr_in dir_cliente;
@@ -62,7 +62,6 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_
     args->logger = logger;
     args->colas = colas;
     args->suscriptores = suscriptores;
-    args->semaforos = semaforos;
 
 	pthread_create(&thread,NULL,(void*)broker_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
 
@@ -77,7 +76,6 @@ void broker_serves_client(void* input){
 	t_log*	logger = ((struct thread_args*)input)->logger;
 	t_colas* colas = ((struct thread_args*)input)->colas;
 	t_suscriptores*	suscriptores = ((struct thread_args*)input)->suscriptores;
-	t_semaforos* semaforos = ((struct thread_args*)input)->semaforos;
 
 	pthread_t self = pthread_self();
 	log_info(logger, "Se creo un thread %d para atender la conexion del cliente %d\n", self, socket);
@@ -100,14 +98,14 @@ void broker_serves_client(void* input){
 
 
 	if(cod_op == SUSCRIPCION)
-		process_suscripcion(cod_op, socket, logger, suscriptores, semaforos);
+		process_suscripcion(cod_op, socket, logger, suscriptores);
 	else
-		process_mensaje(cod_op, socket, logger, colas, semaforos);
+		process_mensaje(cod_op, socket, logger, colas);
 
 
 }
 
-void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores, t_semaforos* semaforos) {
+void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores) {
 
 	//ya recibi la cod_op
 	//recibir el size del stream
@@ -123,39 +121,61 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 	cola = receive_cola(socket_cliente, logger);
 
 //TODO verificar si es un proceso que ya se habia suscrito antes, y verificar que se este suscribiendo a la misma cola
+	//si ya estaba conectado, no se puede volver a suscribir
+	//si no estaba conectado, pasar el flag a conectado
+	//verificar que se suscribe a la misma cola
+	//actualizar el nuevo socket
 
-	//guardar al t_suscriber en la cola de suscritos
+	//crear el t_suscriber
+	t_suscriber* suscriber = malloc(sizeof(t_suscriber));
+	suscriber->ID_suscriber = ID_proceso;
+	suscriber->sent_messages = list_create();
 
+	//asignar la cola al t_suscriber y guardar en la cola de suscritos
+	t_semaforos* my_semaphores;
+	t_list* my_queue;
 	switch(cola){
 
 	case COLA_NEW:
+		my_semaphores = &(semaphores_new);
+		my_queue = &(queues->NEW_POKEMON);
 		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->NEW, semaforos->mutex_subs_new, logger);
+		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->NEW, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_APPEARED:
+		my_semaphores = &(semaphores_appeared);
+		my_queue = &(queues->APPEARED_POKEMON);
 		log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->APPEARED, semaforos->mutex_subs_appeared, logger);
+		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->APPEARED, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_CATCH:
+		my_semaphores = &(semaphores_catch);
+		my_queue = &(queues->CATCH_POKEMON);
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CATCH", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->CATCH, semaforos->mutex_subs_catch, logger);
+		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CATCH, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_CAUGHT:
+		my_semaphores = &(semaphores_caught);
+		my_queue = &(queues->CAUGHT_POKEMON);
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CAUGHT", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->CAUGHT, semaforos->mutex_subs_caught, logger);
+		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CAUGHT, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_GET:
+		my_semaphores = &(semaphores_get);
+		my_queue = &(queues->GET_POKEMON);
 		log_info(logger, "Por suscribir al socket '%d' a la cola de GET", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->GET, semaforos->mutex_subs_get, logger);
+		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->GET, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_LOCALIZED:
+		my_semaphores = &(semaphores_localized);
+		my_queue = &(queues->LOCALIZED_POKEMON);
 		log_info(logger, "Por suscribir al socket '%d' a la cola de LOCALIZED", socket_cliente);
-		agregar_Asubs(ID_proceso, socket_cliente, cola, suscriptores->LOCALIZED, semaforos->mutex_subs_localized, logger);
+		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->LOCALIZED, my_semaphores->mutex_subs, logger);
 		break;
 
 	default:
@@ -168,44 +188,56 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 
 //TODO enviar mensajes en la cache del broker
 
-	/*
-	while(1)
-		send_received_message(ID_proceso);
-*/
-}
-
-void send_received_message(uint32_t ID_proceso){
-				//alternativamente, el broker puede tener una lista de threads, y desbloquarlos todos ("de alguna otra forma")
-					//Si el thread no estaba en espera por bloqueo, esperar a que lo este, para avisarle que llego un nuevo mensaje.
 
 
-	//esperar a que le avisen que hay un nuevo mensaje en la cola, cualquier mensaje de esa cola
-	//sem_wait();
-	//un sleep luego de entrar para asegurar que todos los threads puedan tomar el signal
-
-
-	//chequear la lista de mensajes de esa cola, y guardarse los ID de mensaje de los que aun no envio.
-	//Iterar lo siguiente, para cada uno de los mensajes que le falte a ese suscriptor:
-	//enviar el mensaje
-		//si esta desconectado, cambiar flag de suscriptor a desconectado, y cerrar el hilo. (termina)
-
-	//marcar que ya le envie ese mensaje a ese suscriptor
-	//esperar a recibir la confirmacion y anotarlo
-
-
-	//cuando termina de enviar los mensajes, volver a checkear si se agrego un mensaje nuevo, para mandar, antes de bloquearse en el semaforo.
-		//al trabajar en el envio de mensajes, puede ser que otro thread le robe un posible signal que vaya a llegar, por eso debe checkear por su cuenta.
-		//va a haber signals de sobra si, pero no van a romper el programa.
-		//Entrara alguna vez de mas en el while, pero es mucho mejor que quedarse iterando infinitamente
-
+	send_received_message(suscriber, my_semaphores, my_queue);	//loop infinito
 
 }
 
-void agregar_Asubs(uint32_t ID_proceso, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
-	t_suscriber* suscriber = malloc(sizeof(t_suscriber));
-	suscriber->ID_suscriber = ID_proceso;
+void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola){
+
+
+	//variable global, cantidad de elementos de la cola
+	//variable local, lista de ids de mensajes ya enviados
+
+	bool condicion;
+	bool queue_not_empty;
+	bool any_available_message_not_sent;
+
+	while(1){
+
+	//any_available_message_not_sent = //TODO que a suscriber->sent_messages le falte contener elementos de cola (filtrar t_pending-> ID_mensaje en la cola)
+
+	pthread_mutex_lock(&(semaforos->mutex_cola));
+	queue_not_empty = (list_is_empty(cola) == 1) ? true : false;	//TODO que devuelve list_is_empty?
+	pthread_mutex_unlock(&(semaforos->mutex_cola));
+
+	condicion = queue_not_empty && any_available_message_not_sent;
+
+	//TODO cambiar queue_not_empty a condicion en el while
+    pthread_mutex_lock(&(semaforos->received));
+       while (!queue_not_empty)	//si cumple la condicion, pasa de largo, y sigue ejecutando el programa. Si no cumple, se bloquea.
+           pthread_cond_wait(&(semaforos->broadcast), &(semaforos->received));
+       /* do something that requires holding the mutex and condition is true */
+    pthread_mutex_unlock(&(semaforos->received));
+
+    //No hace falta hacer un loop adicional con la cantidad de mensajes que le falta enviar, que tome el primer mensaje, mande ese solo, y luego al principio de la funcion vuelve a checkear la condicion.
+    //tomar primer elemento de la cola que falte enviar
+    //enviar el mensaje
+    //si falla el envio, cambiar el flag a desconectado, y cerrar el hilo. Si no, continuar
+    //agregar el ID del mensaje como enviado en t_suscriber
+    //Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
+    //esperar confirmacion del mensaje
+    //Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
+
+    //se repite toda la funcion. En el caso de que hayan llegado mensajes nuevos, va a volver a checkear la condicion, y no se va a bloquear en el semaforo
+
+	}
+}
+
+void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
+
 	suscriber->suscribed_queue = cola;
-	//suscriber->semaforo = semaforo depende del codigo de cola
 	suscriber->connected = true;
 	suscriber->socket = socket;
 
@@ -216,47 +248,58 @@ void agregar_Asubs(uint32_t ID_proceso, int32_t socket, queue_code cola, t_list*
 
 }
 
-void agregar_Acola(t_queue* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
+void agregar_Acola(t_list* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
 
 	pthread_mutex_lock(&mutex);
-	queue_push(cola, t_mensaje);
+	list_add(cola, t_mensaje);
 	pthread_mutex_unlock(&mutex);
 
 }
 
-void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas, t_semaforos* semaforos) {
+void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas) {
+
+	t_semaforos* my_semaphores;
 
 		switch (cod_op) {
 
 		case NEW:
-			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, semaforos);
-			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola NEW
-				//for(;30;)
-				//signal
+			my_semaphores = &(semaphores_new);
+			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, my_semaphores);
+		    pthread_mutex_lock(&(my_semaphores->received));
+		    /* do something that might make condition true */
+		    pthread_cond_broadcast(&(my_semaphores->broadcast));
+		    pthread_mutex_unlock(&(my_semaphores->received));
+			log_debug(logger, "Se notifico el mensaje new recibido");
+
 			break;
 
 		case APPEARED:
-			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, semaforos);
+			my_semaphores = &(semaphores_appeared);
+			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola APPEARED
 			break;
 
 		case GET:
-			process_GET(socket_cliente, logger, colas->GET_POKEMON, semaforos);
+			my_semaphores = &(semaphores_get);
+			process_GET(socket_cliente, logger, colas->GET_POKEMON, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola GET
 			break;
 
 		case LOCALIZED:
-			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, semaforos);
+			my_semaphores = &(semaphores_localized);
+			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola LOCALIZED
 			break;
 
 		case CATCHS:
-			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, semaforos);
+			my_semaphores = &(semaphores_catch);
+			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CATCH
 			break;
 
 		case CAUGHT:
-			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, semaforos);
+			my_semaphores = &(semaphores_caught);
+			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CAUGHT
 			break;
 
@@ -266,17 +309,17 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 		}
 }
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
 	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
 	//Generar ID del mensaje
-	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	pthread_mutex_lock(&mutex_ID_global);
 	t_mensaje->ID_mensaje = ID_GLOBAL;
 	ID_GLOBAL++;
-	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
+	pthread_mutex_unlock(&mutex_ID_global);
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -285,29 +328,29 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semafo
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_new, logger);
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
 
 
-    int elementos = queue_size(queue);
+    int elementos = list_size(queue);
     log_info(logger, "La cola de NEW tiene, %d elementos\n", elementos);
-    sem_post(&(semaforos->nuevo_new));
+    sem_post(&(semaforos->nuevo_mensaje));
 
 
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
 
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
 	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
 	//Generar ID del mensaje
-	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	pthread_mutex_lock(&mutex_ID_global);
 	t_mensaje->ID_mensaje = ID_GLOBAL;
 	ID_GLOBAL++;
-	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
+	pthread_mutex_unlock(&mutex_ID_global);
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -316,10 +359,10 @@ void process_APPEARED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_s
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_appeared, logger);
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
 
 
-    int elementos = queue_size(queue);
+    int elementos = list_size(queue);
     log_info(logger, "La cola de APPEARED tiene, %d elementos\n", elementos);
   //  sem_post(&(semaforos->nuevo_appeared));
 
@@ -327,17 +370,17 @@ void process_APPEARED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_s
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_GET(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
 	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
 	//Generar ID del mensaje
-	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	pthread_mutex_lock(&mutex_ID_global);
 	t_mensaje->ID_mensaje = ID_GLOBAL;
 	ID_GLOBAL++;
-	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
+	pthread_mutex_unlock(&mutex_ID_global);
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -346,10 +389,10 @@ void process_GET(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semafo
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_get, logger);
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
 
 
-    int elementos = queue_size(queue);
+    int elementos = list_size(queue);
     log_info(logger, "La cola de GET tiene, %d elementos\n", elementos);
  //   sem_post(&(semaforos->nuevo_get));
 
@@ -357,17 +400,17 @@ void process_GET(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semafo
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
 	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
 	//Generar ID del mensaje
-	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	pthread_mutex_lock(&mutex_ID_global);
 	t_mensaje->ID_mensaje = ID_GLOBAL;
 	ID_GLOBAL++;
-	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
+	pthread_mutex_unlock(&mutex_ID_global);
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -376,10 +419,10 @@ void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_localized, logger);
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
 
 
-    int elementos = queue_size(queue);
+    int elementos = list_size(queue);
     log_info(logger, "La cola de LOCALIZED tiene, %d elementos\n", elementos);
    // sem_post(&(semaforos->nuevo_localized));
 
@@ -387,17 +430,17 @@ void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_queue* queue, t_
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
 	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
 	//Generar ID del mensaje
-	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	pthread_mutex_lock(&mutex_ID_global);
 	t_mensaje->ID_mensaje = ID_GLOBAL;
 	ID_GLOBAL++;
-	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
+	pthread_mutex_unlock(&mutex_ID_global);
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -406,10 +449,10 @@ void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_sema
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_catch, logger);
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
 
 
-    int elementos = queue_size(queue);
+    int elementos = list_size(queue);
     log_info(logger, "La cola de CATCH tiene, %d elementos\n", elementos);
   //  sem_post(&(semaforos->nuevo_catch));
 
@@ -417,17 +460,17 @@ void process_CATCH(int32_t socket_cliente, t_log* logger, t_queue* queue, t_sema
 	//no se hace el free de catch->nombre ni free de catch porque sigo usando el mensaje en la cola
 }
 
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_queue* queue, t_semaforos* semaforos){
+void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
 	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
 
 	//Generar ID del mensaje
-	pthread_mutex_lock(&(semaforos->mutex_ID_global));
+	pthread_mutex_lock(&mutex_ID_global);
 	t_mensaje->ID_mensaje = ID_GLOBAL;
 	ID_GLOBAL++;
-	pthread_mutex_unlock(&(semaforos->mutex_ID_global));
+	pthread_mutex_unlock(&mutex_ID_global);
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -436,10 +479,10 @@ void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_queue* queue, t_sem
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola_caught, logger);
+	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
 
 
-    int elementos = queue_size(queue);
+    int elementos = list_size(queue);
     log_info(logger, "La cola de CAUGHT tiene, %d elementos\n", elementos);
   //  sem_post(&(semaforos->nuevo_caught));
 

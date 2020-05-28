@@ -30,7 +30,6 @@ struct thread_args {
     t_log* logger;
     t_colas* colas;
     t_suscriptores* suscriptores;
-    t_semaforos* semaforos;
 };
 
 void iniciar_servidor(char* puerto, t_log* logger);

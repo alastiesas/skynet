@@ -16,17 +16,17 @@ void generic_initialization() {
 }
 
 void initialize_queues() {
-	queues->APPEARED_POKEMON = queue_create();
+	queues->APPEARED_POKEMON = list_create();
 	suscribers->APPEARED = list_create();
-	queues->CATCH_POKEMON = queue_create();
+	queues->CATCH_POKEMON = list_create();
 	suscribers->CATCH = list_create();
-	queues->CAUGHT_POKEMON = queue_create();
+	queues->CAUGHT_POKEMON = list_create();
 	suscribers->CAUGHT = list_create();
-	queues->GET_POKEMON = queue_create();
+	queues->GET_POKEMON = list_create();
 	suscribers->GET = list_create();
-	queues->LOCALIZED_POKEMON = queue_create();
+	queues->LOCALIZED_POKEMON = list_create();
 	suscribers->LOCALIZED = list_create();
-	queues->NEW_POKEMON = queue_create();
+	queues->NEW_POKEMON = list_create();
 	suscribers->NEW = list_create();
 }
 
@@ -34,25 +34,35 @@ void specific_initialization() {
 
 	queues = malloc(sizeof(t_colas));
 	suscribers = malloc(sizeof(t_suscriptores));
-	semaphores = malloc(sizeof(t_semaforos));
+	semaphores_new = malloc(sizeof(t_semaforos));
+	semaphores_appeared = malloc(sizeof(t_semaforos));
+	semaphores_get = malloc(sizeof(t_semaforos));
+	semaphores_localized = malloc(sizeof(t_semaforos));
+	semaphores_catch = malloc(sizeof(t_semaforos));
+	semaphores_caught = malloc(sizeof(t_semaforos));
 
 	initialize_queues();
 
-	pthread_mutex_init(&(semaphores->mutex_cola_new), NULL);
-	pthread_mutex_init(&(semaphores->mutex_cola_appeared), NULL);
-	pthread_mutex_init(&(semaphores->mutex_cola_get), NULL);
-	pthread_mutex_init(&(semaphores->mutex_cola_localized), NULL);
-	pthread_mutex_init(&(semaphores->mutex_cola_catch), NULL);
-	pthread_mutex_init(&(semaphores->mutex_cola_caught), NULL);
+	pthread_mutex_init(&mutex_ID_global, NULL);
 
-	pthread_mutex_init(&(semaphores->mutex_subs_new), NULL);
-	pthread_mutex_init(&(semaphores->mutex_subs_appeared), NULL);
-	pthread_mutex_init(&(semaphores->mutex_subs_get), NULL);
-	pthread_mutex_init(&(semaphores->mutex_subs_localized), NULL);
-	pthread_mutex_init(&(semaphores->mutex_subs_catch), NULL);
-	pthread_mutex_init(&(semaphores->mutex_subs_caught), NULL);
+	pthread_mutex_init(&(semaphores_new->mutex_cola), NULL);
+	pthread_mutex_init(&(semaphores_appeared->mutex_cola), NULL);
+	pthread_mutex_init(&(semaphores_get->mutex_cola), NULL);
+	pthread_mutex_init(&(semaphores_localized->mutex_cola), NULL);
+	pthread_mutex_init(&(semaphores_catch->mutex_cola), NULL);
+	pthread_mutex_init(&(semaphores_caught->mutex_cola), NULL);
 
-	sem_init(&(semaphores->nuevo_new), 0, 0);
+	pthread_mutex_init(&(semaphores_new->mutex_subs), NULL);
+	pthread_mutex_init(&(semaphores_appeared->mutex_subs), NULL);
+	pthread_mutex_init(&(semaphores_get->mutex_subs), NULL);
+	pthread_mutex_init(&(semaphores_localized->mutex_subs), NULL);
+	pthread_mutex_init(&(semaphores_catch->mutex_subs), NULL);
+	pthread_mutex_init(&(semaphores_caught->mutex_subs), NULL);
+
+	sem_init(&(semaphores_new->nuevo_mensaje), 0, 0);
+
+	pthread_mutex_init(&(semaphores_new->received), NULL);
+	pthread_cond_init(&(semaphores_new->broadcast), NULL);
 }
 
 void behavior() {
@@ -73,13 +83,18 @@ void termination() {
 
 void specific_termination() {
 
-	queue_destroy(queues->NEW_POKEMON);
-	queue_destroy(queues->APPEARED_POKEMON);
-	queue_destroy(queues->GET_POKEMON);
-	queue_destroy(queues->LOCALIZED_POKEMON);
-	queue_destroy(queues->CATCH_POKEMON);
-	queue_destroy(queues->CAUGHT_POKEMON);
+	list_destroy(queues->NEW_POKEMON);
+	list_destroy(queues->APPEARED_POKEMON);
+	list_destroy(queues->GET_POKEMON);
+	list_destroy(queues->LOCALIZED_POKEMON);
+	list_destroy(queues->CATCH_POKEMON);
+	list_destroy(queues->CAUGHT_POKEMON);
 	free(queues);
 	free(suscribers);
-	free(semaphores);
+	free(semaphores_new);
+	free(semaphores_appeared);
+	free(semaphores_get);
+	free(semaphores_localized);
+	free(semaphores_catch);
+	free(semaphores_caught);
 }

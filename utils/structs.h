@@ -86,12 +86,12 @@ typedef struct
 
 typedef struct
 {
-	t_queue* NEW_POKEMON;		//asi nombra a las colas en t0do el TP
-	t_queue* APPEARED_POKEMON;
-	t_queue* GET_POKEMON;
-	t_queue* LOCALIZED_POKEMON;
-	t_queue* CATCH_POKEMON;
-	t_queue* CAUGHT_POKEMON;
+	t_list* NEW_POKEMON;		//asi nombra a las colas en t0do el TP
+	t_list* APPEARED_POKEMON;
+	t_list* GET_POKEMON;
+	t_list* LOCALIZED_POKEMON;
+	t_list* CATCH_POKEMON;
+	t_list* CAUGHT_POKEMON;
 
 } t_colas;
 
@@ -105,55 +105,6 @@ typedef struct
 	t_list* CAUGHT;
 
 } t_suscriptores;
-
-typedef struct
-{
-	uint32_t ID_suscriber;
-	queue_code suscribed_queue;
-	//sem_t semaforo;		//para esperar y enviar mensajes segun la cola
-	bool connected;
-	int32_t socket;
-
-} t_suscriber;
-
-typedef struct
-{
-	pthread_mutex_t mutex_ID_global;
-
-	pthread_mutex_t mutex_cola_new;
-	pthread_mutex_t mutex_subs_new;
-	sem_t nuevo_new;
-
-	pthread_mutex_t mutex_cola_appeared;
-	pthread_mutex_t mutex_subs_appeared;
-	sem_t nuevo_appeared;
-
-	pthread_mutex_t mutex_cola_get;
-	pthread_mutex_t mutex_subs_get;
-	sem_t nuevo_get;
-
-	pthread_mutex_t mutex_cola_localized;
-	pthread_mutex_t mutex_subs_localized;
-	sem_t nuevo_localized;
-
-	pthread_mutex_t mutex_cola_catch;
-	pthread_mutex_t mutex_subs_catch;
-	sem_t nuevo_catch;
-
-	pthread_mutex_t mutex_cola_caught;
-	pthread_mutex_t mutex_subs_caught;
-	sem_t nuevo_caught;
-
-} t_semaforos;
-
-typedef struct
-{
-	uint32_t ID_mensaje;
-	t_list* subs_enviados;
-	t_list* subs_confirmados;
-	void* datos_mensaje;
-
-} t_pending;
 
 
 
