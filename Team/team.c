@@ -79,6 +79,7 @@ int main(void)
 	//printf("debug del test list 2 %s\n", test_split[2]);
 	puerto = config_get_string_value(config, "PUERTO");
 
+	messages_list = list_create();
 
 	new_list = list_create();
 	ready_list = list_create();
