@@ -680,7 +680,7 @@ void short_term_scheduler()
 		sem_wait(&sem_messages_list);
 		t_message_catch* message = malloc(sizeof(t_message_catch));
 		message->tid = trainer_exec->tid;
-		message->message = construct_catch(0, trainer_exec->target->pokemon, trainer_exec->target->position);
+		message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
 		list_add(messages_list,message);
 		sem_post(&sem_messages_list);
 		sem_post(&sem_messages);
