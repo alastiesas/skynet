@@ -204,25 +204,20 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 	bool queue_not_empty;
 	bool any_available_message_not_sent;
 
-	while(1){
+	t_list* ids_a_enviar = obtener_ids_pendientes(suscriber->sent_messages, cola); // TODO Reemplazar cola por cola de ids.
 
-	//any_available_message_not_sent = //TODO que a suscriber->sent_messages le falte contener elementos de cola (filtrar t_pending-> ID_mensaje en la cola)
+	condicion = (list_is_empty(ids_a_enviar) == 1) ? false : true;
 
-	pthread_mutex_lock(&(semaforos->mutex_cola));
-	queue_not_empty = (list_is_empty(cola) == 1) ? true : false;	//TODO que devuelve list_is_empty?
-	pthread_mutex_unlock(&(semaforos->mutex_cola));
+	while(condicion){
 
-	condicion = queue_not_empty && any_available_message_not_sent;
-
-	//TODO cambiar queue_not_empty a condicion en el while
     pthread_mutex_lock(&(semaforos->received));
        while (!queue_not_empty)	//si cumple la condicion, pasa de largo, y sigue ejecutando el programa. Si no cumple, se bloquea.
            pthread_cond_wait(&(semaforos->broadcast), &(semaforos->received));
        /* do something that requires holding the mutex and condition is true */
     pthread_mutex_unlock(&(semaforos->received));
 
-    //No hace falta hacer un loop adicional con la cantidad de mensajes que le falta enviar, que tome el primer mensaje, mande ese solo, y luego al principio de la funcion vuelve a checkear la condicion.
-    //tomar primer elemento de la cola que falte enviar
+    //iterar ids_a_enviar
+    //obtener mensaje con el id a enviar
     //enviar el mensaje
     //si falla el envio, cambiar el flag a desconectado, y cerrar el hilo. Si no, continuar
     //agregar el ID del mensaje como enviado en t_suscriber
@@ -230,10 +225,29 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
     //esperar confirmacion del mensaje
     //Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
 
-    //se repite toda la funcion. En el caso de que hayan llegado mensajes nuevos, va a volver a checkear la condicion, y no se va a bloquear en el semaforo
+    //se sigue iterando ids_a_enviar y enviandos los mensajes correspondientes
 
+    //volver a calcular lista de ids_a_enviar
 	}
 }
+
+t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar){
+		t_link_element *elemento = colaAEnviar->head;
+		uint32_t posicion = 0;
+
+		t_list* ids_a_enviar = NULL;
+
+		while(elemento != NULL){
+			if (falta_enviar_msj(colaEnviados, elemento))
+				list_add(ids_a_enviar, ((t_pending)elemento->data)->ID_mensaje);
+			elemento = elemento->next;
+			posicion++;
+		}
+
+		return ids_a_enviar;
+	}
+
+
 
 void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
 
