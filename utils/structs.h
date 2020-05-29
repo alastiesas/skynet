@@ -93,6 +93,13 @@ typedef struct
 	t_list* CATCH_POKEMON;
 	t_list* CAUGHT_POKEMON;
 
+	t_list* NEW_POKEMON_IDS;
+	t_list* APPEARED_POKEMON_IDS;
+	t_list* GET_POKEMON_IDS;
+	t_list* LOCALIZED_POKEMON_IDS;
+	t_list* CATCH_POKEMON_IDS;
+	t_list* CAUGHT_POKEMON_IDS;
+
 } t_colas;
 
 typedef struct

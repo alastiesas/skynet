@@ -238,8 +238,8 @@ t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar){
 		t_list* ids_a_enviar = NULL;
 
 		while(elemento != NULL){
-			if (falta_enviar_msj(colaEnviados, elemento))
-				list_add(ids_a_enviar, ((t_pending)elemento->data)->ID_mensaje);
+			if (falta_enviar_msj(colaEnviados, ((t_pending*)elemento->data)->ID_mensaje))
+				list_add(ids_a_enviar, ((t_pending*)elemento->data)->ID_mensaje);
 			elemento = elemento->next;
 			posicion++;
 		}
@@ -247,7 +247,16 @@ t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar){
 		return ids_a_enviar;
 	}
 
+bool falta_enviar_msj(t_list* cola_enviados, uint32_t idMensaje){
+	//TODO modificar para que funcione con las colas de ids.
 
+//	bool soy_mismo_mensaje(void *mensaje){
+//		return ((t_pending)mensaje)->ID_mensaje == idMensaje;
+//	}
+//
+//	list_any_satisfy(cola_enviados, soy_mismo_mensaje);
+	return true;
+}
 
 void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
 
@@ -262,10 +271,11 @@ void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_li
 
 }
 
-void agregar_Acola(t_list* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
+void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger){
 
 	pthread_mutex_lock(&mutex);
 	list_add(cola, t_mensaje);
+	list_add(colaIds, t_mensaje->ID_mensaje);
 	pthread_mutex_unlock(&mutex);
 
 }
@@ -278,7 +288,7 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 		case NEW:
 			my_semaphores = &(semaphores_new);
-			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, my_semaphores);
+			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores);
 		    pthread_mutex_lock(&(my_semaphores->received));
 		    /* do something that might make condition true */
 		    pthread_cond_broadcast(&(my_semaphores->broadcast));
@@ -289,31 +299,31 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 		case APPEARED:
 			my_semaphores = &(semaphores_appeared);
-			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, my_semaphores);
+			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola APPEARED
 			break;
 
 		case GET:
 			my_semaphores = &(semaphores_get);
-			process_GET(socket_cliente, logger, colas->GET_POKEMON, my_semaphores);
+			process_GET(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola GET
 			break;
 
 		case LOCALIZED:
 			my_semaphores = &(semaphores_localized);
-			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, my_semaphores);
+			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola LOCALIZED
 			break;
 
 		case CATCHS:
 			my_semaphores = &(semaphores_catch);
-			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, my_semaphores);
+			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CATCH
 			break;
 
 		case CAUGHT:
 			my_semaphores = &(semaphores_caught);
-			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, my_semaphores);
+			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CAUGHT
 			break;
 
@@ -323,7 +333,7 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 		}
 }
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
+void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -342,7 +352,7 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_semafor
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
+	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger);
 
 
     int elementos = list_size(queue);
@@ -354,7 +364,7 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_semafor
 }
 
 
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
+void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -373,7 +383,7 @@ void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue, t_se
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
+	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger);
 
 
     int elementos = list_size(queue);
@@ -384,7 +394,7 @@ void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue, t_se
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
+void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -403,7 +413,7 @@ void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue, t_semafor
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
+	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger);
 
 
     int elementos = list_size(queue);
@@ -414,7 +424,7 @@ void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue, t_semafor
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
+void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -433,7 +443,7 @@ void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue, t_s
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
+	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger);
 
 
     int elementos = list_size(queue);
@@ -444,7 +454,7 @@ void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue, t_s
 	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
+void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -463,7 +473,7 @@ void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaf
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
+	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger);
 
 
     int elementos = list_size(queue);
@@ -474,7 +484,7 @@ void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaf
 	//no se hace el free de catch->nombre ni free de catch porque sigo usando el mensaje en la cola
 }
 
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue, t_semaforos* semaforos){
+void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -493,7 +503,7 @@ void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue, t_sema
 	receive_ACK(socket_cliente, logger);
 
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, t_mensaje, semaforos->mutex_cola, logger);
+	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger);
 
 
     int elementos = list_size(queue);

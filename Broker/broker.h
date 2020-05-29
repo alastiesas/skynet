@@ -100,19 +100,22 @@ void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_li
 
 //agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
 //mutex funciona sin pasarlo como puntero??
-void agregar_Acola(t_list* cola, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger);
+void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger);
 
 //Recibe el size del stream. Recibe un queue_code.
 queue_code receive_cola(uint32_t socket, t_log* logger);
 
 t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger);
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_semaforos* semaforos);
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_semaforos* semaforos);
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_semaforos* semaforos);
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_semaforos* semaforos);
-void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_semaforos* semaforos);
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_semaforos* semaforos);
+void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+
+t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar);
+bool falta_enviar_msj(t_list* cola_enviados, uint32_t idMensaje);
 
 void initialization();
 
