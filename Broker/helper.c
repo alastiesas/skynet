@@ -1,4 +1,5 @@
 #include "broker.h"
+#include "listas.h"
 
 
 void iniciar_servidor_broker()
@@ -134,46 +135,53 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 	//asignar la cola al t_suscriber y guardar en la cola de suscritos
 	t_semaforos* my_semaphores;
 	t_list* my_queue;
+	t_list* my_queueIDs;
 	switch(cola){
 
 	case COLA_NEW:
-		my_semaphores = &(semaphores_new);
-		my_queue = &(queues->NEW_POKEMON);
+		my_semaphores = semaphores_new;
+		my_queue = queues->NEW_POKEMON;
+		my_queueIDs = queues->NEW_POKEMON_IDS;
 		log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
 		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->NEW, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_APPEARED:
-		my_semaphores = &(semaphores_appeared);
-		my_queue = &(queues->APPEARED_POKEMON);
+		my_semaphores = semaphores_appeared;
+		my_queue = queues->APPEARED_POKEMON;
+		my_queueIDs = queues->APPEARED_POKEMON_IDS;
 		log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
 		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->APPEARED, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_CATCH:
-		my_semaphores = &(semaphores_catch);
-		my_queue = &(queues->CATCH_POKEMON);
+		my_semaphores = semaphores_catch;
+		my_queue = queues->CATCH_POKEMON;
+		my_queueIDs = queues->CATCH_POKEMON_IDS;
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CATCH", socket_cliente);
 		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CATCH, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_CAUGHT:
-		my_semaphores = &(semaphores_caught);
-		my_queue = &(queues->CAUGHT_POKEMON);
+		my_semaphores = semaphores_caught;
+		my_queue = queues->CAUGHT_POKEMON;
+		my_queueIDs = queues->CAUGHT_POKEMON_IDS;
 		log_info(logger, "Por suscribir al socket '%d' a la cola de CAUGHT", socket_cliente);
 		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CAUGHT, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_GET:
-		my_semaphores = &(semaphores_get);
-		my_queue = &(queues->GET_POKEMON);
+		my_semaphores = semaphores_get;
+		my_queue = queues->GET_POKEMON;
+		my_queueIDs = queues->GET_POKEMON_IDS;
 		log_info(logger, "Por suscribir al socket '%d' a la cola de GET", socket_cliente);
 		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->GET, my_semaphores->mutex_subs, logger);
 		break;
 
 	case COLA_LOCALIZED:
-		my_semaphores = &(semaphores_localized);
-		my_queue = &(queues->LOCALIZED_POKEMON);
+		my_semaphores = semaphores_localized;
+		my_queue = queues->LOCALIZED_POKEMON;
+		my_queueIDs = queues->LOCALIZED_POKEMON_IDS;
 		log_info(logger, "Por suscribir al socket '%d' a la cola de LOCALIZED", socket_cliente);
 		agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->LOCALIZED, my_semaphores->mutex_subs, logger);
 		break;
@@ -190,44 +198,61 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 
 
 
-	send_received_message(suscriber, my_semaphores, my_queue);	//loop infinito
+	send_received_message(suscriber, my_semaphores, my_queue, my_queueIDs);	//loop infinito
 
 }
 
-void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola){
-
-
-	//variable global, cantidad de elementos de la cola
-	//variable local, lista de ids de mensajes ya enviados
+void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs){
 
 	bool condicion;
-	bool queue_not_empty;
-	bool any_available_message_not_sent;
+	//bool queue_not_empty;
+	//bool any_available_message_not_sent;
+	t_list* current_global_message_ids = list_create();
+	t_list* not_sent_ids = list_create();
+	void* elemento;
 
-	t_list* ids_a_enviar = obtener_ids_pendientes(suscriber->sent_messages, cola); // TODO Reemplazar cola por cola de ids.
+	//t_list* ids_a_enviar = obtener_ids_pendientes(suscriber->sent_messages, cola); // TODO Reemplazar cola por cola de ids.
 
-	condicion = (list_is_empty(ids_a_enviar) == 1) ? false : true;
+	//condicion = (list_is_empty(ids_a_enviar) == 1) ? false : true;
 
-	while(condicion){
+	while(1){
 
-    pthread_mutex_lock(&(semaforos->received));
-       while (!queue_not_empty)	//si cumple la condicion, pasa de largo, y sigue ejecutando el programa. Si no cumple, se bloquea.
-           pthread_cond_wait(&(semaforos->broadcast), &(semaforos->received));
-       /* do something that requires holding the mutex and condition is true */
-    pthread_mutex_unlock(&(semaforos->received));
+		list_clean(current_global_message_ids);
+		//obtener lista global de ids
+		pthread_mutex_lock(&(semaforos->mutex_cola));
+		list_add_all(current_global_message_ids, colaIDs);
+		pthread_mutex_unlock(&(semaforos->mutex_cola));
 
-    //iterar ids_a_enviar
-    //obtener mensaje con el id a enviar
-    //enviar el mensaje
-    //si falla el envio, cambiar el flag a desconectado, y cerrar el hilo. Si no, continuar
-    //agregar el ID del mensaje como enviado en t_suscriber
-    //Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
-    //esperar confirmacion del mensaje
-    //Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
+		no_enviados_lista(current_global_message_ids, suscriber->sent_messages, not_sent_ids);
 
-    //se sigue iterando ids_a_enviar y enviandos los mensajes correspondientes
+		condicion = (!list_is_empty(not_sent_ids));
 
-    //volver a calcular lista de ids_a_enviar
+
+		pthread_mutex_lock(&(semaforos->received));
+		while (!condicion)	//si cumple la condicion, pasa de largo, y sigue ejecutando el programa. Si no cumple, se bloquea.
+			pthread_cond_wait(&(semaforos->broadcast), &(semaforos->received));
+		/* do something that requires holding the mutex and condition is true */
+		pthread_mutex_unlock(&(semaforos->received));
+
+
+		while(!list_is_empty(not_sent_ids)){
+			//tomar el primer ID de mensaje que falte enviar, y sacarlo de la lista
+			elemento = list_remove(not_sent_ids, 0);
+
+			//obtener el mensaje con ese ID
+
+			//enviar el mensaje
+
+			//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
+
+			//agregar el ID del mensaje como enviado en suscriber->sent_messages
+
+			//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
+
+			//esperar confirmacion del mensaje
+			//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
+		}
+
 	}
 }
 
@@ -287,7 +312,7 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 		switch (cod_op) {
 
 		case NEW:
-			my_semaphores = &(semaphores_new);
+			my_semaphores = semaphores_new;
 			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores);
 		    pthread_mutex_lock(&(my_semaphores->received));
 		    /* do something that might make condition true */
@@ -298,31 +323,31 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 			break;
 
 		case APPEARED:
-			my_semaphores = &(semaphores_appeared);
+			my_semaphores = semaphores_appeared;
 			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola APPEARED
 			break;
 
 		case GET:
-			my_semaphores = &(semaphores_get);
+			my_semaphores = semaphores_get;
 			process_GET(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola GET
 			break;
 
 		case LOCALIZED:
-			my_semaphores = &(semaphores_localized);
+			my_semaphores = semaphores_localized;
 			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola LOCALIZED
 			break;
 
 		case CATCHS:
-			my_semaphores = &(semaphores_catch);
+			my_semaphores = semaphores_catch;
 			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CATCH
 			break;
 
 		case CAUGHT:
-			my_semaphores = &(semaphores_caught);
+			my_semaphores = semaphores_caught;
 			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CAUGHT
 			break;

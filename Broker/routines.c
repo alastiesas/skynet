@@ -28,6 +28,13 @@ void initialize_queues() {
 	suscribers->LOCALIZED = list_create();
 	queues->NEW_POKEMON = list_create();
 	suscribers->NEW = list_create();
+
+	queues->NEW_POKEMON_IDS = list_create();
+	queues->APPEARED_POKEMON_IDS = list_create();
+	queues->GET_POKEMON_IDS = list_create();
+	queues->LOCALIZED_POKEMON_IDS = list_create();
+	queues->CATCH_POKEMON_IDS = list_create();
+	queues->CAUGHT_POKEMON_IDS = list_create();
 }
 
 void specific_initialization() {
@@ -89,6 +96,12 @@ void specific_termination() {
 	list_destroy(queues->LOCALIZED_POKEMON);
 	list_destroy(queues->CATCH_POKEMON);
 	list_destroy(queues->CAUGHT_POKEMON);
+	list_destroy(queues->NEW_POKEMON_IDS);
+	list_destroy(queues->APPEARED_POKEMON_IDS);
+	list_destroy(queues->GET_POKEMON_IDS);
+	list_destroy(queues->LOCALIZED_POKEMON_IDS);
+	list_destroy(queues->CATCH_POKEMON_IDS);
+	list_destroy(queues->CAUGHT_POKEMON_IDS);
 	free(queues);
 	free(suscribers);
 	free(semaphores_new);

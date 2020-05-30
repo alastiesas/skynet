@@ -93,7 +93,7 @@ void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, 
 void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas);
 
 //TODO
-void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola);
+void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs);
 
 //mutex funciona sin pasarlo como puntero??
 void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
