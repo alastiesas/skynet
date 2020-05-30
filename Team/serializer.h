@@ -34,6 +34,16 @@ typedef struct {
 
 
 //--estructuras de mensajes
+//--estrcutruas para envio y recepcion de mensajes--
+typedef struct {
+	uint32_t size;
+	void* stream;
+}t_buffer;
+typedef struct {
+	op_code operation_code;
+	t_buffer* buffer;
+}t_package;
+
 
 //NEW = {1, id_mensaje, tamaño_pokemon, pokemon, posx, posy, cantidad}
 typedef struct {

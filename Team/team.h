@@ -674,23 +674,36 @@ void sjfc_algorithm()
 
 void short_term_scheduler()
 {
-	t_trainer* trainer_exec = (t_trainer*) list_get(exec_list,0);
-	//ACA CONSULTAMOS SI SALE POR I/0
-	if(trainer_exec->target->catching){
-		sem_wait(&sem_messages_list);
-		t_message_catch* message = malloc(sizeof(t_message_catch));
-		message->tid = trainer_exec->tid;
-		message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
-		list_add(messages_list,message);
-		sem_post(&sem_messages_list);
-		sem_post(&sem_messages);
+	printf("aca llego bien\n");
+	if(list_size(exec_list)>0){
+		t_trainer* trainer_exec = (t_trainer*) list_get(exec_list,0);
+			printf("aca llego bien12\n");
+			//ACA CONSULTAMOS SI SALE POR I/0
+			printf("the trainer exec has %s\n",trainer_exec->target->pokemon);
+			printf("the trainer exec has %d\n",trainer_exec->target->position->x);
+			printf("the trainer exec has %d\n",trainer_exec->target->position->y);
+			printf("the trainer exec has %d\n",trainer_exec->target->catching);
+			if(trainer_exec->target->catching){
+				printf("aca llego bien11\n");
+				sem_wait(&sem_messages_list);
+				printf("aca llego bien2\n");
+				t_message_catch* message = malloc(sizeof(t_message_catch));
+				message->tid = trainer_exec->tid;
+				message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
+				list_add(messages_list,message);
+				sem_post(&sem_messages_list);
+				printf("aca llego bien3\n");
+				sem_post(&sem_messages);
+				printf("aca llego bien4\n");
 
 
-		//PENSAR QUE VA EN MESSAGE LIST ??
-		//TARGET, tid del entrenador, correlative_id??
+				//PENSAR QUE VA EN MESSAGE LIST ??
+				//TARGET, tid del entrenador, correlative_id??
 
-		transition_exec_to_block();
+				transition_exec_to_block();
+			}
 	}
+
 
 	switch(algorithm){
 			case FIFO:

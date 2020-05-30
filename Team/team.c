@@ -29,6 +29,10 @@ int main(void)
 	char* ip;
 	char* puerto;
 
+
+	/*// DESDE ACA DEJAMOS COMENTADO
+	 *
+
 	t_log* logger;
 	t_config* config;
 
@@ -72,11 +76,6 @@ int main(void)
 	printf("el count termina con %d\n", count);
 
 
-
-
-
-	//printf("tamaño de la lista de entrenadores es %d\n", size_test);
-	//printf("debug del test list 2 %s\n", test_split[2]);
 	puerto = config_get_string_value(config, "PUERTO");
 
 	messages_list = list_create();
@@ -102,9 +101,7 @@ int main(void)
 
 	add_to_poke_map("Pikachu",(void*) test_position_1);
 	add_to_poke_map("Charmander",(void*) test_position_2);
-	//add_to_poke_map("pikachu",(void*) test_position_3);
-	//ciclo para cargar una lista de entrenadores.
-	//t_trainer* test_entrenador = construct_trainer(test_postions[0], test_objetivos[0], test_pokemons[0]);
+
 	initialize_trainers(test_postions, test_objetivos, test_pokemons);
 
 	objetives_list = list_create();
@@ -116,22 +113,6 @@ int main(void)
 	pthread_t tid2;
 	pthread_attr_t attr;
 
-
-	/*
-	sem_post(&trainer->sem_thread);
-	sleep(1);
-	sem_post(&trainer2->sem_thread);
-
-	pthread_join(tid, NULL);
-	pthread_join(tid2, NULL);
-
-	*/
-	//state_change(0,new_list, ready_list);
-
-	//ESTO TIENE QUE ESTAR EN UN HILO DE EJECUCION
-	//transition_new_to_ready(1);
-	//7transition_new_to_ready(0);
-	//transition_new_to_ready(0);
 	printf("aca llego!!!\n");
 	long_term_scheduler();
 	sleep(4);
@@ -147,6 +128,9 @@ int main(void)
 
 
 	pthread_join(exec_tid, NULL);
+	*/
+	//HASTA ACA DEJAMOS COMENTADO
+
 	/*
 	void* map(t_trainer* trainer){
 		void iterate(pokemon){
