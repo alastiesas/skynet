@@ -256,32 +256,6 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 	}
 }
 
-t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar){
-		t_link_element *elemento = colaAEnviar->head;
-		uint32_t posicion = 0;
-
-		t_list* ids_a_enviar = NULL;
-
-		while(elemento != NULL){
-			if (falta_enviar_msj(colaEnviados, ((t_pending*)elemento->data)->ID_mensaje))
-				list_add(ids_a_enviar, ((t_pending*)elemento->data)->ID_mensaje);
-			elemento = elemento->next;
-			posicion++;
-		}
-
-		return ids_a_enviar;
-	}
-
-bool falta_enviar_msj(t_list* cola_enviados, uint32_t idMensaje){
-	//TODO modificar para que funcione con las colas de ids.
-
-//	bool soy_mismo_mensaje(void *mensaje){
-//		return ((t_pending)mensaje)->ID_mensaje == idMensaje;
-//	}
-//
-//	list_any_satisfy(cola_enviados, soy_mismo_mensaje);
-	return true;
-}
 
 void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
 
