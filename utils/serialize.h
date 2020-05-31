@@ -23,27 +23,27 @@
 */
 
 //Recibe una estructura t_paquete. Lo convierte en el stream |cod_op|size_buffer|buffer| y lo manda. Libera el paquete.
-int32_t send_paquete(int32_t socket, t_paquete* paquete);
+int32_t send_paquete(int32_t socket, t_package* paquete);
 
 //Recibe un char* y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
-t_paquete* serialize_message(char* mensaje);
+t_package* serialize_message(char* mensaje);
 
 //recibe una cola a suscribirse y lo convierte a paquete
 //se
-t_paquete* serialize_suscripcion(uint32_t ID_PROCESO, queue_code cola);
+t_package* serialize_suscripcion(uint32_t ID_PROCESO, queue_code cola);
 
 //Recibe un t_new y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
-t_paquete* serialize_new(t_new* new);
+t_package* serialize_new(t_new* new);
 
 //Recibe un t_catch y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
-t_paquete* serialize_catch(t_catch* catch);
+t_package* serialize_catch(t_catch* catch);
 
 
 
 
 //---Funciones sin usar
 
-void* serializar_paquete(t_paquete* paquete, int bytes);
+void* serializar_paquete(t_package* paquete, int bytes);
 
 
 //FROM serializer.h

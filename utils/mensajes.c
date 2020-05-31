@@ -35,7 +35,7 @@ void* recibir_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger)
 int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 {
 
-	t_paquete* paquete = serialize_message(mensaje);
+	t_package* paquete = serialize_message(mensaje);
 
 
 //ya se puede enviar el paquete
@@ -56,7 +56,7 @@ int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 
 int32_t send_catch(t_catch* catch, uint32_t socket, t_log* logger){
 
-	t_paquete* paquete = serialize_catch(catch);
+	t_package* paquete = serialize_catch(catch);
 
 
 //ya se puede enviar el paquete
@@ -342,7 +342,7 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 	//recibir mensaje
 		log_info(logger, "Intentando recibir el paquete por vez numero %d\n", vez);
 
-		op_code codigo;
+		operation_code codigo;
 		codigo = receive_cod_op(socket, logger);
 
 
@@ -361,7 +361,7 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 			free(buffer);
 			break;
 
-		case CATCHS:
+		case OPERATION_CATCH:
 
 			log_info(logger, "Se recibe un paquete de tipo CATCH");
 
@@ -387,11 +387,11 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 	free(catch);
 }
 
-op_code receive_cod_op(uint32_t socket, t_log* logger){
-	op_code codigo;
+operation_code receive_cod_op(uint32_t socket, t_log* logger){
+	operation_code codigo;
 
 	int32_t resultado;
-	if((resultado = recv(socket, &codigo, sizeof(op_code), MSG_WAITALL)) == -1)
+	if((resultado = recv(socket, &codigo, sizeof(operation_code), MSG_WAITALL)) == -1)
 		log_error(logger, "Error al recibir la cod_op\n");
 	else
 		log_info(logger, "Se recibio la cod op: %d\n", codigo);

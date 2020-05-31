@@ -31,20 +31,20 @@ int main(int argc, char* argv[]) {
 	config = config_create("gameboy.config");
 	log_info(log, "config created");
 
-	if (strcmp(argv[1], PARAMETER_SUBSCRIBER) == 0 && argc == 4) {
+	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
 
 		queue_code queue_code;
-		if (strcmp(argv[2], PARAMETER_APPEARED_POKEMON) == 0) {
+		if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
 			queue_code = COLA_APPEARED;
-		} else if (strcmp(argv[2], PARAMETER_CATCH_POKEMON) == 0) {
+		} else if (strcmp(argv[2], "CATCH_POKEMON") == 0) {
 			queue_code = COLA_CATCH;
-		} else if (strcmp(argv[2], PARAMETER_CAUGHT_POKEMON) == 0) {
+		} else if (strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
 			queue_code = COLA_CAUGHT;
-		} else if (strcmp(argv[2], PARAMETER_GET_POKEMON) == 0) {
+		} else if (strcmp(argv[2], "GET_POKEMON") == 0) {
 			queue_code = COLA_GET;
-		} else if (strcmp(argv[2], PARAMETER_LOCALIZED_POKEMON) == 0) {
+		} else if (strcmp(argv[2], "LOCALIZED_POKEMON") == 0) {
 			queue_code = COLA_LOCALIZED;
-		} else if (strcmp(argv[2], PARAMETER_NEW_POKEMON) == 0) {
+		} else if (strcmp(argv[2], "NEW_POKEMON") == 0) {
 			queue_code = COLA_NEW;
 		} else {
 			exit(EXIT_FAILURE);
@@ -54,24 +54,24 @@ int main(int argc, char* argv[]) {
 	} else {
 		char* ip;
 		char* port;
-		t_paquete* package; /*pending1*/
-		if (strcmp(argv[1], PARAMETER_BROKER) == 0) {
+		t_package* package; /*pending1*/
+		if (strcmp(argv[1], "BROKER") == 0) {
 
 			ip = config_get_string_value(config, "BROKER_IP");
 			port = config_get_string_value(config, "BROKER_PORT");
-			if (argc == 3 && strcmp(argv[2], PARAMETER_GET_POKEMON) == 0) {
+			if (argc == 3 && strcmp(argv[2], "GET_POKEMON") == 0) {
 
 			} else if (argc == 5
-					&& strcmp(argv[2], PARAMETER_CAUGHT_POKEMON) == 0) {
+					&& strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
 
 			} else if (argc == 6
-					&& strcmp(argv[2], PARAMETER_CATCH_POKEMON) == 0) {
+					&& strcmp(argv[2], "CATCH_POKEMON") == 0) {
 
 			} else if (argc == 7) {
 
-				if (strcmp(argv[2], PARAMETER_APPEARED_POKEMON) == 0) {
+				if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
 
-				} else if (strcmp(argv[2], PARAMETER_NEW_POKEMON) == 0) {
+				} else if (strcmp(argv[2], "NEW_POKEMON") == 0) {
 
 				} else {
 					exit(EXIT_FAILURE);
@@ -80,24 +80,24 @@ int main(int argc, char* argv[]) {
 				exit(EXIT_FAILURE);
 			}
 
-		} else if (strcmp(argv[1], PARAMETER_GAMECARD) == 0) {
+		} else if (strcmp(argv[1], "GAMECARD") == 0) {
 
 			ip = config_get_string_value(config, "GAMECARD_IP");
 			port = config_get_string_value(config, "GAMECARD_PORT");
-			if (argc == 5 && strcmp(argv[2], PARAMETER_GET_POKEMON) == 0) {
+			if (argc == 5 && strcmp(argv[2], "GET_POKEMON") == 0) {
 
 			} else if (argc == 7
-					&& strcmp(argv[2], PARAMETER_CATCH_POKEMON) == 0) {
+					&& strcmp(argv[2], "CATCH_POKEMON") == 0) {
 
 			} else if (argc == 8
-					&& strcmp(argv[2], PARAMETER_NEW_POKEMON) == 0) {
+					&& strcmp(argv[2], "NEW_POKEMON") == 0) {
 
 			} else {
 				exit(EXIT_FAILURE);
 			}
 
-		} else if (strcmp(argv[1], PARAMETER_TEAM) == 0 && argc == 6
-				&& strcmp(argv[2], PARAMETER_APPEARED_POKEMON) == 0) {
+		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6
+				&& strcmp(argv[2], "APPEARED_POKEMON") == 0) {
 
 			ip = config_get_string_value(config, "TEAM_IP");
 			port = config_get_string_value(config, "TEAM_PORT");

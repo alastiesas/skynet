@@ -18,18 +18,16 @@
 #include <stdio.h>
 //
 
-typedef enum
-{
-	NEW=1,
-	APPEARED=2,
-	GET=3,
-	LOCALIZED=4,
-	CATCHS=5,
-	CAUGHT=6,
-	SUSCRIPCION=7,
-	CONFIRMACION=8,
-	SALUDO=9
-}op_code;
+typedef enum {
+	OPERATION_NEW = 1,
+	OPERATION_APPEARED = 2,
+	OPERATION_GET = 3,
+	OPERATION_LOCALIZED = 4,
+	OPERATION_CATCH = 5,
+	OPERATION_CAUGHT = 6,
+	OPERATION_SUSCRIPTION = 7,
+	OPERATION_CONFIRMATION = 8
+} operation_code;
 
 typedef enum
 {
@@ -58,35 +56,63 @@ typedef struct
 	void* stream;
 } t_buffer;
 
-typedef struct
-{
-	op_code codigo_operacion; //operation_code
+typedef struct {
+	operation_code operation_code;
 	t_buffer* buffer;
-} t_paquete; //t_package
+} t_package;
 
+typedef struct {
+	uint32_t x;
+	uint32_t y;
+} t_position;
 
-typedef struct
-{
-		//op_code CATCH
+typedef struct {
+	t_position* position;
+	uint32_t amount;
+} t_location;
+
+typedef struct {
 	uint32_t id;
-	uint32_t size_nombre;
-	char* nombre;
-	uint32_t posX;
-	uint32_t posY;
+	uint32_t pokemon_name_size;
+	char* pokemon_name;
+	t_position* position;
+} t_message_appeared;
 
-} t_catch;
-
-typedef struct
-{
-		//op_code NEW
+typedef struct {
 	uint32_t id;
-	uint32_t size_nombre;
-	char* nombre;
-	uint32_t posX;
-	uint32_t posY;
-	uint32_t cantidad;
+	uint32_t pokemon_name_size;
+	char* pokemon_name;
+	t_position* position;
+} t_message_catch;
 
-} t_new;
+typedef struct {
+	uint32_t id;
+	uint32_t correlative_id;
+	bool result;
+} t_message_caught;
+
+typedef struct {
+	uint32_t id;
+	uint32_t pokemon_name_size;
+	char* pokemon_name;
+} t_message_get;
+
+//pending
+typedef struct {
+	uint32_t id;
+	uint32_t correlative_id;
+	uint32_t pokemon_name_size;
+	char* pokemon_name;
+	uint32_t position_amount; //cantidad de locaciones -> sizeof(t_location)*location_amount para el tamaño de la lista en bytes
+	t_position* positions; //lista de locaciones (posicion + cantidad)
+} t_message_localized;
+
+typedef struct {
+	uint32_t id;
+	uint32_t pokemon_name_size;
+	char* pokemon_name;
+	t_location* location;
+} t_message_new;
 
 typedef struct
 {
@@ -118,101 +144,20 @@ typedef struct
 } t_suscriptores;
 
 
-/*
- *
- *
- */
-// FROM serializer.h (team)
+t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position);
+t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x, uint32_t position_y);
+t_message_catch* create_message_catch(char* pokemon_name, t_position* position);
+t_message_caught* create_message_caught(uint32_t correlative_id, bool result);
+t_message_get* create_message_get(char* pokemon_name);
+t_message_localized* create_message_localized(uint32_t correlative_id, char* pokemon_name, uint32_t position_amount, t_position* positions);
+t_message_new* create_message_new(char* pokemon_name, t_location* location);
+t_message_new* create_message_new_long(char* pokemon_name, uint32_t position_x, uint32_t position_y, uint32_t amount);
 
-//estructuras utiles
-typedef struct {
-	uint32_t x;
-	uint32_t y;
-}t_position;//posicion (x, y)
-
-typedef struct {
-	t_position* position;
-	uint32_t amount;
-}t_location;//Localizacion (posicion + cantidad)
-//--fin estructuras utiles--
-
-
-/*
-//NEW = {1, id_mensaje, tamaño_pokemon, pokemon, posx, posy, cantidad}
-typedef struct {
-	op_code operation_code;
-	uint32_t message_id;
-	uint32_t size_pokemon;
-	char* pokemon;
-	t_location* location;
-}t_new;
-
-//APPEARED = {2, id_mensaje, tamaño_pokeon, pokemon, posx, posy}
-typedef struct {
-	op_code operation_code;
-	uint32_t message_id;
-	uint32_t size_pokemon;
-	char* pokemon;
-	t_position* position;
-}t_appeared;
-
-//GET = {3, id_mensaje, tamaño_pokemon, pokemon}
-typedef struct {
-	op_code operation_code;
-	uint32_t message_id;
-	uint32_t size_pokemon;
-	char* pokemon;
-}t_get;
-
-//LOCALIZED = {4, id_mensaje, id_correlativo, tamaño_pokemon, pokemon, cantidad_localizaciones, lista_localizaciones}
-typedef struct {
-	op_code operation_code;
-	uint32_t message_id;
-	uint32_t correlative_id;
-	uint32_t size_pokemon;
-	char* pokemon;
-	uint32_t position_amount;//cantidad de locaciones -> sizeof(t_location)*location_amount para el tamaño de la lista en bytes
-	t_position* positions;//lista de locaciones (posicion + cantidad)
-}t_localized;
-
-//CATCH = {5, id_mensaje, tamaño_pokemon, pokemon, posicion}
-typedef struct {
-	op_code operation_code;
-	uint32_t message_id;
-	uint32_t size_pokemon;
-	char* pokemon;
-	t_position* position;
-}t_catch;
-
-//CAUGHT = {6, id_mensaje, id_correlativo, resultado}
-typedef struct {
-	op_code operation_code;
-	uint32_t message_id;
-	uint32_t correlative_id;
-	bool result;//1 = si, 0 = no
-}t_caught;
-
-//constructores de mensajes
-t_new* construct_new(char* pokemon, t_location* location);
-t_new* construct_new_long(char* pokemon, uint32_t posx,uint32_t posy,uint32_t amount);
-t_appeared* construct_appeared(char* pokemon, t_position* position);
-t_appeared* construct_appeared_long(char* pokemon, uint32_t posx, uint32_t posy);
-t_get* construct_get(char* pokemon);
-t_localized* construct_localized(uint32_t correlative_id, char* pokemon, uint32_t position_amount, t_position* positions);
-//t_localized* construct_localized_long(uint32_t message_id, uint32_t correlative_id, char* pokemon, uint32_t position_amount, uint32_t** positions);
-t_catch* construct_catch(char* pokemon, t_position* position);
-t_caught* construct_caught(uint32_t correlative_id, bool result);
-//fin constructores
-
-//destructores
-void destroy_new(t_new* message);
-void destroy_appeared(t_appeared* message);
-void destroy_get(t_get* message);
-void destroy_localized(t_localized* message);
-void destroy_catch(t_catch* message);
-void destroy_caught(t_caught* message);
-//fin destructores
- *
- */
+void destroy_message_appeared(t_message_appeared* message_appeared);
+void destroy_message_catch(t_message_catch* message_catch);
+void destroy_message_caught(t_message_caught* message_caught);
+void destroy_message_get(t_message_get* message_get);
+void destroy_message_localized(t_message_localized* message_localized);
+void destroy_message_new(t_message_new* message_new);
 
 #endif /* STRUCTS_H_ */

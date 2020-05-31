@@ -8,7 +8,7 @@ void subscribe(queue_code queue_code, int time) {
 	int32_t socket = connect_to_server(ip, port, log);
 
 	uint32_t id = config_get_string_value(config, "ID");
-	t_paquete* package = serialize_suscripcion(atoi(id), queue_code);
+	t_package* package = serialize_suscripcion(atoi(id), queue_code);
 
 	send_paquete(socket, package); /*pending2*/
 	if (receive_ACK(socket, log) == -1) {
@@ -26,7 +26,7 @@ void subscribe(queue_code queue_code, int time) {
 }
 
 
-void send(char* ip, char* port, t_paquete* package) {
+void send(char* ip, char* port, t_package* package) {
 
 	int32_t socket = connect_to_server(ip, port, log);
 	send_paquete(socket, package);

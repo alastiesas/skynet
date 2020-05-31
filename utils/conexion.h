@@ -37,7 +37,7 @@ void iniciar_servidor(char* puerto, t_log* logger);
 void esperar_cliente(int32_t socket_servidor, t_log* logger);
 
 void recibir_muchos_mensajes(void* input);
-void process_request(op_code cod_op, int32_t socket, t_log* logger);
+void process_request(operation_code cod_op, int32_t socket, t_log* logger);
 
 
 

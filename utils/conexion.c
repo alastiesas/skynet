@@ -93,7 +93,7 @@ void recibir_muchos_mensajes(void* input)
 	int vez = 1;
 	while(1){
 	log_info(logger, "\nesperando recibir cod_op, por vez numero %d\n", vez);
-	op_code cod_op;
+	operation_code cod_op;
 			//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
 	int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 	if(recibido == -1)
@@ -110,7 +110,7 @@ void recibir_muchos_mensajes(void* input)
 
 }
 
-void process_request(op_code cod_op, int32_t socket, t_log* logger) {
+void process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 	uint32_t size;
 	void* msg;
 	t_catch* catch = malloc(sizeof(t_catch));
@@ -123,14 +123,14 @@ void process_request(op_code cod_op, int32_t socket, t_log* logger) {
 			log_info(logger, "Se recibio el mensaje: %s", msg);
 			break;
 
-		case NEW:
+		case OPERATION_NEW:
 			log_info(logger, "Se recibe el mensaje:\n");
 			new = receive_new(socket, &size, logger);
 			//imprimir_new();	//el recv ya imprime
 			free(new->nombre);
 			break;
 
-		case CATCHS:
+		case OPERATION_CATCH:
 			log_info(logger, "Se recibe el mensaje:\n");
 			catch = receive_catch(socket, &size, logger);
 			//imprimir_catch();		//el recv ya imprime
