@@ -15,13 +15,13 @@
 #include<commons/config.h>
 #include<commons/collections/list.h>
 #include<readline/readline.h>
-#include "serializer.h"
-#include "utils.h"
+#include <utils.h>
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <conexion.h>
 #include <mensajes.h>
+#include <structs.h>
 
 
 t_config* config;
@@ -695,7 +695,7 @@ void short_term_scheduler()
 				printf("aca llego bien2\n");
 				t_message_catch* message = malloc(sizeof(t_message_catch));
 				message->tid = trainer_exec->tid;
-				message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
+				//message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
 				list_add(messages_list,message);
 				sem_post(&sem_messages_list);
 				printf("aca llego bien3\n");

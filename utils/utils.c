@@ -14,7 +14,7 @@
  * el tamaño del stream de bytes serializados que devuelve
  */
 
-
+/*
 void* serializar_paquete(t_paquete* paquete, int *bytes)
 {
 	printf("the bytes are %d ", *bytes);
@@ -147,3 +147,4 @@ void terminar_programa(int conexion, t_log* logger, t_config* config)
 	liberar_conexion(conexion);
 	//Y por ultimo, para cerrar, hay que liberar lo que utilizamos (conexion, log y config) con las funciones de las commons y del TP mencionadas en el enunciado
 }
+*/

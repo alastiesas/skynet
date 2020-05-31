@@ -4,7 +4,6 @@
  *  Created on: 24 abr. 2020
  *      Author: utnso
  */
-
 #ifndef SERIALIZE_H_
 #define SERIALIZE_H_
 
@@ -15,7 +14,13 @@
 
 
 #include "structs.h"
-
+/*
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <serialize.h>
+*/
 
 //Recibe una estructura t_paquete. Lo convierte en el stream |cod_op|size_buffer|buffer| y lo manda. Libera el paquete.
 int32_t send_paquete(int32_t socket, t_paquete* paquete);
@@ -41,5 +46,14 @@ t_paquete* serialize_catch(t_catch* catch);
 void* serializar_paquete(t_paquete* paquete, int bytes);
 
 
+//FROM serializer.h
+/*
+void* serialize_new(t_new* message, uint32_t* bytes);
+void* serialize_appeared(t_appeared* message, uint32_t *bytes);
+void* serialize_get(t_get* message, uint32_t *bytes);
+void* serialize_localized(t_localized* message, uint32_t *bytes);
+void* serialize_catch(t_catch* message, uint32_t *bytes);
+void* serialize_caught(t_caught* message, uint32_t *bytes);
+*/
 
 #endif /* SERIALIZE_H_ */
