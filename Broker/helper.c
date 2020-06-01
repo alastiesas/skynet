@@ -84,7 +84,7 @@ void broker_serves_client(void* input){
 	char modulo[16];
 	pthread_getname_np(self, modulo, 16);
 
-	op_code cod_op;
+	operation_code cod_op;
 
 	int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 	if(recibido == -1)
@@ -98,7 +98,7 @@ void broker_serves_client(void* input){
 
 
 
-	if(cod_op == SUSCRIPCION)
+	if(cod_op == OPERATION_SUSCRIPTION)
 		process_suscripcion(cod_op, socket, logger, suscriptores);
 	else
 		process_mensaje(cod_op, socket, logger, colas);
@@ -106,7 +106,7 @@ void broker_serves_client(void* input){
 
 }
 
-void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores) {
+void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores) {
 
 	//ya recibi la cod_op
 	//recibir el size del stream
@@ -279,13 +279,13 @@ void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_
 
 }
 
-void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas) {
+void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas) {
 
 	t_semaforos* my_semaphores;
 
 		switch (cod_op) {
 
-		case NEW:
+		case OPERATION_NEW:
 			my_semaphores = semaphores_new;
 			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores);
 		    pthread_mutex_lock(&(my_semaphores->received));
@@ -296,31 +296,31 @@ void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_co
 
 			break;
 
-		case APPEARED:
+		case OPERATION_APPEARED:
 			my_semaphores = semaphores_appeared;
 			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola APPEARED
 			break;
 
-		case GET:
+		case OPERATION_GET:
 			my_semaphores = semaphores_get;
 			process_GET(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola GET
 			break;
 
-		case LOCALIZED:
+		case OPERATION_LOCALIZED:
 			my_semaphores = semaphores_localized;
 			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola LOCALIZED
 			break;
 
-		case CATCHS:
+		case OPERATION_CATCH:
 			my_semaphores = semaphores_catch;
 			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CATCH
 			break;
 
-		case CAUGHT:
+		case OPERATION_CAUGHT:
 			my_semaphores = semaphores_caught;
 			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores);
 			//TODO hacer un signal de la cantidad se suscriptores que haya en la cola CAUGHT

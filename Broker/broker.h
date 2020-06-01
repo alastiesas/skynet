@@ -87,10 +87,10 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_
 void broker_serves_client(void* input);
 
 
-void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores);
+void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores);
 
 
-void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas);
+void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas);
 
 //TODO
 void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs);
