@@ -3,21 +3,21 @@
 
 void subscribe(queue_code queue_code, int time) {
 
-	char* ip = config_get_string_value(config, "BROKER_IP");
-	char* port = config_get_string_value(config, "BROKER_PORT");
-	int32_t socket = connect_to_server(ip, port, log);
+	ip = config_get_string_value(config, "BROKER_IP");
+	port = config_get_string_value(config, "BROKER_PORT");
+	int32_t socket = connect_to_server(ip, port, logger);
 
 	uint32_t id = config_get_string_value(config, "ID");
 	t_package* package = serialize_suscripcion(atoi(id), queue_code);
 
 	send_paquete(socket, package); /*pending2*/
-	if (receive_ACK(socket, log) == -1) {
+	if (receive_ACK(socket, logger) == -1) {
 		exit(EXIT_FAILURE);
 	}
 
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
-	args->logger = log;
+	args->logger = logger;
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) recibir_muchos_mensajes,
 			args); /*pending2*/
@@ -26,11 +26,11 @@ void subscribe(queue_code queue_code, int time) {
 }
 
 
-void send(char* ip, char* port, t_package* package) {
+void send_message(char* ip, char* port, t_package* package) {
 
-	int32_t socket = connect_to_server(ip, port, log);
+	int32_t socket = connect_to_server(ip, port, logger);
 	send_paquete(socket, package);
 
-	receive_ID(socket, log);
-	send_ACK(socket, log);
+	receive_ID(socket, logger);
+	send_ACK(socket, logger);
 }

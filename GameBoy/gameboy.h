@@ -7,6 +7,8 @@
 
 t_log* logger;
 t_config* config;
+char* ip;
+char* port;
 
 t_package* package_appearead_pokemon();
 t_package* package_catch_pokemon();

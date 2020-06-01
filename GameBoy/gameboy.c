@@ -26,13 +26,13 @@
 int main(int argc, char* argv[]) {
 	puts("starting gameboy");
 
-	log = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
-	log_info(log, "log created");
+	logger = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
+	log_info(logger, "log created");
 	config = config_create("gameboy.config");
-	log_info(log, "config created");
+	log_info(logger, "config created");
 
 	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
-
+		//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
 		queue_code queue_code;
 		if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
 			queue_code = COLA_APPEARED;
@@ -52,27 +52,31 @@ int main(int argc, char* argv[]) {
 		subscribe(queue_code, argv[3]);
 
 	} else {
-		char* ip;
-		char* port;
+
 		t_package* package; /*pending1*/
 		if (strcmp(argv[1], "BROKER") == 0) {
 
 			ip = config_get_string_value(config, "BROKER_IP");
 			port = config_get_string_value(config, "BROKER_PORT");
 			if (argc == 3 && strcmp(argv[2], "GET_POKEMON") == 0) {
+				//gameboy BROKER GET_POKEMON [POKEMON]
 
-			} else if (argc == 5
-					&& strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
+			} else if (argc == 5 && strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
+				//gameboy BROKER CAUGHT_POKEMON [ID_CORRELATIVO] [OK/FAIL]
 
-			} else if (argc == 6
-					&& strcmp(argv[2], "CATCH_POKEMON") == 0) {
+			} else if (argc == 6 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
+				//gameboy BROKER CATCH_POKEMON [POKEMON] [POSX] [POSY]
 
 			} else if (argc == 7) {
 
 				if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
+					//gameboy BROKER APPEARED_POKEMON [POKEMON] [POSX] [POSY] [ID_CORRELATIVO]
 
 				} else if (strcmp(argv[2], "NEW_POKEMON") == 0) {
-
+					//gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]
+					t_message_new* new;
+					new = create_message_new_long(argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
+					package = serialize_message_new(new);
 				} else {
 					exit(EXIT_FAILURE);
 				}
@@ -85,19 +89,20 @@ int main(int argc, char* argv[]) {
 			ip = config_get_string_value(config, "GAMECARD_IP");
 			port = config_get_string_value(config, "GAMECARD_PORT");
 			if (argc == 5 && strcmp(argv[2], "GET_POKEMON") == 0) {
+				//gameboy GAMECARD GET_POKEMON [POKEMON] [ID_MENSAJE]
 
-			} else if (argc == 7
-					&& strcmp(argv[2], "CATCH_POKEMON") == 0) {
+			} else if (argc == 7 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
+				//gameboy GAMECARD CATCH_POKEMON [POKEMON] [POSX] [POSY] [ID_MENSAJE]
 
-			} else if (argc == 8
-					&& strcmp(argv[2], "NEW_POKEMON") == 0) {
+			} else if (argc == 8 && strcmp(argv[2], "NEW_POKEMON") == 0) {
+				//gameboy GAMECARD NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD] [ID_MENSAJE]
 
 			} else {
 				exit(EXIT_FAILURE);
 			}
 
-		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6
-				&& strcmp(argv[2], "APPEARED_POKEMON") == 0) {
+		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6 && strcmp(argv[2], "APPEARED_POKEMON") == 0) {
+			//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]
 
 			ip = config_get_string_value(config, "TEAM_IP");
 			port = config_get_string_value(config, "TEAM_PORT");
@@ -105,12 +110,12 @@ int main(int argc, char* argv[]) {
 		} else {
 			exit(EXIT_FAILURE);
 		}
-		send(ip, port, package);
+		send_message(ip, port, package);
 
 	}
 
 	puts("ending gameboy");
-	log_destroy(log);
+	log_destroy(logger);
 	config_destroy(config);
 	return EXIT_SUCCESS;
 }
