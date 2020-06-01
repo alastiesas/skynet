@@ -157,6 +157,7 @@ typedef struct
 t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position);
 t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x, uint32_t position_y);
 t_message_catch* create_message_catch(char* pokemon_name, t_position* position);
+t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx, uint32_t posy);
 t_message_caught* create_message_caught(uint32_t correlative_id, bool result);
 t_message_get* create_message_get(char* pokemon_name);
 t_message_localized* create_message_localized(uint32_t correlative_id, char* pokemon_name, uint32_t position_amount, t_position* positions);

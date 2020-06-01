@@ -287,3 +287,22 @@ void* serializar_paquete(t_package* paquete, int bytes)
 	return magic;
 }
 */
+
+t_package* serialize_saludo(char* mensaje){
+
+	t_buffer* ptr_buffer = malloc(sizeof(t_buffer));
+	t_package* paquete = malloc(sizeof(t_package));
+
+	//meto la cod_op en el paquete
+	paquete->operation_code = PRUEBA;
+	//asigno el buffer que previamente reserve memoria
+	paquete->buffer = ptr_buffer;
+	//asigno el size del buffer
+	paquete->buffer->size = strlen(mensaje) + 1;
+	//Con el size calculado, reservo memoria para el payload
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+	//con memcpy() lleno el stream
+	memcpy(paquete->buffer->stream, mensaje, paquete->buffer->size);
+
+	return paquete;
+}

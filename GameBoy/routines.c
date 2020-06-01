@@ -1,5 +1,6 @@
 #include "gameboy.h"
 #include <conexion.h>
+#include <mensajes.h>
 
 void subscribe_timed(queue_code queue_code, int time) {
 
@@ -7,7 +8,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	port = config_get_string_value(config, "BROKER_PORT");
 	int32_t socket = connect_to_server(ip, port, logger);
 
-	uint32_t id = config_get_string_value(config, "ID");
+	char* id = config_get_string_value(config, "ID");
 	t_package* suscription_package = serialize_suscripcion(atoi(id), queue_code);
 
 	send_paquete(socket, suscription_package); /*pending2*/

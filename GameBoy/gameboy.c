@@ -15,7 +15,7 @@
 #include<commons/collections/list.h>
 #include <conexion.h>
 #include <mensajes.h>
-#include "routines.c"
+#include "gameboy.h"
 
 #define LOG_CONSOLE true /*pending2*/
 
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 		} else {
 			exit(EXIT_FAILURE);
 		}
-		subscribe_timed(queue_code, argv[3]);
+		subscribe_timed(queue_code, atoi(argv[3]));
 
 	} else {
 
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 
 	//serializar
 	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete = serialize_new(new); /*pending1
+	paquete = serialize_new(new); pending1
 
 	free(new->nombre);
 	free(new);*/

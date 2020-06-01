@@ -78,8 +78,7 @@ t_message_catch* create_message_catch(char* pokemon_name, t_position* position) 
 	catch->position = position;
 	return catch;
 }
-t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx,
-		uint32_t posy) {
+t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx, uint32_t posy) {
 	t_position *position = malloc(sizeof(t_position));
 	position->x = posx;
 	position->y = posy;

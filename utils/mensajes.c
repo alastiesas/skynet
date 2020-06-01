@@ -35,7 +35,7 @@ void* recibir_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger)
 int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 {
 
-	t_package* paquete = serialize_message(mensaje);
+	t_package* paquete = serialize_saludo(mensaje);
 
 
 	//ya se puede enviar el paquete
