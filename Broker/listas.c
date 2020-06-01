@@ -63,7 +63,7 @@ void imprimir_lista(t_list* lista, char* nombre){
 
 	for(i=0; i<tamanio; i++){
 		contenido = list_get(lista, i);
-		printf("%s[%d] vale: %d\n", nombre, i, contenido);
+		printf("%s[%d] vale: %d\n", nombre, i, (int) contenido);
 	}
 
 }
