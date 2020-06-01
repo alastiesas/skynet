@@ -21,7 +21,7 @@ void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_
 
 }
 
-void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas) {
+void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas) {
 
 	t_semaforos* my_semaphores;
 	uint32_t* count;

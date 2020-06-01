@@ -28,15 +28,15 @@ pthread_t thread;
 struct thread_args {
     int32_t socket;
     t_log* logger;
-    t_colas* colas;
-    t_suscriptores* suscriptores;
+    //t_colas* colas;
+   // t_suscribers* suscriptores;
 };
 
 void iniciar_servidor(char* puerto, t_log* logger);
 
 void esperar_cliente(int32_t socket_servidor, t_log* logger);
 
-void recibir_muchos_mensajes(void* input);
+void listen_messages(void* input);
 void process_request(operation_code cod_op, int32_t socket, t_log* logger);
 
 

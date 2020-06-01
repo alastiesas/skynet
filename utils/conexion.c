@@ -70,7 +70,7 @@ void esperar_cliente(int32_t socket_servidor, t_log* logger)
     struct thread_args* args = malloc(sizeof(struct thread_args));
     args->socket = socket_cliente;
     args->logger = logger;
-	pthread_create(&thread,NULL,(void*)recibir_muchos_mensajes, (void *)args);		//TODO comprobar errores de pthread_create
+	pthread_create(&thread,NULL,(void*)listen_messages, (void *)args);		//TODO comprobar errores de pthread_create
 
 //	pthread_detach(thread);
 //	free(args);		//liberar args una vez cerrado el hilo
@@ -79,7 +79,7 @@ void esperar_cliente(int32_t socket_servidor, t_log* logger)
 
 
 
-void recibir_muchos_mensajes(void* input)
+void listen_messages(void* input)
 {
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;

@@ -20,7 +20,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	args->socket = socket;
 	args->logger = logger;
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) recibir_muchos_mensajes, args); /*pending2*/
+	pthread_create(&thread, NULL, (void*) listen_messages, args); /*pending2*/
 
 	sleep(time);
 

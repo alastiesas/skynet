@@ -35,6 +35,42 @@ typedef struct
 
 } t_suscriber;
 
+typedef struct
+{
+	t_list* NEW_POKEMON;			//listas de t_pending* encolados
+	t_list* APPEARED_POKEMON;
+	t_list* GET_POKEMON;
+	t_list* LOCALIZED_POKEMON;
+	t_list* CATCH_POKEMON;
+	t_list* CAUGHT_POKEMON;
+
+	t_list* NEW_POKEMON_IDS;		//listas de ids encolados
+	t_list* APPEARED_POKEMON_IDS;
+	t_list* GET_POKEMON_IDS;
+	t_list* LOCALIZED_POKEMON_IDS;
+	t_list* CATCH_POKEMON_IDS;
+	t_list* CAUGHT_POKEMON_IDS;
+
+} t_queues;
+
+typedef struct
+{
+	t_list* NEW;
+	t_list* APPEARED;
+	t_list* GET;
+	t_list* LOCALIZED;
+	t_list* CATCH;
+	t_list* CAUGHT;
+
+} t_suscribers;
+
+struct broker_thread_args {
+    int32_t socket;
+    t_log* logger;
+    t_queues* colas;
+    t_suscribers* suscriptores;
+};
+
 pthread_mutex_t mutex_ID_global;
 uint32_t total_new_messages;
 uint32_t total_appeared_messages;
@@ -65,8 +101,8 @@ uint32_t size_subs_caught;
 t_log* logger;
 t_config* config;
 
-t_colas* queues;
-t_suscriptores* suscribers;
+t_queues* queues;
+t_suscribers* suscribers;
 t_semaforos* semaphores_new;
 t_semaforos* semaphores_appeared;
 t_semaforos* semaphores_get;
@@ -87,16 +123,16 @@ void cola_CAUGHT();
 void iniciar_servidor_broker();
 
 //atiende clientes en un nuevo hilo con la funcion broker_server_client()
-void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores);
+void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t_suscribers* suscriptores);
 
 //verifica si lo que se recibe es una suscripcion o un mensaje, y lo procesa segun corresponda
 void broker_serves_client(void* input);
 
 
-void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores);
+void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscribers* suscriptores);
 
 
-void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas);
+void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas);
 
 //TODO
 void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t total_queue_messages);

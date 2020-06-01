@@ -41,7 +41,7 @@ void iniciar_servidor_broker()
     	esperar_clientes(socket_servidor, logger, queues, suscribers);
 }
 
-void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_suscriptores* suscriptores)
+void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t_suscribers* suscriptores)
 {
 	pthread_t self = pthread_self();
 	struct sockaddr_in dir_cliente;
@@ -57,7 +57,7 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_
 		log_info(logger, "Conexion aceptada");
 
 
-    struct thread_args* args = malloc(sizeof(struct thread_args));
+    struct broker_thread_args* args = malloc(sizeof(struct broker_thread_args));
     args->socket = socket_cliente;
     args->logger = logger;
     args->colas = colas;
@@ -72,10 +72,10 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_
 
 
 void broker_serves_client(void* input){
-	int32_t socket = ((struct thread_args*)input)->socket;
-	t_log*	logger = ((struct thread_args*)input)->logger;
-	t_colas* colas = ((struct thread_args*)input)->colas;
-	t_suscriptores*	suscriptores = ((struct thread_args*)input)->suscriptores;
+	int32_t socket = ((struct broker_thread_args*)input)->socket;
+	t_log*	logger = ((struct broker_thread_args*)input)->logger;
+	t_queues* colas = ((struct broker_thread_args*)input)->colas;
+	t_suscribers*	suscriptores = ((struct broker_thread_args*)input)->suscriptores;
 
 	pthread_t self = pthread_self();
 	log_info(logger, "Se creo un thread %d para atender la conexion del cliente %d\n", self, socket);

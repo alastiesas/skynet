@@ -121,38 +121,6 @@ typedef struct {
 	bool result;
 } t_message_caught;
 
-//-------------------------Mover a Broker
-
-typedef struct
-{
-	t_list* NEW_POKEMON;
-	t_list* APPEARED_POKEMON;
-	t_list* GET_POKEMON;
-	t_list* LOCALIZED_POKEMON;
-	t_list* CATCH_POKEMON;
-	t_list* CAUGHT_POKEMON;
-
-	t_list* NEW_POKEMON_IDS;
-	t_list* APPEARED_POKEMON_IDS;
-	t_list* GET_POKEMON_IDS;
-	t_list* LOCALIZED_POKEMON_IDS;
-	t_list* CATCH_POKEMON_IDS;
-	t_list* CAUGHT_POKEMON_IDS;
-
-} t_colas;
-
-typedef struct
-{
-	t_list* NEW;
-	t_list* APPEARED;
-	t_list* GET;
-	t_list* LOCALIZED;
-	t_list* CATCH;
-	t_list* CAUGHT;
-
-} t_suscriptores;
-
-//-------------------------------------------------------
 
 t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position);
 t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x, uint32_t position_y);

@@ -39,8 +39,8 @@ void initialize_queues() {
 
 void specific_initialization() {
 
-	queues = malloc(sizeof(t_colas));
-	suscribers = malloc(sizeof(t_suscriptores));
+	queues = malloc(sizeof(t_queues));
+	suscribers = malloc(sizeof(t_suscribers));
 	semaphores_new = malloc(sizeof(t_semaforos));
 	semaphores_appeared = malloc(sizeof(t_semaforos));
 	semaphores_get = malloc(sizeof(t_semaforos));

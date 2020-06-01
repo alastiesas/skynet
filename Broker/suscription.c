@@ -20,7 +20,7 @@ void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_li
 
 }
 
-void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores) {
+void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscribers* suscriptores) {
 
 	//ya recibi la cod_op
 	//recibir el size del stream
