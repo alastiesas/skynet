@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <serialize.h>
 #include <conexion.h>
 #include <mensajes.h>
 #include <structs.h>
@@ -114,6 +115,12 @@ typedef struct
 
 } t_catch;
 
+typedef struct
+{
+	pthread_t tid;
+	t_target target;
+	uint32_t message_id;
+} t_message_team;
 
 
 int size_array (char*);
@@ -160,6 +167,8 @@ void add_catching(t_list* list, char* pokemon);
 bool pokemon_is_needed(char* pokemon);
 void* sender_thread();
 
+
+void subscribe(queue_code queue_code);
 
 
 int size_array (char* array)
@@ -693,7 +702,7 @@ void short_term_scheduler()
 				printf("aca llego bien11\n");
 				sem_wait(&sem_messages_list);
 				printf("aca llego bien2\n");
-				t_message_catch* message = malloc(sizeof(t_message_catch));
+				t_message_team* message = malloc(sizeof(t_message_team));
 				message->tid = trainer_exec->tid;
 				//message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
 				list_add(messages_list,message);
@@ -809,12 +818,27 @@ void* exec_thread()
 
 void* sender_thread()
 {
+	/*
 	sem_init(&sem_messages_list, 0, 0);
 	sem_init(&sem_messages, 0, 0);
 	while(1){
 		sem_wait(&sem_messages);
 	}
+	*/
 	//send al broker, (pokemon, posicion, el entrenador)
+
+
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, subscribe, NULL);
+	pthread_join(tid, NULL);
+
+}
+
+void* listener_thread()
+{
+	//ENVIAMOS SUBSCRIPCION Y ESCUCHAMOS
+
 
 }
 
@@ -827,7 +851,7 @@ void subscribe(queue_code queue_code) {
 	uint32_t id = config_get_string_value(config, "ID");
 	t_package* package = serialize_suscripcion(atoi(id), queue_code);
 
-	send_paquete(socket, package); /*pending2*/
+	send_paquete(socket, package);
 	if (receive_ACK(socket, log) == -1) {
 		exit(EXIT_FAILURE);
 	}
@@ -839,7 +863,7 @@ void subscribe(queue_code queue_code) {
 	args->socket = socket;
 	args->logger = log;
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) listen_messages, args); /*pending2*/
+	pthread_create(&thread, NULL, (void*) listen_messages, args);
 
 
 	//Al completar el objetivo global, enviar tres mensajes al broker con ID de proceso e ID de cola asi puede liberar memoria

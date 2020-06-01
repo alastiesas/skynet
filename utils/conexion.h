@@ -20,6 +20,7 @@
 #include<commons/string.h>
 #include "serialize.h"
 #include "structs.h"
+#include "mensajes.h"
 
 #define TIEMPO_REINTENTO 10
 

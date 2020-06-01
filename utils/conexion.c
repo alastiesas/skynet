@@ -5,9 +5,8 @@
  *      Author: utnso
  */
 #include "conexion.h"
-#include "mensajes.h"
 #define _GNU_SOURCE		//para pthread_setname_np
-#include<pthread.h>
+
 /*
 void iniciar_servidor(char* puerto, t_log* logger)
 {

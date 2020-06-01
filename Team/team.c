@@ -29,21 +29,15 @@ int main(void)
 	char* ip;
 	char* puerto;
 
+	//config = config_create("team.config");
+	//log = log_create("team.log", "team", LOG_CONSOLE, LOG_LEVEL_INFO);
+
+	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
+	log_info(log, "hola soy lasti123");
+
 	config = config_create("team.config");
-	log = log_create("team.log", "team", LOG_CONSOLE, LOG_LEVEL_INFO);
-
-
-	/*// DESDE ACA DEJAMOS COMENTADO
-	 *
-
-	t_log* logger;
-	t_config* config;
-
-	logger = iniciar_logger();
-	log_info(logger, "hola soy lasti123");
-
-	config = leer_config();
 	bool test = config_has_property(config, "IP");
+	/*
 	printf(test ? "true" : "false");
 	ip = config_get_string_value(config, "IP");
 
@@ -172,8 +166,8 @@ int main(void)
 	char* message;
 	message = recibir_mensaje(conexion);
 	//loguear mensaje recibido
-	log_info(logger, message);
-	terminar_programa(conexion, logger, config);
+	log_info(log, message);
+	terminar_programa(conexion, log, config);
 	*/
   /*
 	char* string = "Team";
