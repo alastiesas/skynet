@@ -102,11 +102,44 @@ void broker_serves_client(void* input){
 	else
 		first_process(cod_op, socket, logger, colas);
 
-
 }
 
 
+t_package* broker_serialize(queue_code queue_code, void* message){
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_package* paquete = malloc(sizeof(t_package));
+	operation_code cod_op;
 
+	switch(queue_code){
+	case COLA_NEW:
+		cod_op = OPERATION_NEW;
+		break;
+	case COLA_APPEARED:
+		cod_op = OPERATION_APPEARED;
+		break;
+	case COLA_GET:
+		cod_op = OPERATION_GET;
+		break;
+	case COLA_LOCALIZED:
+		cod_op = OPERATION_LOCALIZED;
+		break;
+	case COLA_CATCH:
+		cod_op = OPERATION_CATCH;
+		break;
+	case COLA_CAUGHT:
+		cod_op = OPERATION_CAUGHT;
+		break;
+	}
+
+	paquete->operation_code = cod_op;
+	paquete->buffer = buffer;
+	paquete->buffer->size = sizeof(message); //TODO verificar que sizeof(message) este bien
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+	//con memcpy() lleno el stream
+	memcpy(paquete->buffer->stream, message, paquete->buffer->size);
+
+	return paquete;
+}
 
 
 

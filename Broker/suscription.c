@@ -118,20 +118,19 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 //TODO enviar mensajes en la cache del broker
 
 
-
 	send_received_message(suscriber, my_semaphores, my_queue, my_queueIDs, *count);	//loop infinito
 
 }
 
 void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t total_queue_messages){
 
-	//bool condicion;
-
 	t_list* current_global_message_ids = list_create();
 	t_list* not_sent_ids = list_create();
 	void* elemento;
 	uint32_t current_total_count;
-
+	t_pending* mensaje;
+	t_package* paquete;
+	int32_t result;
 
 	while(1){
 
@@ -144,8 +143,6 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
 
 		no_enviados_lista(current_global_message_ids, suscriber->sent_messages, not_sent_ids);
-
-		//condicion = (!list_is_empty(not_sent_ids));
 
 
 		pthread_mutex_lock(&(semaforos->mutex_cola));
@@ -162,17 +159,34 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 			elemento = list_remove(not_sent_ids, 0);
 
 			//obtener el mensaje con ese ID
+			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola);
+			paquete = broker_serialize(suscriber->suscribed_queue, mensaje);
 
 			//enviar el mensaje
+			result = send_paquete(suscriber->socket, paquete);
 
 			//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
-
+			if(result == -1){
+				suscriber->connected = false;
+				log_info(logger, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
+				pthread_exit(NULL);
+			}
 			//agregar el ID del mensaje como enviado en suscriber->sent_messages
+			list_add(suscriber->sent_messages, elemento);
 
 			//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
+			pthread_mutex_lock(&(semaforos->mutex_cola));
+				list_add(mensaje->subs_enviados, suscriber->ID_suscriber);
+			pthread_mutex_unlock(&(semaforos->mutex_cola));
 
 			//esperar confirmacion del mensaje
+				//receive_ACK();	//TODO falta hacer el send_ACK() del lado del gameboy
+
 			//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
+			pthread_mutex_lock(&(semaforos->mutex_cola));
+				list_add(mensaje->subs_confirmados, suscriber->ID_suscriber);
+			pthread_mutex_unlock(&(semaforos->mutex_cola));
+
 		}
 
 	}
