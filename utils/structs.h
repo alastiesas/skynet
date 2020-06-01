@@ -13,10 +13,8 @@
 #include<commons/collections/queue.h>
 #include <semaphore.h>
 #include <stdbool.h>
-
-//
 #include <stdio.h>
-//
+
 
 typedef enum {
 	OPERATION_NEW = 1,
@@ -26,7 +24,8 @@ typedef enum {
 	OPERATION_CATCH = 5,
 	OPERATION_CAUGHT = 6,
 	OPERATION_SUSCRIPTION = 7,
-	OPERATION_CONFIRMATION = 8
+	OPERATION_CONFIRMATION = 8,
+	OPERATION_END = 9
 } operation_code;
 
 typedef enum
@@ -50,6 +49,8 @@ typedef enum
 
 }process_code;
 
+//-----------------------------------------------
+
 typedef struct
 {
 	int32_t size;
@@ -61,6 +62,8 @@ typedef struct {
 	t_buffer* buffer;
 } t_package;
 
+//-----------------------------------------------
+
 typedef struct {
 	uint32_t x;
 	uint32_t y;
@@ -71,16 +74,42 @@ typedef struct {
 	uint32_t amount;
 } t_location;
 
+//---------------------------------------------Mensajes
+
 typedef struct {
 	uint32_t id;
-	uint32_t pokemon_name_size;
+	uint32_t size_pokemon_name;
+	char* pokemon_name;
+	t_location* location;
+} t_message_new;
+
+typedef struct {
+	uint32_t id;
+	uint32_t correlative_id;
+	uint32_t size_pokemon_name;
 	char* pokemon_name;
 	t_position* position;
 } t_message_appeared;
 
 typedef struct {
 	uint32_t id;
-	uint32_t pokemon_name_size;
+	uint32_t size_pokemon_name;
+	char* pokemon_name;
+} t_message_get;
+
+//pending
+typedef struct {
+	uint32_t id;
+	uint32_t correlative_id;
+	uint32_t size_pokemon_name;
+	char* pokemon_name;
+	uint32_t position_amount; //cantidad de locaciones -> sizeof(t_location)*location_amount para el tamaño de la lista en bytes
+	t_position* positions; //lista de locaciones (posicion + cantidad)
+} t_message_localized;
+
+typedef struct {
+	uint32_t id;
+	uint32_t size_pokemon_name;
 	char* pokemon_name;
 	t_position* position;
 } t_message_catch;
@@ -91,32 +120,11 @@ typedef struct {
 	bool result;
 } t_message_caught;
 
-typedef struct {
-	uint32_t id;
-	uint32_t pokemon_name_size;
-	char* pokemon_name;
-} t_message_get;
-
-//pending
-typedef struct {
-	uint32_t id;
-	uint32_t correlative_id;
-	uint32_t pokemon_name_size;
-	char* pokemon_name;
-	uint32_t position_amount; //cantidad de locaciones -> sizeof(t_location)*location_amount para el tamaño de la lista en bytes
-	t_position* positions; //lista de locaciones (posicion + cantidad)
-} t_message_localized;
-
-typedef struct {
-	uint32_t id;
-	uint32_t pokemon_name_size;
-	char* pokemon_name;
-	t_location* location;
-} t_message_new;
+//-------------------------Mover a Broker
 
 typedef struct
 {
-	t_list* NEW_POKEMON;		//asi nombra a las colas en t0do el TP
+	t_list* NEW_POKEMON;
 	t_list* APPEARED_POKEMON;
 	t_list* GET_POKEMON;
 	t_list* LOCALIZED_POKEMON;
@@ -143,6 +151,7 @@ typedef struct
 
 } t_suscriptores;
 
+//-------------------------------------------------------
 
 t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position);
 t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x, uint32_t position_y);

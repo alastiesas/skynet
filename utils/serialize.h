@@ -33,27 +33,19 @@ t_package* serialize_message(char* mensaje);
 t_package* serialize_suscripcion(uint32_t ID_PROCESO, queue_code cola);
 
 //Recibe un t_new y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
-t_package* serialize_new(t_new* new);
+t_package* serialize_new(t_message_new* new);
+t_package* serialize_new(t_message_new* new);
+t_package* serialize_new(t_message_new* new);
+t_package* serialize_new(t_message_new* new);
+t_package* serialize_new(t_message_new* new);
+t_package* serialize_new(t_message_new* new);
 
 //Recibe un t_catch y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
-t_package* serialize_catch(t_catch* catch);
+t_package* serialize_catch(t_message_catch* catch);
 
 
 
 
-//---Funciones sin usar
-
-void* serializar_paquete(t_package* paquete, int bytes);
-
-
-//FROM serializer.h
-/*
-void* serialize_new(t_new* message, uint32_t* bytes);
-void* serialize_appeared(t_appeared* message, uint32_t *bytes);
-void* serialize_get(t_get* message, uint32_t *bytes);
-void* serialize_localized(t_localized* message, uint32_t *bytes);
-void* serialize_catch(t_catch* message, uint32_t *bytes);
-void* serialize_caught(t_caught* message, uint32_t *bytes);
-*/
+//void* serializar_paquete(t_package* paquete, int bytes);
 
 #endif /* SERIALIZE_H_ */

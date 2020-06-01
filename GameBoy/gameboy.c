@@ -77,6 +77,7 @@ int main(int argc, char* argv[]) {
 					t_message_new* new;
 					new = create_message_new_long(argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
 					package = serialize_message_new(new);
+					destroy_message_new(new);
 				} else {
 					exit(EXIT_FAILURE);
 				}

@@ -57,14 +57,14 @@ t_package* serialize_suscripcion(uint32_t ID_proceso, queue_code cola){
 	return paquete;
 }
 
-
 t_package* serialize_message_new(t_message_new* message_new) {
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_package* package = malloc(sizeof(t_package));
 
-	int32_t buffer_size = sizeof(message_new->id)
-			+ message_new->pokemon_name_size + sizeof(message_new->pokemon_name)
+	uint32_t buffer_size = sizeof(message_new->id)
+			+ sizeof(message_new->size_pokemon_name)
+			+ message_new->size_pokemon_name
 			+ sizeof(message_new->location->position->x)
 			+ sizeof(message_new->location->position->y)
 			+ sizeof(message_new->location->amount);
@@ -77,10 +77,10 @@ t_package* serialize_message_new(t_message_new* message_new) {
 	int offset = 0;
 	memcpy(package->buffer->stream + offset, &(message_new->id), sizeof(message_new->id));
 	offset += sizeof(message_new->id);
-	memcpy(package->buffer->stream + offset, &(message_new->pokemon_name_size),	sizeof(message_new->pokemon_name_size));
-	offset += sizeof(message_new->pokemon_name_size);
-	memcpy(package->buffer->stream + offset, message_new->pokemon_name,	message_new->pokemon_name_size);
-	offset += message_new->pokemon_name_size;
+	memcpy(package->buffer->stream + offset, &(message_new->size_pokemon_name),	sizeof(message_new->size_pokemon_name));
+	offset += sizeof(message_new->size_pokemon_name);
+	memcpy(package->buffer->stream + offset, message_new->pokemon_name,	message_new->size_pokemon_name);
+	offset += message_new->size_pokemon_name;
 	memcpy(package->buffer->stream + offset, &(message_new->location->position->x),	sizeof(message_new->location->position->x));
 	offset += sizeof(message_new->location->position->x);
 	memcpy(package->buffer->stream + offset, &(message_new->location->position->y),	sizeof(message_new->location->position->y));
@@ -91,20 +91,131 @@ t_package* serialize_message_new(t_message_new* message_new) {
 	return package;
 }
 
+t_package* serialize_appeared(t_message_appeared* message) {
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_package* package = malloc(sizeof(t_package));
 
-/*t_package* serialize_catch(t_catch* catch){
+	uint32_t buffer_size = sizeof(uint32_t)*5 + sizeof(char) * (message->size_pokemon_name);
 
-	if(catch->nombre == NULL)
+	package->operation_code = OPERATION_APPEARED;
+	package->buffer = buffer;
+	package->buffer->size = buffer_size;
+	package->buffer->stream = malloc(package->buffer->size);
+	void* serialized = package->buffer->stream;
+
+	uint32_t size = 0;
+	size = sizeof(uint32_t);
+	uint32_t offset = 0;
+
+	//message_id
+	memcpy(serialized + offset, &message->id, size);
+	offset += size;
+//ID CORRELATIVO
+	memcpy(serialized + offset, &message->correlative_id, size);
+	offset += size;
+	//size_pokemon
+	memcpy(serialized + offset, &message->size_pokemon_name, size);
+	offset += size;
+	//pokemon
+	size = sizeof(char) * message->size_pokemon_name;
+	memcpy(serialized + offset, message->pokemon_name, size);
+	offset += size;
+	//position x
+	size = sizeof(uint32_t);
+	memcpy(serialized + offset, &message->position->x, size);
+	offset += size;
+	//position y
+	memcpy(serialized + offset, &message->position->y, size);
+	offset += size;
+
+	return package;
+}
+
+t_package* serialize_get(t_message_get* message) {
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_package* package = malloc(sizeof(t_package));
+
+	uint32_t buffer_size = sizeof(uint32_t)*2 + sizeof(char) * (message->size_pokemon_name);
+
+	package->operation_code = OPERATION_GET;
+	package->buffer = buffer;
+	package->buffer->size = buffer_size;
+	package->buffer->stream = malloc(package->buffer->size);
+	void* serialized = package->buffer->stream;
+
+	uint32_t offset = 0;
+	uint32_t size = 0;
+	size = sizeof(uint32_t);
+
+	//message_id
+	memcpy(serialized + offset, &message->id, size);
+	offset += size;
+	//size_pokemon
+	memcpy(serialized + offset, &message->size_pokemon_name, size);
+	offset += size;
+	//pokemon
+	size = sizeof(char) * message->size_pokemon_name;
+	memcpy(serialized + offset, message->pokemon_name, size);
+	offset += size;
+
+	return package;
+}
+
+t_package* serialize_localized(t_message_localized* message) {
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_package* package = malloc(sizeof(t_package));
+
+	uint32_t buffer_size = sizeof(uint32_t)*4 + sizeof(char) * (message->size_pokemon_name) + sizeof(uint32_t)*2*(message->position_amount);
+
+	package->operation_code = OPERATION_LOCALIZED;
+	package->buffer = buffer;
+	package->buffer->size = buffer_size;
+	package->buffer->stream = malloc(package->buffer->size);
+	void* serialized = package->buffer->stream;
+
+	uint32_t offset = 0;
+	uint32_t size = 0;
+	size = sizeof(uint32_t);
+
+	//message_id
+	memcpy(serialized + offset, &message->id, size);
+	offset += size;
+	//correlative_id
+	memcpy(serialized + offset, &message->correlative_id, size);
+	offset += size;
+	//size_pokemon
+	memcpy(serialized + offset, &message->size_pokemon_name, size);
+	offset += size;
+	//pokemon
+	size = sizeof(char) * message->size_pokemon_name;
+	memcpy(serialized + offset, message->pokemon_name, size);
+	offset += size;
+	//position_aomunt
+	size = sizeof(uint32_t);
+	memcpy(serialized + offset, &message->position_amount, size);
+	offset += size;
+	for(int i = 0; i < message->position_amount; i++){
+		memcpy(serialized + offset, &message->positions[i].x, size);
+		offset += size;
+		memcpy(serialized + offset, &message->positions[i].y, size);
+		offset += size;
+	}
+
+	return package;
+}
+
+t_package* serialize_catch(t_message_catch* catch){
+
+	if(catch->pokemon_name == NULL)
 		printf("ERROR FALTA COMPLETAR CAMPOS DEL MENSAJE CATCH");	//no se pueden comprobar enteros sin inicializar
 
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_package* paquete = malloc(sizeof(t_package));
-//	void* stream = paquete->buffer->stream;
 
-	int32_t buffer_size = sizeof(catch->id) + sizeof(catch->size_nombre) + catch->size_nombre + sizeof(catch->posX) + sizeof(catch->posY);
+	uint32_t buffer_size = sizeof(catch->id) + sizeof(catch->size_pokemon_name) + catch->size_pokemon_name + sizeof(catch->position->x) + sizeof(catch->position->y);
 
 	//meto la cod_op en el paquete
-	paquete->codigo_operacion = OPERATION_CATCH;
+	paquete->operation_code = OPERATION_CATCH;
 	//asigno el buffer que previamente reserve memoria
 	paquete->buffer = buffer;
 	//asigno el size del buffer
@@ -116,30 +227,51 @@ t_package* serialize_message_new(t_message_new* message_new) {
 	//con memcpy() lleno el stream
 	memcpy(paquete->buffer->stream + offset, &(catch->id), sizeof(catch->id));
 	offset += sizeof(catch->id);
-	memcpy(paquete->buffer->stream + offset, &(catch->size_nombre), sizeof(catch->size_nombre));
-	offset += sizeof(catch->size_nombre);
-	memcpy(paquete->buffer->stream + offset, catch->nombre, catch->size_nombre);
-	offset += catch->size_nombre;
-	memcpy(paquete->buffer->stream + offset, &(catch->posX), sizeof(catch->posX));
-	offset += sizeof(catch->posX);
-	memcpy(paquete->buffer->stream + offset, &(catch->posY), sizeof(catch->posY));
-	offset += sizeof(catch->posY);
+	memcpy(paquete->buffer->stream + offset, &(catch->size_pokemon_name), sizeof(catch->size_pokemon_name));
+	offset += sizeof(catch->size_pokemon_name);
+	memcpy(paquete->buffer->stream + offset, catch->pokemon_name, catch->size_pokemon_name);
+	offset += catch->size_pokemon_name;
+	memcpy(paquete->buffer->stream + offset, &(catch->position->x), sizeof(catch->position->x));
+	offset += sizeof(catch->position->x);
+	memcpy(paquete->buffer->stream + offset, &(catch->position->y), sizeof(catch->position->y));
+	offset += sizeof(catch->position->y);
 
 
 	return paquete;
-}*/
+}
+
+t_package* serialize_caught(t_message_caught* message) {
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_package* package = malloc(sizeof(t_package));
+
+	uint32_t buffer_size = sizeof(uint32_t)*2 + sizeof(bool);
+
+	package->operation_code = OPERATION_CAUGHT;
+	package->buffer = buffer;
+	package->buffer->size = buffer_size;
+	package->buffer->stream = malloc(package->buffer->size);
+	void* serialized = package->buffer->stream;
+
+	uint32_t offset = 0;
+	uint32_t size = 0;
+	size = sizeof(uint32_t);
+
+	//message_id
+	memcpy(serialized + offset, &message->id, size);
+	offset += size;
+	//correlative_id
+	memcpy(serialized + offset, &message->correlative_id, size);
+	offset += size;
+	//result
+	size = sizeof(bool);
+	memcpy(serialized + offset, &message->result, size);
+	offset += size;
 
 
-
-
-
-
-
-
+	return package;
+}
 
 /*
-
-
 void* serializar_paquete(t_package* paquete, int bytes)
 {
 	void * magic = malloc(bytes);
@@ -153,189 +285,5 @@ void* serializar_paquete(t_package* paquete, int bytes)
 	desplazamiento+= paquete->buffer->size;
 
 	return magic;
-}
-
-
-//FROM serializer.c
-
-
-
-
-//serializadores
-void* serialize_new(t_new* message, uint32_t* bytes) {
-	*bytes = sizeof(uint32_t)*6 + sizeof(char) * (message->size_pokemon);
-	void* serialized = malloc(*bytes);
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	//operation code
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->operation_code, size);
-	offset += size;
-	//message_id
-	memcpy(serialized + offset, &message->message_id, size);
-	offset += size;
-	//size_pokemon
-	memcpy(serialized + offset, &message->size_pokemon, size);
-	offset += size;
-	//pokemon
-	size = sizeof(char) * message->size_pokemon;
-	memcpy(serialized + offset, message->pokemon, size);
-	offset += size;
-	//position x
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->location->position->x, size);
-	offset += size;
-	//position y
-	memcpy(serialized + offset, &message->location->position->y, size);
-	offset += size;
-	//cantidad
-	memcpy(serialized + offset, &message->location->amount, size);
-	offset += size;
-
-	return serialized;
-}
-
-void* serialize_appeared(t_appeared* message, uint32_t *bytes) {
-	*bytes = sizeof(uint32_t)*5 + sizeof(char) * (message->size_pokemon);
-	void* serialized = malloc(*bytes);
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	//operation code
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->operation_code, size);
-	offset += size;
-	//message_id
-	memcpy(serialized + offset, &message->message_id, size);
-	offset += size;
-	//size_pokemon
-	memcpy(serialized + offset, &message->size_pokemon, size);
-	offset += size;
-	//pokemon
-	size = sizeof(char) * message->size_pokemon;
-	memcpy(serialized + offset, message->pokemon, size);
-	offset += size;
-	//position x
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->position->x, size);
-	offset += size;
-	//position y
-	memcpy(serialized + offset, &message->position->y, size);
-	offset += size;
-
-	return serialized;
-}
-
-void* serialize_get(t_get* message, uint32_t *bytes) {
-	*bytes = sizeof(uint32_t)*3 + sizeof(char) * (message->size_pokemon);
-	void* serialized = malloc(*bytes);
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	//operation code
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->operation_code, size);
-	offset += size;
-	//message_id
-	memcpy(serialized + offset, &message->message_id, size);
-	offset += size;
-	//size_pokemon
-	memcpy(serialized + offset, &message->size_pokemon, size);
-	offset += size;
-	//pokemon
-	size = sizeof(char) * message->size_pokemon;
-	memcpy(serialized + offset, message->pokemon, size);
-	offset += size;
-
-	return serialized;
-}
-
-void* serialize_localized(t_localized* message, uint32_t *bytes) {
-	*bytes = sizeof(uint32_t)*5 + sizeof(char) * (message->size_pokemon) + sizeof(uint32_t)*2*(message->position_amount);
-	void* serialized = malloc(*bytes);
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	//operation code
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->operation_code, size);
-	offset += size;
-	//message_id
-	memcpy(serialized + offset, &message->message_id, size);
-	offset += size;
-	//correlative_id
-	memcpy(serialized + offset, &message->correlative_id, size);
-	offset += size;
-	//size_pokemon
-	memcpy(serialized + offset, &message->size_pokemon, size);
-	offset += size;
-	//pokemon
-	size = sizeof(char) * message->size_pokemon;
-	memcpy(serialized + offset, message->pokemon, size);
-	offset += size;
-	//position_aomunt
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->position_amount, size);
-	offset += size;
-	for(int i = 0; i < message->position_amount; i++){
-		memcpy(serialized + offset, &message->positions[i].x, size);
-		offset += size;
-		memcpy(serialized + offset, &message->positions[i].y, size);
-		offset += size;
-	}
-
-	return serialized;
-}
-
-void* serialize_catch(t_catch* message, uint32_t *bytes) {
-	*bytes = sizeof(uint32_t)*5 + sizeof(char) * (message->size_pokemon);
-	void* serialized = malloc(*bytes);
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	//operation code
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->operation_code, size);
-	offset += size;
-	//message_id
-	memcpy(serialized + offset, &message->message_id, size);
-	offset += size;
-	//size_pokemon
-	memcpy(serialized + offset, &message->size_pokemon, size);
-	offset += size;
-	//pokemon
-	size = sizeof(char) * message->size_pokemon;
-	memcpy(serialized + offset, message->pokemon, size);
-	offset += size;
-	//position x
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->position->x, size);
-	offset += size;
-	//position y
-	memcpy(serialized + offset, &message->position->y, size);
-	offset += size;
-
-	return serialized;
-}
-
-
-void* serialize_caught(t_caught* message, uint32_t *bytes) {
-	*bytes = sizeof(uint32_t)*3 + sizeof(bool);
-	void* serialized = malloc(*bytes);
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	//operation code
-	size = sizeof(uint32_t);
-	memcpy(serialized + offset, &message->operation_code, size);
-	offset += size;
-	//message_id
-	memcpy(serialized + offset, &message->message_id, size);
-	offset += size;
-	//correlative_id
-	memcpy(serialized + offset, &message->correlative_id, size);
-	offset += size;
-	//result
-	size = sizeof(bool);
-	memcpy(serialized + offset, &message->result, size);
-	offset += size;
-
-
-	return serialized;
 }
 */

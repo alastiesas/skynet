@@ -110,9 +110,9 @@ typedef struct
 typedef struct
 {
 	pthread_t tid;
-	t_catch* message;
+	t_message_catch* message;
 
-} t_message_catch;
+} t_catch;
 
 
 
