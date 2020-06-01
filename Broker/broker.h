@@ -11,7 +11,6 @@
 #include<commons/collections/queue.h>
 #include <conexion.h>
 #include <mensajes.h>
-#include "listas.h"
 
 char* IP_BROKER;
 char* PORT;
@@ -24,6 +23,8 @@ typedef struct
 	void* datos_mensaje;
 
 } t_pending;
+
+#include "listas.h"
 
 typedef struct
 {
@@ -171,7 +172,7 @@ void termination();
 
 void specific_termination();
 
-
+t_package* broker_serialize(queue_code queue_code, void* message);
 
 
 
