@@ -7,6 +7,7 @@
 t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position) {
 	t_message_appeared* appeared = malloc(sizeof(t_message_appeared));
 	appeared->id = 0; //El Broker se encarga de generar este dato
+	appeared->correlative_id = 0; //TODO se debe pasar por constructor?
 	appeared->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
 	appeared->pokemon_name = malloc(appeared->size_pokemon_name);
 	strcpy(appeared->pokemon_name, pokemon_name);

@@ -85,7 +85,7 @@ void recibir_muchos_mensajes(void* input)
 	t_log*	logger = ((struct thread_args*)input)->logger;
 
 	pthread_t self = pthread_self();
-	log_info(logger, "Se creo un thread %d para atender la conexion del %d\n", self, socket);
+	//log_info(logger, "Se creo un thread %d para atender la conexion del %d\n", self, socket);
 
 	char modulo[16];
 	pthread_getname_np(self, modulo, 16);

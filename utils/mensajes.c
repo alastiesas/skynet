@@ -38,7 +38,7 @@ int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 	t_package* paquete = serialize_message(mensaje);
 
 
-//ya se puede enviar el paquete
+	//ya se puede enviar el paquete
 	int32_t result;
 	log_info(logger, "Intentando enviar");
 	if((result = send_paquete(socket, paquete)) == -1)
@@ -46,8 +46,8 @@ int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 	else
 		log_info(logger, "Se enviaron %d bytes", result);
 
-//TODO se debe recibir la confirmacion del mensaje
-//	receive_ACK();
+	//TODO se debe recibir la confirmacion del mensaje
+	//	receive_ACK();
 
 	return result;
 }
@@ -59,7 +59,7 @@ int32_t send_catch(t_message_catch* catch, uint32_t socket, t_log* logger){
 	t_package* paquete = serialize_catch(catch);
 
 
-//ya se puede enviar el paquete
+	//ya se puede enviar el paquete
 	int32_t result;
 	log_info(logger, "Intentando enviar");
 	if((result = send_paquete(socket, paquete)) == -1)
@@ -67,8 +67,8 @@ int32_t send_catch(t_message_catch* catch, uint32_t socket, t_log* logger){
 	else
 		log_info(logger, "Se enviaron %d bytes", result);
 
-//TODO se debe recibir la confirmacion del mensaje
-//	receive_ACK();
+	//TODO se debe recibir la confirmacion del mensaje
+	//	receive_ACK();
 
 	return result;
 
@@ -145,7 +145,7 @@ uint32_t receive_size(uint32_t socket, t_log* logger){
 		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", size);
 
 
-		return size;
+	return size;
 
 }
 
@@ -161,7 +161,7 @@ uint32_t receive_ID_proceso(uint32_t socket, t_log* logger){
 		log_info(logger, "Se recibio el ID del proceso: %d\n", ID_proceso);
 
 
-		return 0; //success
+	return 0; //success
 
 }
 
@@ -251,7 +251,7 @@ t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* l
 	else
 		log_info(logger, "size_nombre de catch recibido: %d", catch->size_pokemon_name);
 
-catch->pokemon_name = malloc(catch->size_pokemon_name);
+	catch->pokemon_name = malloc(catch->size_pokemon_name);
 
 	//recibir nombre de catch
 	if(recv(socket_cliente, catch->pokemon_name, catch->size_pokemon_name, MSG_WAITALL) == -1)
@@ -286,15 +286,15 @@ catch->pokemon_name = malloc(catch->size_pokemon_name);
 t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t mi_thread){
 
 	char * file = string_new();
-		string_append(&file, mi_nombre);
-		string_append(&file, "_");
-		string_append(&file, proceso_a_conectar);
-		string_append(&file, ".log");
+	string_append(&file, mi_nombre);
+	string_append(&file, "_");
+	string_append(&file, proceso_a_conectar);
+	string_append(&file, ".log");
 	char * nombre_logger = string_new();
-		string_append(&nombre_logger, "Conexion_con_");
-		string_append(&nombre_logger, proceso_a_conectar);
+	string_append(&nombre_logger, "Conexion_con_");
+	string_append(&nombre_logger, proceso_a_conectar);
 
-//Se crea el logger para el thread especifico
+	//Se crea el logger para el thread especifico
 	t_log* logger;
 	if((logger = log_create(file, nombre_logger, LOG_CONSOLE, LOG_LEVEL_INFO)) == NULL){
 		puts("No se pudo crear el log");
@@ -302,14 +302,14 @@ t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t 
 	else
 		log_info(logger, "Log del %s creado", mi_nombre);
 
-//Asigno como nombre de este hilo al proceso que va a conectar
-		log_debug(logger, "id del thread: '%lu'\n", mi_thread);
-		char nombre[16];	//minimo es 16
-		pthread_setname_np(mi_thread, proceso_a_conectar);
-		pthread_getname_np(mi_thread, nombre, 16);
-		log_info(logger, "Proceso a conectar: %s\n", nombre);
+	//Asigno como nombre de este hilo al proceso que va a conectar
+	log_debug(logger, "id del thread: '%lu'\n", mi_thread);
+	char nombre[16];	//minimo es 16
+	pthread_setname_np(mi_thread, proceso_a_conectar);
+	pthread_getname_np(mi_thread, nombre, 16);
+	log_info(logger, "Proceso a conectar: %s\n", nombre);
 
-return logger;
+	return logger;
 
 
 }
@@ -317,13 +317,13 @@ return logger;
 void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 
 	char* mensaje = string_new();
-		string_append(&mensaje, "Buen dia ");
-		string_append(&mensaje, el);
-		string_append(&mensaje, " soy el ");
-		string_append(&mensaje, yo);
+	string_append(&mensaje, "Buen dia ");
+	string_append(&mensaje, el);
+	string_append(&mensaje, " soy el ");
+	string_append(&mensaje, yo);
 
 	uint32_t size = strlen(mensaje)+1;
-			//size = sizeof(mensaje);	por que no se puede hacer sizeof??????
+	//size = sizeof(mensaje);	por que no se puede hacer sizeof??????
 
 	t_message_catch* catch = malloc(sizeof(t_message_catch));
 	catch->id = 2;
@@ -339,7 +339,7 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 		else
 			send_catch(catch, socket, logger);
 
-	//recibir mensaje
+		//recibir mensaje
 		log_info(logger, "Intentando recibir el paquete por vez numero %d\n", vez);
 
 		operation_code codigo;
@@ -354,9 +354,9 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 			log_info(logger, "Se recibe un paquete de tipo mensaje");
 
 
-		buffer = recibir_mensaje(socket, &size, logger);
+			buffer = recibir_mensaje(socket, &size, logger);
 
-		//loguear mensaje recibido
+			//loguear mensaje recibido
 			log_info(logger, "Mensaje rerespuesta del %s recibido: %s\n", el, buffer);
 			free(buffer);
 			break;
@@ -366,9 +366,9 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 			log_info(logger, "Se recibe un paquete de tipo CATCH");
 
 
-		catch2 = receive_catch(socket, &size, logger);
+			catch2 = receive_catch(socket, &size, logger);
 
-		//loguear mensaje recibido
+			//loguear mensaje recibido
 			log_info(logger, "Mensaje rerespuesta del %s recibido:\n id: %d\n size_nombre: %d\n nombre: %s\n posX: %d\n posY: %d \n", el, catch2->id, catch2->size_pokemon_name, catch2->pokemon_name, catch2->position->x, catch2->position->y);
 
 			free(catch2->pokemon_name);	//faltan frees

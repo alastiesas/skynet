@@ -17,10 +17,8 @@
 #include <mensajes.h>
 #include "routines.c"
 
-
 #define LOG_CONSOLE true /*pending2*/
 
-#define IP "127.0.0.1" /*pending2*/
 
 /*pending3*/
 int main(int argc, char* argv[]) {
@@ -58,20 +56,33 @@ int main(int argc, char* argv[]) {
 
 			ip = config_get_string_value(config, "BROKER_IP");
 			port = config_get_string_value(config, "BROKER_PORT");
-			if (argc == 3 && strcmp(argv[2], "GET_POKEMON") == 0) {
+			if (argc == 4 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy BROKER GET_POKEMON [POKEMON]
-
+				t_message_get* get;
+				get = create_message_get(argv[3]);
+				package = serialize_get(get);
+				destroy_message_get(get);
 			} else if (argc == 5 && strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
 				//gameboy BROKER CAUGHT_POKEMON [ID_CORRELATIVO] [OK/FAIL]
-
+				t_message_caught* caught;
+				caught = create_message_caught(atoi(argv[3]), atoi(argv[4]));
+				package = serialize_caught(caught);
+				destroy_message_caught(caught);
 			} else if (argc == 6 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
 				//gameboy BROKER CATCH_POKEMON [POKEMON] [POSX] [POSY]
-
+				t_message_catch* catch;
+				catch = create_message_catch_long(argv[3], atoi(argv[4]), atoi(argv[5]));
+				package = serialize_catch(catch);
+				destroy_message_catch(catch);
 			} else if (argc == 7) {
 
 				if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
 					//gameboy BROKER APPEARED_POKEMON [POKEMON] [POSX] [POSY] [ID_CORRELATIVO]
-
+					t_message_appeared* appeared;
+					appeared = create_message_appeared_long(argv[3], atoi(argv[4]), atoi(argv[5]));
+					appeared->correlative_id = atoi(argv[6]);
+					package = serialize_appeared(appeared);
+					destroy_message_appeared(appeared);
 				} else if (strcmp(argv[2], "NEW_POKEMON") == 0) {
 					//gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]
 					t_message_new* new;
@@ -91,22 +102,39 @@ int main(int argc, char* argv[]) {
 			port = config_get_string_value(config, "GAMECARD_PORT");
 			if (argc == 5 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy GAMECARD GET_POKEMON [POKEMON] [ID_MENSAJE]
-
+				t_message_get* get;
+				get = create_message_get(argv[3]);
+				get->id = atoi(argv[4]);
+				package = serialize_get(get);
+				destroy_message_get(get);
 			} else if (argc == 7 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
 				//gameboy GAMECARD CATCH_POKEMON [POKEMON] [POSX] [POSY] [ID_MENSAJE]
+				t_message_catch* catch;
+				catch = create_message_catch_long(argv[3], atoi(argv[4]), atoi(argv[5]));
+				catch->id = atoi(argv[6]);
+				package = serialize_catch(catch);
+				destroy_message_catch(catch);
 
 			} else if (argc == 8 && strcmp(argv[2], "NEW_POKEMON") == 0) {
 				//gameboy GAMECARD NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD] [ID_MENSAJE]
+				t_message_new* new;
+				new = create_message_new_long(argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
+				new->id = atoi(argv[7]);
+				package = serialize_message_new(new);
+				destroy_message_new(new);
 
 			} else {
 				exit(EXIT_FAILURE);
 			}
 
 		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6 && strcmp(argv[2], "APPEARED_POKEMON") == 0) {
-			//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]
-
 			ip = config_get_string_value(config, "TEAM_IP");
 			port = config_get_string_value(config, "TEAM_PORT");
+			//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]
+			t_message_appeared* appeared;
+			appeared = create_message_appeared_long(argv[3], atoi(argv[4]), atoi(argv[5]));
+			package = serialize_appeared(appeared);
+			destroy_message_appeared(appeared);
 
 		} else {
 			exit(EXIT_FAILURE);
