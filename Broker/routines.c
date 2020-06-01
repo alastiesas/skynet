@@ -66,7 +66,7 @@ void specific_initialization() {
 	pthread_mutex_init(&(semaphores_catch->mutex_subs), NULL);
 	pthread_mutex_init(&(semaphores_caught->mutex_subs), NULL);
 
-	sem_init(&(semaphores_new->nuevo_mensaje), 0, 0);
+	//sem_init(&(semaphores_new->nuevo_mensaje), 0, 0);
 
 	pthread_cond_init(&(semaphores_new->broadcast), NULL);
 

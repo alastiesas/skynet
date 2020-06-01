@@ -5,7 +5,6 @@
  *      Author: utnso
  */
 
-#include "receive.h"
 #include "broker.h"
 
 void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger, pthread_cond_t cond, uint32_t total_queue_messages){
@@ -17,11 +16,9 @@ void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_
     	total_queue_messages++;		//solo se suma, no se resta al eliminar mensajes.
     	pthread_cond_broadcast(&(cond));
     pthread_mutex_unlock(&(mutex));
-
-
 }
 
-void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas) {
+void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas) {
 
 	t_semaforos* my_semaphores;
 	uint32_t* count;
@@ -31,7 +28,7 @@ void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logge
 		case OPERATION_NEW:
 			my_semaphores = semaphores_new;
 			count = &total_new_messages;
-			process_NEW(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores, *count);
+			process_receive_message(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores, *count);
 			log_debug(logger, "Se notifico el mensaje new recibido");
 
 			break;
@@ -39,35 +36,35 @@ void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logge
 		case OPERATION_APPEARED:
 			my_semaphores = semaphores_appeared;
 			count = &total_appeared_messages;
-			process_APPEARED(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores, *count);
+			process_receive_message(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores, *count);
 
 			break;
 
 		case OPERATION_GET:
 			my_semaphores = semaphores_get;
 			count = &total_get_messages;
-			process_GET(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores, *count);
+			process_receive_message(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores, *count);
 
 			break;
 
 		case OPERATION_LOCALIZED:
 			my_semaphores = semaphores_localized;
 			count = &total_localized_messages;
-			process_LOCALIZED(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores, *count);
+			process_receive_message(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores, *count);
 
 			break;
 
 		case OPERATION_CATCH:
 			my_semaphores = semaphores_catch;
 			count = &total_catch_messages;
-			process_CATCH(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores, *count);
+			process_receive_message(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores, *count);
 
 			break;
 
 		case OPERATION_CAUGHT:
 			my_semaphores = semaphores_caught;
 			count = &total_caught_messages;
-			process_CAUGHT(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores, *count);
+			process_receive_message(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores, *count);
 
 			break;
 
@@ -115,7 +112,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 	return t_mensaje;
 }
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
+void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -136,163 +133,5 @@ void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* q
 	//Agregar mensaje a cola correspondiente
 	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos->broadcast, total_queue_messages);
 
-
-    int elementos = list_size(queue);
-    log_info(logger, "La cola de NEW tiene, %d elementos\n", elementos);
-    sem_post(&(semaforos->nuevo_mensaje));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
-}
-
-
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
-	uint32_t size;
-	t_pending* t_mensaje;
-
-	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
-
-	//Generar ID del mensaje
-	pthread_mutex_lock(&mutex_ID_global);
-		t_mensaje->ID_mensaje = ID_GLOBAL;
-		ID_GLOBAL++;
-	pthread_mutex_unlock(&mutex_ID_global);
-
-	//Enviar ID del mensaje
-	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
-
-	//Recibir confirmacion de haber recibido la ID
-	receive_ACK(socket_cliente, logger);
-
-	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos->broadcast, total_queue_messages);
-
-
-    int elementos = list_size(queue);
-    log_info(logger, "La cola de APPEARED tiene, %d elementos\n", elementos);
-  //  sem_post(&(semaforos->nuevo_appeared));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
-}
-
-void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
-	uint32_t size;
-	t_pending* t_mensaje;
-
-	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
-
-	//Generar ID del mensaje
-	pthread_mutex_lock(&mutex_ID_global);
-		t_mensaje->ID_mensaje = ID_GLOBAL;
-		ID_GLOBAL++;
-	pthread_mutex_unlock(&mutex_ID_global);
-
-	//Enviar ID del mensaje
-	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
-
-	//Recibir confirmacion de haber recibido la ID
-	receive_ACK(socket_cliente, logger);
-
-	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos->broadcast, total_queue_messages);
-
-
-    int elementos = list_size(queue);
-    log_info(logger, "La cola de GET tiene, %d elementos\n", elementos);
- //   sem_post(&(semaforos->nuevo_get));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
-}
-
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
-	uint32_t size;
-	t_pending* t_mensaje;
-
-	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
-
-	//Generar ID del mensaje
-	pthread_mutex_lock(&mutex_ID_global);
-		t_mensaje->ID_mensaje = ID_GLOBAL;
-		ID_GLOBAL++;
-	pthread_mutex_unlock(&mutex_ID_global);
-
-	//Enviar ID del mensaje
-	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
-
-	//Recibir confirmacion de haber recibido la ID
-	receive_ACK(socket_cliente, logger);
-
-	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos->broadcast, total_queue_messages);
-
-
-    int elementos = list_size(queue);
-    log_info(logger, "La cola de LOCALIZED tiene, %d elementos\n", elementos);
-   // sem_post(&(semaforos->nuevo_localized));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
-}
-
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
-	uint32_t size;
-	t_pending* t_mensaje;
-
-	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
-
-	//Generar ID del mensaje
-	pthread_mutex_lock(&mutex_ID_global);
-		t_mensaje->ID_mensaje = ID_GLOBAL;
-		ID_GLOBAL++;
-	pthread_mutex_unlock(&mutex_ID_global);
-
-	//Enviar ID del mensaje
-	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
-
-	//Recibir confirmacion de haber recibido la ID
-	receive_ACK(socket_cliente, logger);
-
-	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos->broadcast, total_queue_messages);
-
-
-    int elementos = list_size(queue);
-    log_info(logger, "La cola de CATCH tiene, %d elementos\n", elementos);
-  //  sem_post(&(semaforos->nuevo_catch));
-
-
-	//no se hace el free de catch->nombre ni free de catch porque sigo usando el mensaje en la cola
-}
-
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages){
-	uint32_t size;
-	t_pending* t_mensaje;
-
-	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
-
-	//Generar ID del mensaje
-	pthread_mutex_lock(&mutex_ID_global);
-		t_mensaje->ID_mensaje = ID_GLOBAL;
-		ID_GLOBAL++;
-	pthread_mutex_unlock(&mutex_ID_global);
-
-	//Enviar ID del mensaje
-	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
-
-	//Recibir confirmacion de haber recibido la ID
-	receive_ACK(socket_cliente, logger);
-
-	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos->broadcast, total_queue_messages);
-
-
-    int elementos = list_size(queue);
-    log_info(logger, "La cola de CAUGHT tiene, %d elementos\n", elementos);
-  //  sem_post(&(semaforos->nuevo_caught));
-
-
-	//no se hace el free de new->nombre ni free de new porque sigo usando el mensaje en la cola
 }
 

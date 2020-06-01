@@ -132,7 +132,7 @@ void broker_serves_client(void* input);
 void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscribers* suscriptores);
 
 
-void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas);
+void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas);
 
 //TODO
 void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t total_queue_messages);
@@ -149,12 +149,8 @@ queue_code receive_cola(uint32_t socket, t_log* logger);
 
 t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger);
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
-void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+
 
 t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar);
 bool falta_enviar_msj(t_list* cola_enviados, uint32_t idMensaje);
