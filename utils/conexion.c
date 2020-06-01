@@ -113,10 +113,10 @@ void recibir_muchos_mensajes(void* input)
 void process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 	uint32_t size;
 	void* msg;
-	t_catch* catch = malloc(sizeof(t_catch));
-	t_new* new = malloc(sizeof(t_new));
+	t_message_catch* catch = malloc(sizeof(t_message_catch));
+	t_message_new* new = malloc(sizeof(t_message_new));
 		switch (cod_op) {
-		case SALUDO:
+		case PRUEBA:
 
 			msg = recibir_mensaje(socket, &size, logger);
 
@@ -127,14 +127,17 @@ void process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 			log_info(logger, "Se recibe el mensaje:\n");
 			new = receive_new(socket, &size, logger);
 			//imprimir_new();	//el recv ya imprime
-			free(new->nombre);
+			free(new->pokemon_name);
+			free(new->location->position);
+			free(new->location);
 			break;
 
 		case OPERATION_CATCH:
 			log_info(logger, "Se recibe el mensaje:\n");
 			catch = receive_catch(socket, &size, logger);
 			//imprimir_catch();		//el recv ya imprime
-			free(catch->nombre);
+			free(catch->pokemon_name);
+			free(catch->position);
 			break;
 
 		default:

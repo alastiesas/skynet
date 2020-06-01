@@ -1,11 +1,14 @@
 #include "structs.h"
 #include <commons/collections/list.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position) {
 	t_message_appeared* appeared = malloc(sizeof(t_message_appeared));
 	appeared->id = 0; //El Broker se encarga de generar este dato
-	appeared->pokemon_name_size = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	appeared->pokemon_name = malloc(appeared->pokemon_name_size);
+	appeared->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
+	appeared->pokemon_name = malloc(appeared->size_pokemon_name);
 	strcpy(appeared->pokemon_name, pokemon_name);
 	appeared->position = position;
 	return appeared;
@@ -16,15 +19,15 @@ t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t po
 	t_position* position = malloc(sizeof(t_position));
 	position->x = position_x;
 	position->y = position_y;
-	return construct_appeared(pokemon_name, position);
+	return create_message_appeared(pokemon_name, position);
 }
 
 t_message_new* create_message_new(char* pokemon_name, t_location* location) {
 
 	t_message_new* new = malloc(sizeof(t_message_new));
 	new->id = 0; //El Broker se encarga de generar este dato
-	new->pokemon_name_size = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	new->pokemon_name = malloc(new->pokemon_name_size);
+	new->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
+	new->pokemon_name = malloc(new->size_pokemon_name);
 	strcpy(new->pokemon_name, pokemon_name);
 	new->location = location;
 	return new;
@@ -38,14 +41,14 @@ t_message_new* create_message_new_long(char* pokemon_name, uint32_t position_x,
 	location->position->x = position_x;
 	location->position->y = position_y;
 	location->amount = amount;
-	return construct_new(pokemon_name, location);
+	return create_message_new(pokemon_name, location);
 }
 
 t_message_get* create_message_get(char* pokemon_name) {
 	t_message_get* get = malloc(sizeof(t_message_get));
 	get->id = 0; //El Broker se encarga de generar este dato
-	get->pokemon_name_size = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	get->pokemon_name = malloc(get->pokemon_name_size);
+	get->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
+	get->pokemon_name = malloc(get->size_pokemon_name);
 	strcpy(get->pokemon_name, pokemon_name);
 	return get;
 }
@@ -55,8 +58,8 @@ t_message_localized* create_message_localized(uint32_t correlative_id,
 	t_message_localized* localized = malloc(sizeof(t_message_localized));
 	localized->id = 0; //El Broker se encarga de generar este dato
 	localized->correlative_id = correlative_id; //El que responde se encarga de generar este dato
-	localized->pokemon_name_size = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	localized->pokemon_name = malloc(localized->pokemon_name_size);
+	localized->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
+	localized->pokemon_name = malloc(localized->size_pokemon_name);
 	strcpy(localized->pokemon_name, pokemon_name);
 	localized->position_amount = position_amount;
 	localized->positions = malloc(position_amount * sizeof(t_position));
@@ -68,8 +71,8 @@ t_message_localized* create_message_localized(uint32_t correlative_id,
 t_message_catch* create_message_catch(char* pokemon_name, t_position* position) {
 	t_message_catch* catch = malloc(sizeof(t_message_catch));
 	catch->id = 0; //El Broker se encarga de generar este dato
-	catch->pokemon_name_size = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	catch->pokemon_name = malloc( catch->pokemon_name_size);
+	catch->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
+	catch->pokemon_name = malloc(catch->size_pokemon_name);
 	strcpy(catch->pokemon_name, pokemon_name);
 	catch->position = position;
 	return catch;
@@ -79,7 +82,7 @@ t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx,
 	t_position *position = malloc(sizeof(t_position));
 	position->x = posx;
 	position->y = posy;
-	return construct_catch(pokemon, position);
+	return create_message_catch(pokemon, position);
 }
 
 t_message_caught* create_message_caught(uint32_t correlative_id, bool result) {

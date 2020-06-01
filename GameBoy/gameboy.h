@@ -15,7 +15,7 @@ t_package* package_catch_pokemon();
 t_package* package_caught_pokemon();
 t_package* package_get_pokemon();
 t_package* package_new_pokemon();
-void subscribe(queue_code queue, int time);
+void subscribe_timed(queue_code queue, int time);
 //void send(char* ip, char* port, t_paquete* package);
 
 #endif /* GAMEBOY_H_ */

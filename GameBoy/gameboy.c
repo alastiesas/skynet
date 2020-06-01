@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 		} else {
 			exit(EXIT_FAILURE);
 		}
-		subscribe(queue_code, argv[3]);
+		subscribe_timed(queue_code, argv[3]);
 
 	} else {
 

@@ -54,7 +54,7 @@ int32_t enviar_mensaje(char* mensaje, uint32_t socket, t_log* logger)
 
 
 
-int32_t send_catch(t_catch* catch, uint32_t socket, t_log* logger){
+int32_t send_catch(t_message_catch* catch, uint32_t socket, t_log* logger){
 
 	t_package* paquete = serialize_catch(catch);
 
@@ -167,9 +167,9 @@ uint32_t receive_ID_proceso(uint32_t socket, t_log* logger){
 
 
 
-t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
-	t_new* new = malloc(sizeof(t_new));
+	t_message_new* new = malloc(sizeof(t_message_new));
 
 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
@@ -187,48 +187,48 @@ t_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 		log_info(logger, "id de new recibido: %d", new->id);
 
 	//recibir size_nombre de new
-	if(recv(socket_cliente, &(new->size_nombre), sizeof(new->size_nombre), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(new->size_pokemon_name), sizeof(new->size_pokemon_name), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el size_nombre de new");
 	else
-		log_info(logger, "size_nombre de new recibido: %d", new->size_nombre);
+		log_info(logger, "size_nombre de new recibido: %d", new->size_pokemon_name);
 
-	new->nombre = malloc(new->size_nombre);
+	new->pokemon_name = malloc(new->size_pokemon_name);
 
 	//recibir nombre de new
-	if(recv(socket_cliente, new->nombre, new->size_nombre, MSG_WAITALL) == -1)
+	if(recv(socket_cliente, new->pokemon_name, new->size_pokemon_name, MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el nombre de new");
 	else
-		log_info(logger, "nombre de new recibido: %s", new->nombre);
+		log_info(logger, "nombre de new recibido: %s", new->pokemon_name);
 
 	//recibir posX de new
-	if(recv(socket_cliente, &(new->posX), sizeof(new->posX), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(new->location->position->x), sizeof(new->location->position->x), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir la posX de new");
 	else
-		log_info(logger, "posX de new recibida: %d", new->posX);
+		log_info(logger, "posX de new recibida: %d", new->location->position->x);
 
 	//recibir posY de new
-	if(recv(socket_cliente, &(new->posY), sizeof(new->posY), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(new->location->position->y), sizeof(new->location->position->y), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir la posY de new");
 	else
-		log_info(logger, "posY de new recibida: %d\n", new->posY);
+		log_info(logger, "posY de new recibida: %d\n", new->location->position->y);
 
 	//recibir cantidad de new
-	if(recv(socket_cliente, &(new->cantidad), sizeof(new->cantidad), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(new->location->amount), sizeof(new->location->amount), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir la cantidad de new");
 	else
-		log_info(logger, "cantidad de new recibida: %d\n", new->cantidad);
+		log_info(logger, "cantidad de new recibida: %d\n", new->location->amount);
 
 
-	if(*size != sizeof(new->id) + sizeof(new->size_nombre) + strlen(new->nombre)+1 + sizeof(new->posX) + sizeof(new->posY) + sizeof(new->cantidad))
+	if(*size != sizeof(new->id) + sizeof(new->size_pokemon_name) + strlen(new->pokemon_name)+1 + sizeof(new->location->position->x) + sizeof(new->location->position->y) + sizeof(new->location->amount))
 		log_error(logger, "Tamanio erroneo");
 
 	return new;
 
 }
 
-t_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
-	t_catch* catch = malloc(sizeof(t_catch));
+	t_message_catch* catch = malloc(sizeof(t_message_catch));
 
 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
@@ -246,34 +246,34 @@ t_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 		log_info(logger, "id de catch recibido: %d", catch->id);
 
 	//recibir size_nombre de catch
-	if(recv(socket_cliente, &(catch->size_nombre), sizeof(catch->size_nombre), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(catch->size_pokemon_name), sizeof(catch->size_pokemon_name), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el size_nombre de catch");
 	else
-		log_info(logger, "size_nombre de catch recibido: %d", catch->size_nombre);
+		log_info(logger, "size_nombre de catch recibido: %d", catch->size_pokemon_name);
 
-catch->nombre = malloc(catch->size_nombre);
+catch->pokemon_name = malloc(catch->size_pokemon_name);
 
 	//recibir nombre de catch
-	if(recv(socket_cliente, catch->nombre, catch->size_nombre, MSG_WAITALL) == -1)
+	if(recv(socket_cliente, catch->pokemon_name, catch->size_pokemon_name, MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el nombre de catch");
 	else
-		log_info(logger, "nombre de catch recibido: %s", catch->nombre);
+		log_info(logger, "nombre de catch recibido: %s", catch->pokemon_name);
 
 	//recibir posX de catch
-	if(recv(socket_cliente, &(catch->posX), sizeof(catch->posX), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(catch->position->x), sizeof(catch->position->x), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir la posX de catch");
 	else
-		log_info(logger, "posX de catch recibida: %d", catch->posX);
+		log_info(logger, "posX de catch recibida: %d", catch->position->x);
 
 	//recibir posY de catch
-	if(recv(socket_cliente, &(catch->posY), sizeof(catch->posY), MSG_WAITALL) == -1)
+	if(recv(socket_cliente, &(catch->position->y), sizeof(catch->position->y), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir ela posY de catch");
 	else
-		log_info(logger, "posY de catch recibida: %d\n", catch->posY);
+		log_info(logger, "posY de catch recibida: %d\n", catch->position->y);
 
 
 
-	if(*size != sizeof(catch->id) + sizeof(catch->size_nombre) + strlen(catch->nombre)+1 + sizeof(catch->posX) + sizeof(catch->posY))
+	if(*size != sizeof(catch->id) + sizeof(catch->size_pokemon_name) + strlen(catch->pokemon_name)+1 + sizeof(catch->position->x) + sizeof(catch->position->y))
 		log_error(logger, "Tamanio erroneo");
 
 	return catch;
@@ -325,12 +325,12 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 	uint32_t size = strlen(mensaje)+1;
 			//size = sizeof(mensaje);	por que no se puede hacer sizeof??????
 
-	t_catch* catch = malloc(sizeof(t_catch));
+	t_message_catch* catch = malloc(sizeof(t_message_catch));
 	catch->id = 2;
-	catch->nombre = "pepito";
-	catch->size_nombre = strlen(catch->nombre)+1;
-	catch->posX = 4;
-	catch->posY = 7;
+	catch->pokemon_name = "pepito";
+	catch->size_pokemon_name = strlen(catch->pokemon_name)+1;
+	catch->position->x = 4;
+	catch->position->y = 7;
 
 	uint32_t vez = 1;
 	while(1){
@@ -347,9 +347,9 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 
 
 		char* buffer;
-		t_catch* catch2 = malloc(sizeof(t_catch));
+		t_message_catch* catch2 = malloc(sizeof(t_message_catch));
 		switch(codigo){
-		case SALUDO:
+		case PRUEBA:
 
 			log_info(logger, "Se recibe un paquete de tipo mensaje");
 
@@ -369,9 +369,9 @@ void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger){
 		catch2 = receive_catch(socket, &size, logger);
 
 		//loguear mensaje recibido
-			log_info(logger, "Mensaje rerespuesta del %s recibido:\n id: %d\n size_nombre: %d\n nombre: %s\n posX: %d\n posY: %d \n", el, catch2->id, catch2->size_nombre, catch2->nombre, catch2->posX, catch2->posY);
+			log_info(logger, "Mensaje rerespuesta del %s recibido:\n id: %d\n size_nombre: %d\n nombre: %s\n posX: %d\n posY: %d \n", el, catch2->id, catch2->size_pokemon_name, catch2->pokemon_name, catch2->position->x, catch2->position->y);
 
-			free(catch2->nombre);
+			free(catch2->pokemon_name);	//faltan frees
 			free(catch2);
 			break;
 

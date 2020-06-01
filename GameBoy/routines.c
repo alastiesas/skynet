@@ -1,7 +1,7 @@
 #include "gameboy.h"
 #include <conexion.h>
 
-void subscribe(queue_code queue_code, int time) {
+void subscribe_timed(queue_code queue_code, int time) {
 
 	ip = config_get_string_value(config, "BROKER_IP");
 	port = config_get_string_value(config, "BROKER_PORT");
@@ -19,8 +19,7 @@ void subscribe(queue_code queue_code, int time) {
 	args->socket = socket;
 	args->logger = logger;
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) recibir_muchos_mensajes,
-			args); /*pending2*/
+	pthread_create(&thread, NULL, (void*) recibir_muchos_mensajes, args); /*pending2*/
 
 	sleep(time);
 }

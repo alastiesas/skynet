@@ -25,7 +25,8 @@ typedef enum {
 	OPERATION_CAUGHT = 6,
 	OPERATION_SUSCRIPTION = 7,
 	OPERATION_CONFIRMATION = 8,
-	OPERATION_END = 9
+	OPERATION_END = 9,
+	PRUEBA = 10
 } operation_code;
 
 typedef enum
