@@ -35,6 +35,12 @@ typedef struct
 } t_suscriber;
 
 pthread_mutex_t mutex_ID_global;
+uint32_t total_new_messages;
+uint32_t total_appeared_messages;
+uint32_t total_catch_messages;
+uint32_t total_caught_messages;
+uint32_t total_get_messages;
+uint32_t total_localized_messages;
 
 typedef struct
 {
@@ -43,7 +49,6 @@ typedef struct
 	pthread_mutex_t mutex_subs;
 	sem_t nuevo_mensaje;	//solo para probar lo use
 
-	pthread_mutex_t received;
 	pthread_cond_t broadcast;
 
 } t_semaforos;
@@ -87,32 +92,32 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_colas* colas, t_
 void broker_serves_client(void* input);
 
 
-void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores);
+void process_suscripcion(op_code cod_op, int32_t socket_cliente, t_log* logger, t_suscriptores* suscriptores);
 
 
-void process_mensaje(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas);
+void process_mensaje(op_code cod_op, int32_t socket_cliente, t_log* logger, t_colas* colas);
 
 //TODO
-void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs);
+void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t total_queue_messages);
 
 //mutex funciona sin pasarlo como puntero??
 void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
 
 //agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
 //mutex funciona sin pasarlo como puntero??
-void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger);
+void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger, pthread_cond_t cond, uint32_t total_queue_messages);
 
 //Recibe el size del stream. Recibe un queue_code.
 queue_code receive_cola(uint32_t socket, t_log* logger);
 
 t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger);
 
-void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
-void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
-void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
-void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
-void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
-void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos);
+void process_NEW(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+void process_APPEARED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+void process_CATCH(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+void process_CAUGHT(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+void process_GET(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
+void process_LOCALIZED(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t total_queue_messages);
 
 t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar);
 bool falta_enviar_msj(t_list* cola_enviados, uint32_t idMensaje);

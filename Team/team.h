@@ -833,18 +833,16 @@ void subscribe(queue_code queue_code) {
 	}
 
 
-	printf("Suscripcion creada, hacer algo\n");
-
-
+	//Quedarse recibiendo mensajes permanentemente, no hace falta otro hilo
 
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
 	args->logger = log;
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) recibir_muchos_mensajes,
-			args); /*pending2*/
+	pthread_create(&thread, NULL, (void*) recibir_muchos_mensajes, args); /*pending2*/
 
 
+	//Al completar el objetivo global, enviar tres mensajes al broker con ID de proceso e ID de cola asi puede liberar memoria
 }
 
 

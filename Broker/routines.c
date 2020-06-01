@@ -1,6 +1,5 @@
 #include "broker.h"
 
-
 void initialization() {
 
 	generic_initialization();
@@ -69,8 +68,14 @@ void specific_initialization() {
 
 	sem_init(&(semaphores_new->nuevo_mensaje), 0, 0);
 
-	pthread_mutex_init(&(semaphores_new->received), NULL);
 	pthread_cond_init(&(semaphores_new->broadcast), NULL);
+
+	total_new_messages = 0;
+	total_appeared_messages = 0;
+	total_catch_messages = 0;
+	total_caught_messages = 0;
+	total_get_messages = 0;
+	total_localized_messages = 0;
 }
 
 void behavior() {
