@@ -862,6 +862,7 @@ void subscribe(queue_code queue_code) {
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
 	args->logger = log;
+	// agregar una funcion
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
 

@@ -82,38 +82,45 @@ void listen_messages(void* input)
 {
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;
+	void (*function)(operation_code, void*) = ((struct thread_args*)input)->function;
+
 
 	pthread_t self = pthread_self();
 	//log_info(logger, "Se creo un thread %d para atender la conexion del %d\n", self, socket);
 
 	char modulo[16];
-	pthread_getname_np(self, modulo, 16);
+	pthread_getname_np(self, modulo, 16);			//preguntar que hace esto XD
 
 	int vez = 1;
 	while(1){
-	log_info(logger, "\nesperando recibir cod_op, por vez numero %d\n", vez);
-	operation_code cod_op;
-			//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
-	int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
-	if(recibido == -1)
-		log_error(logger, "Error del recv()");
-	if(recibido == 0)
-		log_error(logger, "Se recibieron 0 bytes, se cierra el recv()");
+		log_info(logger, "\nesperando recibir cod_op, por vez numero: %d\n", vez);
+		operation_code cod_op;
+				//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
+		int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
+		if(recibido == -1)
+			log_error(logger, "Error del recv()");
+		else if(recibido == 0)
+			log_error(logger, "Se recibieron 0 bytes, se cierra el recv()");
+		else {
+			log_info(logger, "se recibieron %d bytes", recibido);
 
-	log_info(logger, "se recibieron %d bytes", recibido);
-
-	log_info(logger, "se recibio la cod op: %d\n", cod_op);
-	process_request(cod_op, socket, logger);
-	vez++;
+			log_info(logger, "se recibio el cod op: %d\n", cod_op);
+			void* message = process_request(cod_op, socket, logger);
+			function(cod_op, message);//se llama a la función otorgada al crearse el thread
+			//ejemplo, en team, esta función identificaria si un catch fue exitoso para agregar el pokemon al inventario del entrenador
+		}
+		vez++;
 	}
 
 }
 
-void process_request(operation_code cod_op, int32_t socket, t_log* logger) {
+void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 	uint32_t size;
 	void* msg;
-	t_message_catch* catch = malloc(sizeof(t_message_catch));
-	t_message_new* new = malloc(sizeof(t_message_new));
+	//t_message_catch* catch = malloc(sizeof(t_message_catch));//esto se borraria
+	//t_message_new* new = malloc(sizeof(t_message_new));//esto se borraria
+	void* message = NULL;//acá se guardaría el mensaje (void*) independientemente de su tipo.
+
 		switch (cod_op) {
 		case PRUEBA:
 
@@ -124,28 +131,32 @@ void process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 
 		case OPERATION_NEW:
 			log_info(logger, "Se recibe el mensaje:\n");
-			new = receive_new(socket, &size, logger);
+			//new = receive_new(socket, &size, logger);
+			message = (void*)receive_new(socket, &size, logger);			//se guarda en mensaje(void*)
 			//imprimir_new();	//el recv ya imprime
-			free(new->pokemon_name);
-			free(new->location->position);
-			free(new->location);
+			//free(new->pokemon_name);
+			//free(new->location->position);
+			//free(new->location);
 			break;
 
 		case OPERATION_CATCH:
 			log_info(logger, "Se recibe el mensaje:\n");
-			catch = receive_catch(socket, &size, logger);
+			//catch = receive_catch(socket, &size, logger);
+			message = (void*)receive_catch(socket, &size, logger);			//se guarda en mensaje(void*)
 			//imprimir_catch();		//el recv ya imprime
-			free(catch->pokemon_name);
-			free(catch->position);
+			//free(catch->pokemon_name);
+			//free(catch->position);
 			break;
 
 		default:
 			log_warning(logger, "Aun no recibio la cod_op %d, intente otro dia, finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);
 		}
-		free(msg);
-		free(catch);
-		free(new);
+		free(msg);//tambien se borraria?
+		//free(catch);
+		//free(new);
+		return message;
+
 }
 
 
