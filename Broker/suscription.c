@@ -118,17 +118,19 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 //TODO enviar mensajes en la cache del broker
 
 
-	send_received_message(suscriber, my_semaphores, my_queue, my_queueIDs, *count);	//loop infinito
+	send_received_message(suscriber, my_semaphores, my_queue, my_queueIDs, count);	//loop infinito
 
 }
 
-void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t total_queue_messages){
+void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t* total_queue_messages){
 
 	t_list* current_global_message_ids = list_create();
 	t_list* not_sent_ids = list_create();
 	void* elemento;
 	uint32_t current_total_count;
 	t_pending* mensaje;
+	void* message_data;
+	uint32_t bytes;
 	t_package* paquete;
 	int32_t result;
 
@@ -136,31 +138,35 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 		list_clean(current_global_message_ids);
 
+		log_debug(logger, "Por obtener lista global de ids");
 		//obtener lista global de ids
 		pthread_mutex_lock(&(semaforos->mutex_cola));
 			list_add_all(current_global_message_ids, colaIDs);
-			current_total_count = total_queue_messages;
+			current_total_count = (*total_queue_messages);
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
+		log_debug(logger, "Hay un total de %d mensajes en la cola", current_total_count);
 
 		no_enviados_lista(current_global_message_ids, suscriber->sent_messages, not_sent_ids);
 
-
+		log_debug(logger, "Por entrar al semaforo");
 		pthread_mutex_lock(&(semaforos->mutex_cola));
-			while (total_queue_messages == current_total_count)	//si cumple la condicion, pasa de largo, y sigue ejecutando el programa. Si no cumple, se bloquea.
+			while ((*total_queue_messages) == current_total_count)	//si cumple la condicion, pasa de largo, y sigue ejecutando el programa. Si no cumple, se bloquea.
 				pthread_cond_wait(&(semaforos->broadcast), &(semaforos->mutex_cola));
 		/* do something that requires holding the mutex and condition is true */
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
+		log_debug(logger, "Sali del semaforo");
 
-		if(total_queue_messages < current_total_count)
+		if((*total_queue_messages) < current_total_count)
 			printf("ERROR imposible, nunca puede ser menor\n");
 
 		while(!list_is_empty(not_sent_ids)){
 			//tomar el primer ID de mensaje que falte enviar, y sacarlo de la lista
 			elemento = list_remove(not_sent_ids, 0);
+			log_debug(logger, "Se va a enviar el ID: %d", (int)elemento);
 
 			//obtener el mensaje con ese ID
-			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola);
-			paquete = broker_serialize(suscriber->suscribed_queue, mensaje);
+			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &message_data);
+			paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, &message_data, bytes);
 
 			//enviar el mensaje
 			result = send_paquete(suscriber->socket, paquete);
@@ -171,12 +177,15 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				log_info(logger, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
 				pthread_exit(NULL);
 			}
+			else
+				log_debug(logger, "Se envio el mensaje de ID %d al suscriptor %d", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber);
 			//agregar el ID del mensaje como enviado en suscriber->sent_messages
 			list_add(suscriber->sent_messages, elemento);
 
 			//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
 			pthread_mutex_lock(&(semaforos->mutex_cola));
 				list_add(mensaje->subs_enviados, suscriber->ID_suscriber);
+				//verificar si el mensaje ya fue enviado a todos para borrar de la cola. (sigue en la cache)
 			pthread_mutex_unlock(&(semaforos->mutex_cola));
 
 			//esperar confirmacion del mensaje
@@ -187,6 +196,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				list_add(mensaje->subs_confirmados, suscriber->ID_suscriber);
 			pthread_mutex_unlock(&(semaforos->mutex_cola));
 
+			free(message_data);
 		}
 
 	}

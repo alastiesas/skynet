@@ -105,7 +105,7 @@ void broker_serves_client(void* input){
 }
 
 
-t_package* broker_serialize(queue_code queue_code, void* message){
+t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, int32_t bytes){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_package* paquete = malloc(sizeof(t_package));
 	operation_code cod_op;
@@ -133,10 +133,12 @@ t_package* broker_serialize(queue_code queue_code, void* message){
 
 	paquete->operation_code = cod_op;
 	paquete->buffer = buffer;
-	paquete->buffer->size = sizeof(message); //TODO verificar que sizeof(message) este bien
+	paquete->buffer->size = sizeof(uint32_t) + bytes;
+	log_debug(logger, "El buffer para el suscriptor es de tamanio: %d", paquete->buffer->size);
 	paquete->buffer->stream = malloc(paquete->buffer->size);
 	//con memcpy() lleno el stream
-	memcpy(paquete->buffer->stream, message, paquete->buffer->size);
+	memcpy(paquete->buffer->stream, &id_message, sizeof(uint32_t));
+	memcpy(paquete->buffer->stream + sizeof(uint32_t), *message, paquete->buffer->size);
 
 	return paquete;
 }

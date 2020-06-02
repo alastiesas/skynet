@@ -9,7 +9,7 @@ void initialization() {
 void generic_initialization() {
 
 	ID_GLOBAL = 1;
-	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_INFO); //pending clean
+	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_TRACE); //pending clean
 	config = config_create("broker.config"); //pending clean
 	IP_BROKER = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PORT");

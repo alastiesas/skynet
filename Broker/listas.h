@@ -22,7 +22,7 @@ t_list* no_enviados_lista(t_list* lista_global, t_list* lista_enviados, t_list* 
 void imprimir_lista(t_list* lista, char* nombre);
 
 //TODO falta probar
-t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola);
+t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje);
 
 
 #endif /* LISTAS_H_ */

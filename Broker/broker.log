@@ -3,3 +3,666 @@
 [INFO] 18:04:38:496 broker/(11327:11337): Esperando conexion en el thread -1218671808
 [INFO] 19:41:26:664 broker/(10672:10677): Escuchando en el socket 4, en el thread -1219253440
 [INFO] 19:41:26:667 broker/(10672:10677): Esperando conexion en el thread -1219253440
+[INFO] 13:47:51:911 broker/(5578:5709): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 13:47:51:911 broker/(5578:5709): Esperando conexion en el thread -1210221760
+[INFO] 13:49:00:322 broker/(5748:5761): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 13:49:00:322 broker/(5748:5761): Esperando conexion en el thread -1210221760
+[INFO] 13:49:06:828 broker/(5748:5761): Conexion aceptada
+[INFO] 13:49:06:829 broker/(5748:5778): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 13:49:06:829 broker/(5748:5778): se recibieron 4 bytes
+[INFO] 13:49:06:829 broker/(5748:5778): se recibio la cod op: 1
+
+[INFO] 13:49:06:829 broker/(5748:5778): Esperando recibir tamanio del stream
+
+[INFO] 13:49:06:829 broker/(5748:5761): Esperando conexion en el thread -1210221760
+[INFO] 13:49:06:829 broker/(5748:5778): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 13:49:06:832 broker/(5748:5778): id de new recibido: 0 (no se usa ese ID)
+[INFO] 13:49:06:832 broker/(5748:5778): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 13:49:06:832 broker/(5748:5778): Intentando enviar ID del mensaje
+[INFO] 13:49:06:832 broker/(5748:5778): Se envio el ID 1, (4 bytes)
+[INFO] 13:49:06:832 broker/(5748:5778): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 13:49:06:832 broker/(5748:5778): Se notifico el mensaje new recibido
+[INFO] 13:50:35:503 broker/(5839:5850): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 13:50:35:503 broker/(5839:5850): Esperando conexion en el thread -1210221760
+[INFO] 13:50:48:543 broker/(5839:5850): Conexion aceptada
+[INFO] 13:50:48:544 broker/(5839:5850): Esperando conexion en el thread -1210221760
+[INFO] 13:50:48:546 broker/(5839:5865): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 13:50:48:546 broker/(5839:5865): se recibieron 4 bytes
+[INFO] 13:50:48:546 broker/(5839:5865): se recibio la cod op: 1
+
+[INFO] 13:50:48:546 broker/(5839:5865): Esperando recibir tamanio del stream
+
+[INFO] 13:50:48:546 broker/(5839:5865): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 13:50:48:546 broker/(5839:5865): id de new recibido: 0 (no se usa ese ID)
+[INFO] 13:50:48:546 broker/(5839:5865): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 13:50:48:546 broker/(5839:5865): Intentando enviar ID del mensaje
+[INFO] 13:50:48:547 broker/(5839:5865): Se envio el ID 1, (4 bytes)
+[INFO] 13:50:48:547 broker/(5839:5865): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 13:52:23:606 broker/(5839:5865): Se notifico el mensaje new recibido
+[INFO] 13:52:29:953 broker/(5839:5850): Conexion aceptada
+[INFO] 13:52:37:266 broker/(5839:5922): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 13:52:37:266 broker/(5839:5922): se recibieron 4 bytes
+[INFO] 13:52:37:266 broker/(5839:5922): se recibio la cod op: 7
+
+[INFO] 13:52:37:266 broker/(5839:5922): Esperando recibir tamanio del stream
+
+[INFO] 13:52:37:266 broker/(5839:5922): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 13:52:37:266 broker/(5839:5922): Se recibio el ID del proceso: 15
+
+[INFO] 13:52:37:266 broker/(5839:5922): Se recibio la cola a suscribirse: 1
+
+[INFO] 13:52:37:266 broker/(5839:5922): Por suscribir al socket '6' a la cola de NEW
+[INFO] 13:52:37:266 broker/(5839:5922): Se agrego el socket '6' a suscriptores
+
+[DEBUG] 13:52:37:266 broker/(5839:5922): Intentando enviar confirmacion
+[INFO] 13:52:37:266 broker/(5839:5922): Se envio la confirmacion (4 bytes)
+[DEBUG] 13:52:37:266 broker/(5839:5922): Por obtener lista global de ids
+[DEBUG] 13:52:37:266 broker/(5839:5922): Hay un total de 0 mensajes en la cola
+[INFO] 13:52:46:678 broker/(5839:5850): Esperando conexion en el thread -1210221760
+[DEBUG] 13:52:46:681 broker/(5839:5922): Por entrar al semaforo
+[INFO] 13:57:35:857 broker/(6033:6055): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 13:57:35:857 broker/(6033:6055): Esperando conexion en el thread -1210221760
+[INFO] 13:57:38:68 broker/(6033:6055): Conexion aceptada
+[INFO] 13:57:38:73 broker/(6033:6055): Esperando conexion en el thread -1210221760
+[INFO] 13:57:38:78 broker/(6033:6058): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 13:57:38:78 broker/(6033:6058): se recibieron 4 bytes
+[INFO] 13:57:38:78 broker/(6033:6058): se recibio la cod op: 1
+
+[INFO] 13:57:38:78 broker/(6033:6058): Esperando recibir tamanio del stream
+
+[INFO] 13:57:38:78 broker/(6033:6058): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 13:57:38:78 broker/(6033:6058): id de new recibido: 0 (no se usa ese ID)
+[INFO] 13:57:38:78 broker/(6033:6058): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 13:57:38:78 broker/(6033:6058): Intentando enviar ID del mensaje
+[INFO] 13:57:38:87 broker/(6033:6058): Se envio el ID 1, (4 bytes)
+[INFO] 13:57:38:87 broker/(6033:6058): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 13:59:12:504 broker/(6033:6055): Conexion aceptada
+[INFO] 13:59:12:505 broker/(6033:6055): Esperando conexion en el thread -1210221760
+[INFO] 13:59:15:89 broker/(6033:6107): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 13:59:15:89 broker/(6033:6107): se recibieron 4 bytes
+[INFO] 13:59:15:89 broker/(6033:6107): se recibio la cod op: 1
+
+[DEBUG] 13:59:45:630 broker/(6033:6058): Se notifico el mensaje new recibido
+[INFO] 13:59:45:632 broker/(6033:6107): Esperando recibir tamanio del stream
+
+[INFO] 13:59:45:632 broker/(6033:6107): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 13:59:45:632 broker/(6033:6107): id de new recibido: 0 (no se usa ese ID)
+[INFO] 13:59:45:632 broker/(6033:6107): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 13:59:52:724 broker/(6033:6107): Intentando enviar ID del mensaje
+[INFO] 13:59:52:725 broker/(6033:6107): Se envio el ID 2, (4 bytes)
+[INFO] 13:59:53:357 broker/(6033:6107): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 14:01:43:184 broker/(6168:6183): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 14:01:43:184 broker/(6168:6183): Esperando conexion en el thread -1210221760
+[INFO] 14:01:51:359 broker/(6168:6183): Conexion aceptada
+[INFO] 14:01:51:360 broker/(6168:6183): Esperando conexion en el thread -1210221760
+[INFO] 14:01:51:368 broker/(6168:6187): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 14:01:51:368 broker/(6168:6187): se recibieron 4 bytes
+[INFO] 14:01:51:368 broker/(6168:6187): se recibio la cod op: 1
+
+[INFO] 14:03:28:125 broker/(6168:6187): Esperando recibir tamanio del stream
+
+[INFO] 14:03:28:125 broker/(6168:6187): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:03:28:125 broker/(6168:6187): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:03:28:125 broker/(6168:6187): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:03:30:442 broker/(6168:6187): Intentando enviar ID del mensaje
+[INFO] 14:03:30:442 broker/(6168:6187): Se envio el ID 1, (4 bytes)
+[INFO] 14:03:30:866 broker/(6168:6187): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 14:05:32:328 broker/(6344:6357): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 14:05:32:328 broker/(6344:6357): Esperando conexion en el thread -1210221760
+[INFO] 14:05:40:679 broker/(6344:6357): Conexion aceptada
+[INFO] 14:05:40:679 broker/(6344:6357): Esperando conexion en el thread -1210221760
+[INFO] 14:05:40:685 broker/(6344:6361): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 14:05:40:685 broker/(6344:6361): se recibieron 4 bytes
+[INFO] 14:05:40:685 broker/(6344:6361): se recibio la cod op: 1
+
+[INFO] 14:05:53:983 broker/(6344:6361): Esperando recibir tamanio del stream
+
+[INFO] 14:05:53:983 broker/(6344:6361): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:05:53:983 broker/(6344:6361): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:05:53:983 broker/(6344:6361): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:05:55:433 broker/(6344:6361): Intentando enviar ID del mensaje
+[INFO] 14:05:55:433 broker/(6344:6361): Se envio el ID 1, (4 bytes)
+[INFO] 14:05:55:971 broker/(6344:6361): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 14:06:16:192 broker/(6344:6357): Conexion aceptada
+[INFO] 14:06:17:332 broker/(6344:6357): Esperando conexion en el thread -1210221760
+[INFO] 14:06:17:332 broker/(6344:6384): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 14:06:17:332 broker/(6344:6384): se recibieron 4 bytes
+[INFO] 14:06:17:332 broker/(6344:6384): se recibio la cod op: 7
+
+[INFO] 14:06:17:332 broker/(6344:6384): Esperando recibir tamanio del stream
+
+[INFO] 14:06:17:332 broker/(6344:6384): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 14:06:17:332 broker/(6344:6384): Se recibio el ID del proceso: 15
+
+[INFO] 14:06:17:332 broker/(6344:6384): Se recibio la cola a suscribirse: 1
+
+[INFO] 14:06:17:332 broker/(6344:6384): Por suscribir al socket '6' a la cola de NEW
+[INFO] 14:06:17:332 broker/(6344:6384): Se agrego el socket '6' a suscriptores
+
+[DEBUG] 14:06:17:332 broker/(6344:6384): Intentando enviar confirmacion
+[INFO] 14:06:17:332 broker/(6344:6384): Se envio la confirmacion (4 bytes)
+[DEBUG] 14:06:17:332 broker/(6344:6384): Por obtener lista global de ids
+[DEBUG] 14:06:17:333 broker/(6344:6384): Hay un total de 0 mensajes en la cola
+[DEBUG] 14:06:38:993 broker/(6344:6361): Se notifico el mensaje new recibido
+[INFO] 14:06:38:995 broker/(6344:6357): Conexion aceptada
+[INFO] 14:06:38:998 broker/(6344:6357): Esperando conexion en el thread -1210221760
+[DEBUG] 14:06:38:999 broker/(6344:6384): Por entrar al semaforo
+[INFO] 14:06:57:745 broker/(6344:6399): Se creo un thread -1241515200 para atender la conexion del cliente 7
+
+[INFO] 14:06:57:745 broker/(6344:6399): se recibieron 4 bytes
+[INFO] 14:06:57:745 broker/(6344:6399): se recibio la cod op: 1
+
+[INFO] 14:06:58:965 broker/(6344:6399): Esperando recibir tamanio del stream
+
+[INFO] 14:06:58:965 broker/(6344:6399): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:06:58:965 broker/(6344:6399): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:06:58:965 broker/(6344:6399): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:07:04:14 broker/(6344:6399): Intentando enviar ID del mensaje
+[INFO] 14:07:04:14 broker/(6344:6399): Se envio el ID 2, (4 bytes)
+[INFO] 14:07:04:473 broker/(6344:6399): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 14:07:17:377 broker/(6344:6399): Se notifico el mensaje new recibido
+[INFO] 14:08:26:914 broker/(6344:6357): Conexion aceptada
+[INFO] 14:08:26:917 broker/(6344:6357): Esperando conexion en el thread -1210221760
+[INFO] 14:08:33:763 broker/(6344:6465): Se creo un thread -1249907904 para atender la conexion del cliente 8
+
+[INFO] 14:08:33:763 broker/(6344:6465): se recibieron 4 bytes
+[INFO] 14:08:33:763 broker/(6344:6465): se recibio la cod op: 1
+
+[INFO] 14:08:44:324 broker/(6344:6465): Esperando recibir tamanio del stream
+
+[INFO] 14:08:44:324 broker/(6344:6465): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:08:44:324 broker/(6344:6465): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:08:44:324 broker/(6344:6465): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:08:49:706 broker/(6344:6465): Intentando enviar ID del mensaje
+[INFO] 14:08:49:706 broker/(6344:6465): Se envio el ID 3, (4 bytes)
+[INFO] 14:08:50:579 broker/(6344:6465): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 14:08:56:574 broker/(6344:6465): Se notifico el mensaje new recibido
+[INFO] 14:14:51:295 broker/(6622:6635): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 14:14:51:296 broker/(6622:6635): Esperando conexion en el thread -1210221760
+[INFO] 14:14:57:140 broker/(6622:6635): Conexion aceptada
+[INFO] 14:14:57:145 broker/(6622:6635): Esperando conexion en el thread -1210221760
+[INFO] 14:14:57:160 broker/(6622:6640): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 14:14:57:160 broker/(6622:6640): se recibieron 4 bytes
+[INFO] 14:14:57:160 broker/(6622:6640): se recibio la cod op: 1
+
+[INFO] 14:15:18:205 broker/(6622:6640): Esperando recibir tamanio del stream
+
+[INFO] 14:15:18:205 broker/(6622:6640): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:15:18:205 broker/(6622:6640): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:15:18:205 broker/(6622:6640): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:15:19:595 broker/(6622:6640): Intentando enviar ID del mensaje
+[INFO] 14:15:19:595 broker/(6622:6640): Se envio el ID 1, (4 bytes)
+[INFO] 14:15:19:899 broker/(6622:6640): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 14:15:41:505 broker/(6622:6635): Conexion aceptada
+[INFO] 14:15:41:510 broker/(6622:6635): Esperando conexion en el thread -1210221760
+[INFO] 14:15:41:510 broker/(6622:6670): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 14:15:41:510 broker/(6622:6670): se recibieron 4 bytes
+[INFO] 14:15:41:510 broker/(6622:6670): se recibio la cod op: 7
+
+[INFO] 14:15:41:510 broker/(6622:6670): Esperando recibir tamanio del stream
+
+[INFO] 14:15:41:510 broker/(6622:6670): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 14:15:41:510 broker/(6622:6670): Se recibio el ID del proceso: 15
+
+[INFO] 14:15:41:511 broker/(6622:6670): Se recibio la cola a suscribirse: 1
+
+[INFO] 14:15:41:511 broker/(6622:6670): Por suscribir al socket '6' a la cola de NEW
+[INFO] 14:15:41:511 broker/(6622:6670): Se agrego el socket '6' a suscriptores
+
+[DEBUG] 14:15:41:511 broker/(6622:6670): Intentando enviar confirmacion
+[INFO] 14:15:41:511 broker/(6622:6670): Se envio la confirmacion (4 bytes)
+[DEBUG] 14:15:41:511 broker/(6622:6670): Por obtener lista global de ids
+[DEBUG] 14:15:41:511 broker/(6622:6670): Hay un total de 0 mensajes en la cola
+[DEBUG] 14:16:38:726 broker/(6622:6670): Por entrar al semaforo
+[DEBUG] 14:16:55:844 broker/(6622:6640): Se notifico el mensaje new recibido
+[INFO] 14:17:03:350 broker/(6622:6635): Conexion aceptada
+[INFO] 14:17:03:353 broker/(6622:6635): Esperando conexion en el thread -1210221760
+[INFO] 14:17:03:353 broker/(6622:6708): Se creo un thread -1241515200 para atender la conexion del cliente 7
+
+[INFO] 14:17:03:353 broker/(6622:6708): se recibieron 4 bytes
+[INFO] 14:17:03:357 broker/(6622:6708): se recibio la cod op: 1
+
+[INFO] 14:17:09:732 broker/(6622:6708): Esperando recibir tamanio del stream
+
+[INFO] 14:17:09:732 broker/(6622:6708): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:17:09:732 broker/(6622:6708): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:17:09:732 broker/(6622:6708): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:17:12:403 broker/(6622:6708): Intentando enviar ID del mensaje
+[INFO] 14:17:12:403 broker/(6622:6708): Se envio el ID 2, (4 bytes)
+[INFO] 14:17:12:689 broker/(6622:6708): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 14:17:21:293 broker/(6622:6708): Se notifico el mensaje new recibido
+[INFO] 14:22:00:368 broker/(6622:6635): Conexion aceptada
+[INFO] 14:22:00:369 broker/(6622:6635): Esperando conexion en el thread -1210221760
+[INFO] 14:22:02:726 broker/(6622:6805): Se creo un thread -1249907904 para atender la conexion del cliente 8
+
+[INFO] 14:22:02:726 broker/(6622:6805): se recibieron 4 bytes
+[INFO] 14:22:02:726 broker/(6622:6805): se recibio la cod op: 1
+
+[INFO] 14:22:10:730 broker/(6622:6805): Esperando recibir tamanio del stream
+
+[INFO] 14:22:10:730 broker/(6622:6805): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:22:10:730 broker/(6622:6805): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:22:10:730 broker/(6622:6805): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:23:55:503 broker/(6622:6805): Intentando enviar ID del mensaje
+[INFO] 14:23:55:503 broker/(6622:6805): Se envio el ID 3, (4 bytes)
+[INFO] 14:23:55:721 broker/(6622:6805): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 14:29:46:875 broker/(7103:7126): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 14:29:46:875 broker/(7103:7126): Esperando conexion en el thread -1210221760
+[INFO] 14:29:49:555 broker/(7103:7126): Conexion aceptada
+[INFO] 14:29:49:561 broker/(7103:7126): Esperando conexion en el thread -1210221760
+[INFO] 14:29:49:562 broker/(7103:7130): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 14:29:49:562 broker/(7103:7130): se recibieron 4 bytes
+[INFO] 14:29:49:562 broker/(7103:7130): se recibio la cod op: 1
+
+[INFO] 14:29:54:733 broker/(7103:7130): Esperando recibir tamanio del stream
+
+[INFO] 14:29:54:733 broker/(7103:7130): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:29:54:733 broker/(7103:7130): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:29:54:733 broker/(7103:7130): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:29:56:474 broker/(7103:7130): Intentando enviar ID del mensaje
+[INFO] 14:29:56:474 broker/(7103:7130): Se envio el ID 1, (4 bytes)
+[INFO] 14:29:56:865 broker/(7103:7130): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 14:30:44:240 broker/(7103:7126): Conexion aceptada
+[DEBUG] 14:30:44:241 broker/(7103:7130): Se notifico el mensaje new recibido
+[INFO] 14:30:45:808 broker/(7103:7126): Esperando conexion en el thread -1210221760
+[INFO] 14:30:45:808 broker/(7103:7173): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 14:30:45:808 broker/(7103:7173): se recibieron 4 bytes
+[INFO] 14:30:45:808 broker/(7103:7173): se recibio la cod op: 7
+
+[INFO] 14:30:45:808 broker/(7103:7173): Esperando recibir tamanio del stream
+
+[INFO] 14:30:45:808 broker/(7103:7173): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 14:30:45:808 broker/(7103:7173): Se recibio el ID del proceso: 15
+
+[INFO] 14:30:45:808 broker/(7103:7173): Se recibio la cola a suscribirse: 1
+
+[INFO] 14:30:45:808 broker/(7103:7173): Por suscribir al socket '6' a la cola de NEW
+[INFO] 14:30:45:808 broker/(7103:7173): Se agrego el socket '6' a suscriptores
+
+[DEBUG] 14:30:45:808 broker/(7103:7173): Intentando enviar confirmacion
+[INFO] 14:30:45:808 broker/(7103:7173): Se envio la confirmacion (4 bytes)
+[DEBUG] 14:30:45:808 broker/(7103:7173): Por obtener lista global de ids
+[DEBUG] 14:30:45:808 broker/(7103:7173): Hay un total de 1 mensajes en la cola
+[DEBUG] 14:30:49:606 broker/(7103:7173): Por entrar al semaforo
+[INFO] 14:31:00:603 broker/(7103:7126): Conexion aceptada
+[INFO] 14:31:00:605 broker/(7103:7126): Esperando conexion en el thread -1210221760
+[INFO] 14:31:00:611 broker/(7103:7192): Se creo un thread -1241515200 para atender la conexion del cliente 7
+
+[INFO] 14:31:00:611 broker/(7103:7192): se recibieron 4 bytes
+[INFO] 14:31:00:611 broker/(7103:7192): se recibio la cod op: 1
+
+[INFO] 14:31:05:556 broker/(7103:7192): Esperando recibir tamanio del stream
+
+[INFO] 14:31:05:556 broker/(7103:7192): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 14:31:05:556 broker/(7103:7192): id de new recibido: 0 (no se usa ese ID)
+[INFO] 14:31:05:556 broker/(7103:7192): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 14:31:09:625 broker/(7103:7192): Intentando enviar ID del mensaje
+[INFO] 14:31:09:625 broker/(7103:7192): Se envio el ID 2, (4 bytes)
+[INFO] 14:31:09:959 broker/(7103:7192): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 14:31:20:494 broker/(7103:7192): Se notifico el mensaje new recibido
+[INFO] 15:26:35:430 broker/(8667:8680): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 15:26:35:436 broker/(8667:8680): Esperando conexion en el thread -1210221760
+[INFO] 15:26:37:864 broker/(8667:8680): Conexion aceptada
+[INFO] 15:26:37:866 broker/(8667:8680): Esperando conexion en el thread -1210221760
+[INFO] 15:26:37:871 broker/(8667:8684): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 15:26:37:872 broker/(8667:8684): se recibieron 4 bytes
+[INFO] 15:26:37:872 broker/(8667:8684): se recibio la cod op: 1
+
+[INFO] 15:26:40:665 broker/(8667:8684): Esperando recibir tamanio del stream
+
+[INFO] 15:26:40:665 broker/(8667:8684): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 15:26:40:665 broker/(8667:8684): id de new recibido: 0 (no se usa ese ID)
+[INFO] 15:26:47:841 broker/(8667:8684): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[INFO] 15:28:08:872 broker/(8762:8775): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 15:28:08:872 broker/(8762:8775): Esperando conexion en el thread -1210221760
+[INFO] 15:28:10:461 broker/(8762:8775): Conexion aceptada
+[INFO] 15:28:10:462 broker/(8762:8775): Esperando conexion en el thread -1210221760
+[INFO] 15:28:10:466 broker/(8762:8780): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 15:28:10:466 broker/(8762:8780): se recibieron 4 bytes
+[INFO] 15:28:10:466 broker/(8762:8780): se recibio la cod op: 1
+
+[INFO] 15:28:14:124 broker/(8762:8780): Esperando recibir tamanio del stream
+
+[INFO] 15:28:14:124 broker/(8762:8780): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 15:28:14:124 broker/(8762:8780): id de new recibido: 0 (no se usa ese ID)
+[INFO] 15:28:16:691 broker/(8762:8780): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[INFO] 15:30:53:205 broker/(8851:8862): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 15:30:53:205 broker/(8851:8862): Esperando conexion en el thread -1210221760
+[INFO] 15:30:55:130 broker/(8851:8862): Conexion aceptada
+[INFO] 15:30:55:131 broker/(8851:8862): Esperando conexion en el thread -1210221760
+[INFO] 15:30:55:139 broker/(8851:8866): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 15:30:55:139 broker/(8851:8866): se recibieron 4 bytes
+[INFO] 15:30:55:141 broker/(8851:8866): se recibio la cod op: 1
+
+[INFO] 15:30:57:450 broker/(8851:8866): Esperando recibir tamanio del stream
+
+[INFO] 15:30:57:450 broker/(8851:8866): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 15:30:57:450 broker/(8851:8866): id de new recibido: 0 (no se usa ese ID)
+[INFO] 15:32:30:889 broker/(8966:8975): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 15:32:30:889 broker/(8966:8975): Esperando conexion en el thread -1210221760
+[INFO] 15:32:32:766 broker/(8966:8975): Conexion aceptada
+[INFO] 15:32:32:767 broker/(8966:8975): Esperando conexion en el thread -1210221760
+[INFO] 15:32:32:772 broker/(8966:8979): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 15:32:32:772 broker/(8966:8979): se recibieron 4 bytes
+[INFO] 15:32:32:772 broker/(8966:8979): se recibio la cod op: 1
+
+[INFO] 15:32:34:617 broker/(8966:8979): Esperando recibir tamanio del stream
+
+[INFO] 15:32:34:617 broker/(8966:8979): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 15:32:34:617 broker/(8966:8979): id de new recibido: 0 (no se usa ese ID)
+[INFO] 15:33:17:332 broker/(8966:8975): Conexion aceptada
+[INFO] 15:33:17:333 broker/(8966:8975): Esperando conexion en el thread -1210221760
+[INFO] 15:33:17:333 broker/(8966:9000): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 15:33:17:333 broker/(8966:9000): se recibieron 4 bytes
+[INFO] 15:33:17:333 broker/(8966:9000): se recibio la cod op: 7
+
+[INFO] 15:33:17:333 broker/(8966:9000): Esperando recibir tamanio del stream
+
+[INFO] 15:33:17:333 broker/(8966:9000): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 15:33:17:333 broker/(8966:9000): Se recibio el ID del proceso: 15
+
+[INFO] 15:33:17:333 broker/(8966:9000): Se recibio la cola a suscribirse: 1
+
+[INFO] 15:33:17:333 broker/(8966:9000): Por suscribir al socket '6' a la cola de NEW
+[INFO] 15:33:17:333 broker/(8966:9000): Se agrego el socket '6' a suscriptores
+
+[DEBUG] 15:33:17:333 broker/(8966:9000): Intentando enviar confirmacion
+[INFO] 15:33:17:334 broker/(8966:9000): Se envio la confirmacion (4 bytes)
+[DEBUG] 15:33:17:334 broker/(8966:9000): Por obtener lista global de ids
+[DEBUG] 15:33:17:334 broker/(8966:9000): Hay un total de 0 mensajes en la cola
+[DEBUG] 15:33:19:349 broker/(8966:9000): Por entrar al semaforo
+[INFO] 15:33:19:349 broker/(8966:8979): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 15:33:19:349 broker/(8966:8979): Se guardo un mensaje de 27 bytes: 
+[DEBUG] 15:33:19:349 broker/(8966:8979): Intentando enviar ID del mensaje
+[INFO] 15:33:19:350 broker/(8966:8979): Se envio el ID 1, (4 bytes)
+[INFO] 15:33:19:350 broker/(8966:8979): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:33:29:264 broker/(8966:8975): Conexion aceptada
+[INFO] 15:33:29:366 broker/(8966:8975): Esperando conexion en el thread -1210221760
+[INFO] 15:33:29:366 broker/(8966:9012): Se creo un thread -1241515200 para atender la conexion del cliente 7
+
+[INFO] 15:33:29:366 broker/(8966:9012): se recibieron 4 bytes
+[INFO] 15:33:29:366 broker/(8966:9012): se recibio la cod op: 1
+
+[DEBUG] 15:33:30:884 broker/(8966:8979): Se notifico el mensaje new recibido
+[INFO] 15:33:36:403 broker/(8966:9012): Esperando recibir tamanio del stream
+
+[INFO] 15:33:36:403 broker/(8966:9012): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 15:33:36:403 broker/(8966:9012): id de new recibido: 0 (no se usa ese ID)
+[INFO] 15:33:57:968 broker/(8966:9012): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 15:33:57:968 broker/(8966:9012): Se guardo un mensaje de 27 bytes: 
+[DEBUG] 15:33:57:968 broker/(8966:9012): Intentando enviar ID del mensaje
+[INFO] 15:33:57:968 broker/(8966:9012): Se envio el ID 2, (4 bytes)
+[INFO] 15:33:57:970 broker/(8966:9012): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 15:34:00:94 broker/(8966:9000): Sali del semaforo
+[DEBUG] 15:34:00:94 broker/(8966:9000): Por obtener lista global de ids
+[DEBUG] 15:34:00:94 broker/(8966:9000): Hay un total de 1 mensajes en la cola
+[DEBUG] 15:34:01:927 broker/(8966:9000): Por entrar al semaforo
+[INFO] 16:01:03:928 broker/(9745:9756): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 16:01:03:930 broker/(9745:9756): Esperando conexion en el thread -1210221760
+[INFO] 16:01:06:255 broker/(9745:9756): Conexion aceptada
+[INFO] 16:01:06:256 broker/(9745:9756): Esperando conexion en el thread -1210221760
+[INFO] 16:01:06:259 broker/(9745:9760): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 16:01:06:259 broker/(9745:9760): se recibieron 4 bytes
+[INFO] 16:01:06:259 broker/(9745:9760): se recibio la cod op: 1
+
+[INFO] 16:01:07:847 broker/(9745:9760): Esperando recibir tamanio del stream
+
+[INFO] 16:01:07:847 broker/(9745:9760): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:01:07:847 broker/(9745:9760): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:23:01:995 broker/(10839:10850): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 16:23:02:1 broker/(10839:10850): Esperando conexion en el thread -1210221760
+[INFO] 16:23:05:912 broker/(10839:10850): Conexion aceptada
+[INFO] 16:23:05:913 broker/(10839:10850): Esperando conexion en el thread -1210221760
+[INFO] 16:23:05:913 broker/(10839:10854): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 16:23:05:913 broker/(10839:10854): se recibieron 4 bytes
+[INFO] 16:23:05:913 broker/(10839:10854): se recibio la cod op: 7
+
+[INFO] 16:23:05:913 broker/(10839:10854): Esperando recibir tamanio del stream
+
+[INFO] 16:23:05:913 broker/(10839:10854): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 16:23:05:913 broker/(10839:10854): Se recibio el ID del proceso: 15
+
+[INFO] 16:23:05:913 broker/(10839:10854): Se recibio la cola a suscribirse: 1
+
+[INFO] 16:23:05:914 broker/(10839:10854): Por suscribir al socket '5' a la cola de NEW
+[INFO] 16:23:05:914 broker/(10839:10854): Se agrego el socket '5' a suscriptores
+
+[DEBUG] 16:23:05:914 broker/(10839:10854): Intentando enviar confirmacion
+[INFO] 16:23:05:916 broker/(10839:10854): Se envio la confirmacion (4 bytes)
+[DEBUG] 16:23:05:916 broker/(10839:10854): Por obtener lista global de ids
+[DEBUG] 16:23:05:916 broker/(10839:10854): Hay un total de 0 mensajes en la cola
+[INFO] 16:23:14:328 broker/(10839:10850): Conexion aceptada
+[INFO] 16:23:14:330 broker/(10839:10850): Esperando conexion en el thread -1210221760
+[DEBUG] 16:23:14:331 broker/(10839:10854): Por entrar al semaforo
+[INFO] 16:23:16:475 broker/(10839:10860): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 16:23:16:476 broker/(10839:10860): se recibieron 4 bytes
+[INFO] 16:23:16:476 broker/(10839:10860): se recibio la cod op: 1
+
+[INFO] 16:23:23:155 broker/(10839:10860): Esperando recibir tamanio del stream
+
+[INFO] 16:23:23:155 broker/(10839:10860): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:23:23:155 broker/(10839:10860): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:23:23:155 broker/(10839:10860): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:23:23:155 broker/(10839:10860): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:23:23:155 broker/(10839:10860): Intentando enviar ID del mensaje
+[INFO] 16:23:23:155 broker/(10839:10860): Se envio el ID 1, (4 bytes)
+[INFO] 16:23:23:156 broker/(10839:10860): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 16:23:34:91 broker/(10839:10850): Conexion aceptada
+[INFO] 16:23:34:92 broker/(10839:10850): Esperando conexion en el thread -1210221760
+[INFO] 16:23:34:94 broker/(10839:10886): Se creo un thread -1241515200 para atender la conexion del cliente 7
+
+[INFO] 16:23:34:94 broker/(10839:10886): se recibieron 4 bytes
+[INFO] 16:23:34:98 broker/(10839:10886): se recibio la cod op: 1
+
+[INFO] 16:23:38:56 broker/(10839:10886): Esperando recibir tamanio del stream
+
+[INFO] 16:23:38:56 broker/(10839:10886): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:23:38:56 broker/(10839:10886): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:23:38:57 broker/(10839:10886): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:23:38:57 broker/(10839:10886): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:23:38:57 broker/(10839:10886): Intentando enviar ID del mensaje
+[INFO] 16:23:38:57 broker/(10839:10886): Se envio el ID 2, (4 bytes)
+[INFO] 16:23:38:57 broker/(10839:10886): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 16:23:43:829 broker/(10839:10886): Se notifico el mensaje new recibido
+[DEBUG] 16:23:46:956 broker/(10839:10854): Sali del semaforo
+[INFO] 16:24:23:88 broker/(10839:10850): Conexion aceptada
+[DEBUG] 16:24:23:91 broker/(10839:10854): Por obtener lista global de ids
+[INFO] 16:24:23:92 broker/(10839:10850): Esperando conexion en el thread -1210221760
+[INFO] 16:24:24:53 broker/(10839:10937): Se creo un thread -1249907904 para atender la conexion del cliente 8
+
+[INFO] 16:24:24:53 broker/(10839:10937): se recibieron 4 bytes
+[INFO] 16:24:24:53 broker/(10839:10937): se recibio la cod op: 1
+
+[DEBUG] 16:24:26:211 broker/(10839:10854): Hay un total de 1 mensajes en la cola
+[INFO] 16:24:27:277 broker/(10839:10937): Esperando recibir tamanio del stream
+
+[INFO] 16:24:27:277 broker/(10839:10937): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:24:27:277 broker/(10839:10937): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:24:27:277 broker/(10839:10937): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:24:27:277 broker/(10839:10937): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:24:27:277 broker/(10839:10937): Intentando enviar ID del mensaje
+[INFO] 16:24:27:277 broker/(10839:10937): Se envio el ID 3, (4 bytes)
+[DEBUG] 16:24:27:279 broker/(10839:10854): Por entrar al semaforo
+[INFO] 16:24:27:716 broker/(10839:10937): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 16:24:36:118 broker/(10839:10850): Conexion aceptada
+[INFO] 16:24:36:120 broker/(10839:10850): Esperando conexion en el thread -1210221760
+[INFO] 16:24:36:123 broker/(10839:10966): Se creo un thread -1258300608 para atender la conexion del cliente 9
+
+[INFO] 16:24:36:123 broker/(10839:10966): se recibieron 4 bytes
+[INFO] 16:24:36:123 broker/(10839:10966): se recibio la cod op: 1
+
+[INFO] 16:24:40:230 broker/(10839:10966): Esperando recibir tamanio del stream
+
+[INFO] 16:24:40:230 broker/(10839:10966): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:24:40:230 broker/(10839:10966): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:24:40:230 broker/(10839:10966): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:24:40:230 broker/(10839:10966): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:24:40:230 broker/(10839:10966): Intentando enviar ID del mensaje
+[INFO] 16:24:40:230 broker/(10839:10966): Se envio el ID 4, (4 bytes)
+[INFO] 16:24:40:231 broker/(10839:10966): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 16:24:43:47 broker/(10839:10966): Se notifico el mensaje new recibido
+[DEBUG] 16:24:46:647 broker/(10839:10854): Sali del semaforo
+[DEBUG] 16:24:49:646 broker/(10839:10854): Se va a enviar el ID: 2
+[DEBUG] 16:25:51:925 broker/(10839:10854): Se encontro el t_pending de ID: 2
+[DEBUG] 16:26:59:465 broker/(10839:10854): El mensaje tiene 1768973680 bytes
+[INFO] 16:48:12:806 broker/(3994:4013): Escuchando en el socket 4, en el thread -1210221760
+[INFO] 16:48:12:810 broker/(3994:4013): Esperando conexion en el thread -1210221760
+[INFO] 16:48:19:22 broker/(3994:4013): Conexion aceptada
+[INFO] 16:48:19:23 broker/(3994:4013): Esperando conexion en el thread -1210221760
+[INFO] 16:48:19:23 broker/(3994:4017): Se creo un thread -1220543680 para atender la conexion del cliente 5
+
+[INFO] 16:48:19:23 broker/(3994:4017): se recibieron 4 bytes
+[INFO] 16:48:19:23 broker/(3994:4017): se recibio la cod op: 7
+
+[INFO] 16:48:19:23 broker/(3994:4017): Esperando recibir tamanio del stream
+
+[INFO] 16:48:19:23 broker/(3994:4017): Se solicito recibir un tamanio de stream de: 8
+
+[INFO] 16:48:19:23 broker/(3994:4017): Se recibio el ID del proceso: 15
+
+[INFO] 16:48:19:23 broker/(3994:4017): Se recibio la cola a suscribirse: 1
+
+[INFO] 16:48:19:23 broker/(3994:4017): Por suscribir al socket '5' a la cola de NEW
+[INFO] 16:48:19:23 broker/(3994:4017): Se agrego el socket '5' a suscriptores
+
+[DEBUG] 16:48:19:23 broker/(3994:4017): Intentando enviar confirmacion
+[INFO] 16:48:19:23 broker/(3994:4017): Se envio la confirmacion (4 bytes)
+[DEBUG] 16:48:19:23 broker/(3994:4017): Por obtener lista global de ids
+[DEBUG] 16:48:19:23 broker/(3994:4017): Hay un total de 0 mensajes en la cola
+[INFO] 16:48:26:526 broker/(3994:4013): Conexion aceptada
+[INFO] 16:48:26:528 broker/(3994:4013): Esperando conexion en el thread -1210221760
+[DEBUG] 16:48:26:530 broker/(3994:4017): Por entrar al semaforo
+[INFO] 16:48:29:423 broker/(3994:4024): Se creo un thread -1231029440 para atender la conexion del cliente 6
+
+[INFO] 16:48:29:423 broker/(3994:4024): se recibieron 4 bytes
+[INFO] 16:48:29:423 broker/(3994:4024): se recibio la cod op: 1
+
+[INFO] 16:48:30:834 broker/(3994:4024): Esperando recibir tamanio del stream
+
+[INFO] 16:48:30:835 broker/(3994:4024): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:48:30:835 broker/(3994:4024): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:48:30:835 broker/(3994:4024): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:48:30:835 broker/(3994:4024): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:48:33:482 broker/(3994:4024): Intentando enviar ID del mensaje
+[INFO] 16:48:33:482 broker/(3994:4024): Se envio el ID 1, (4 bytes)
+[INFO] 16:48:33:997 broker/(3994:4024): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 16:48:40:589 broker/(3994:4013): Conexion aceptada
+[INFO] 16:48:40:596 broker/(3994:4013): Esperando conexion en el thread -1210221760
+[INFO] 16:48:41:222 broker/(3994:4051): Se creo un thread -1241515200 para atender la conexion del cliente 7
+
+[INFO] 16:48:41:223 broker/(3994:4051): se recibieron 4 bytes
+[INFO] 16:48:41:223 broker/(3994:4051): se recibio la cod op: 1
+
+[DEBUG] 16:48:42:133 broker/(3994:4024): Se notifico el mensaje new recibido
+[INFO] 16:48:43:626 broker/(3994:4051): Esperando recibir tamanio del stream
+
+[INFO] 16:48:43:627 broker/(3994:4051): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:48:43:627 broker/(3994:4051): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:48:43:627 broker/(3994:4051): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:48:43:627 broker/(3994:4051): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:48:43:627 broker/(3994:4051): Intentando enviar ID del mensaje
+[INFO] 16:48:43:627 broker/(3994:4051): Se envio el ID 2, (4 bytes)
+[INFO] 16:48:43:627 broker/(3994:4051): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 16:48:44:775 broker/(3994:4017): Sali del semaforo
+[DEBUG] 16:48:44:775 broker/(3994:4017): Por obtener lista global de ids
+[DEBUG] 16:48:44:775 broker/(3994:4017): Hay un total de 1 mensajes en la cola
+[DEBUG] 16:48:45:210 broker/(3994:4017): Por entrar al semaforo
+[INFO] 16:48:52:125 broker/(3994:4013): Conexion aceptada
+[INFO] 16:48:52:135 broker/(3994:4013): Esperando conexion en el thread -1210221760
+[INFO] 16:48:52:138 broker/(3994:4084): Se creo un thread -1249907904 para atender la conexion del cliente 8
+
+[INFO] 16:48:52:138 broker/(3994:4084): se recibieron 4 bytes
+[INFO] 16:48:52:138 broker/(3994:4084): se recibio la cod op: 1
+
+[INFO] 16:48:53:245 broker/(3994:4084): Esperando recibir tamanio del stream
+
+[INFO] 16:48:53:245 broker/(3994:4084): Se solicito recibir un tamanio de stream de: 27
+
+[INFO] 16:48:53:245 broker/(3994:4084): id de new recibido: 0 (no se usa ese ID)
+[INFO] 16:48:53:245 broker/(3994:4084): Datos del mensaje recibidos. (23 bytes de un total de 23)
+[DEBUG] 16:48:53:245 broker/(3994:4084): Se guardo un mensaje de 23 bytes (+4 bytes ID)
+[DEBUG] 16:48:54:952 broker/(3994:4084): Intentando enviar ID del mensaje
+[INFO] 16:48:54:953 broker/(3994:4084): Se envio el ID 3, (4 bytes)
+[INFO] 16:48:57:545 broker/(3994:4084): Se recibio la confirmacion del mensaje enviado
+
+[DEBUG] 16:49:00:260 broker/(3994:4084): Se notifico el mensaje new recibido
+[DEBUG] 16:49:04:427 broker/(3994:4017): Sali del semaforo
+[DEBUG] 16:49:06:145 broker/(3994:4017): Se va a enviar el ID: 1
+[DEBUG] 16:50:06:746 broker/(3994:4017): Se encontro el t_pending de ID: 1
+[DEBUG] 16:50:09:104 broker/(3994:4017): Adentro de la struct hay 23 bytes
+[DEBUG] 16:50:21:770 broker/(3994:4017): (dentro mutex) El mensaje tiene 23 bytes
+[DEBUG] 16:50:51:219 broker/(3994:4017): (dentro mutex) El mensaje tiene 23 bytes
+[DEBUG] 16:50:51:219 broker/(3994:4017): El mensaje tiene 1768973680 bytes
+[DEBUG] 16:51:14:457 broker/(3994:4017): El buffer para el suscriptor es de tamanio: 1768973684

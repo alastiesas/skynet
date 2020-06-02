@@ -4,8 +4,9 @@ void encontrar_mensaje(){
 
 }
 
-t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola){
+t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje){
 	t_pending* elemento;
+	uint32_t size;
 
 	bool _soy_ID_buscado(void* p){
 		return ((t_pending*) p)->ID_mensaje == (uint32_t) ID_encontrar;
@@ -13,7 +14,17 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 
 	pthread_mutex_lock(&mutex_cola);
 	elemento = list_find(cola, _soy_ID_buscado);
+	log_debug(logger, "Se encontro el t_pending de ID: %d", elemento->ID_mensaje);
+	log_debug(logger, "Adentro de la struct hay %d bytes", elemento->bytes);
+	*bytes = elemento->bytes;
+	*datos_mensaje = malloc(*bytes);
+	log_debug(logger, "(dentro mutex) El mensaje tiene %d bytes", *bytes);
+	size = *bytes;
+	memcpy(datos_mensaje, elemento->datos_mensaje, *bytes);
+	log_debug(logger, "(dentro mutex) El mensaje tiene %d bytes", size);
 	pthread_mutex_unlock(&mutex_cola);
+
+	log_debug(logger, "El mensaje tiene %d bytes", *bytes);
 
 	if(elemento == NULL)
 		log_error(logger, "No se encontro el mensaje que tenia que estar en la cola\n");
