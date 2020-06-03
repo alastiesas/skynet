@@ -37,6 +37,17 @@ int main(void)
 
 	config = config_create("team.config");
 	bool test = config_has_property(config, "IP");
+
+
+	// hilo de servidor
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, fake_broker_thread, NULL);
+
+
+	subscribe(5);
+
+	pthread_join(tid, NULL);
 	/*
 	printf(test ? "true" : "false");
 	ip = config_get_string_value(config, "IP");
