@@ -4,7 +4,7 @@ void encontrar_mensaje(){
 
 }
 
-t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje){
+t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
 	uint32_t size;
 
@@ -14,20 +14,17 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 
 	pthread_mutex_lock(&mutex_cola);
 	elemento = list_find(cola, _soy_ID_buscado);
-	log_debug(logger, "Se encontro el t_pending de ID: %d", elemento->ID_mensaje);
-	log_debug(logger, "Adentro de la struct hay %d bytes", elemento->bytes);
 	*bytes = elemento->bytes;
 	*datos_mensaje = malloc(*bytes);
-	log_debug(logger, "(dentro mutex) El mensaje tiene %d bytes", *bytes);
 	size = *bytes;
-	memcpy(datos_mensaje, elemento->datos_mensaje, *bytes);
-	log_debug(logger, "(dentro mutex) El mensaje tiene %d bytes", size);
+	memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
 	pthread_mutex_unlock(&mutex_cola);
 
-	log_debug(logger, "El mensaje tiene %d bytes", *bytes);
+	log_trace(logsub, "Se encontro el t_pending de ID: %d", elemento->ID_mensaje);
+	log_trace(logsub, "Adentro de la struct hay %d bytes", elemento->bytes);
 
 	if(elemento == NULL)
-		log_error(logger, "No se encontro el mensaje que tenia que estar en la cola\n");
+		log_error(logsub, "No se encontro el mensaje que tenia que estar en la cola\n");
 
 	return elemento;
 }
@@ -69,14 +66,14 @@ void no_contenido(t_list* lista_enviados, void* elemento_lista_global, t_list* r
 	}
 }
 
-t_list* no_enviados_lista(t_list* lista_global, t_list* lista_enviados, t_list* resultado){
-	list_clean(resultado);
+t_list* no_enviados_lista(t_list* lista_global, t_list* lista_enviados, t_list** resultado){
+	list_clean(*resultado);
 	t_list* lista = list_duplicate(lista_global);
 	void* elemento;
 
 	while(list_size(lista) != 0){
 		elemento = list_remove(lista, 0);
-		no_contenido(lista_enviados, elemento, resultado);
+		no_contenido(lista_enviados, elemento, *resultado);
 	}
 
 	if(list_size(lista) == 0)
@@ -84,7 +81,7 @@ t_list* no_enviados_lista(t_list* lista_global, t_list* lista_enviados, t_list* 
 	else
 		printf("ERROR no se vacio la lista\n");
 
-	return resultado;
+	return *resultado;
 }
 
 void imprimir_lista(t_list* lista, char* nombre){

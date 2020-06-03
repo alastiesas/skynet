@@ -19,6 +19,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
 	args->logger = logger;
+	args->function = &process_free;
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) listen_messages, args); /*pending2*/
 
@@ -37,4 +38,22 @@ void send_message(char* ip, char* port, t_package* package) {
 
 	receive_ID(socket, logger);
 	send_ACK(socket, logger);
+}
+
+void process_free(operation_code op_code, void* message){
+
+	printf("Estoy en la funcion\n");
+
+	if(op_code == OPERATION_NEW){
+		free(((t_message_new*)message)->pokemon_name);
+		free(((t_message_new*)message)->location->position);
+		free(((t_message_new*)message)->location);
+		printf("Se libero el mensaje new\n");
+	}
+
+	if(op_code == OPERATION_CATCH){
+		free(((t_message_catch*)message)->pokemon_name);
+		free(((t_message_catch*)message)->position);
+		printf("Se libero el mensaje catch\n");
+	}
 }
