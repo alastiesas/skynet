@@ -1,1 +1,6 @@
 [INFO] 18:06:04:395 team program/(5524:5524): hola soy lasti123
+[INFO] 20:31:56:892 team program/(9353:9353): hola soy lasti123
+[INFO] 21:01:57:901 team program/(10047:10047): hola soy lasti123
+[ERROR] 21:01:57:907 team program/(10047:10047): Error de socket()
+[WARNING] 21:01:57:908 team program/(10047:10047): Error de conexion con el team
+

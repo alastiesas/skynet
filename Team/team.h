@@ -827,21 +827,31 @@ void* sender_thread()
 	*/
 	//send al broker, (pokemon, posicion, el entrenador)
 
+	//
 
+	//pthread_t tid;
+	//pthread_create(&tid, NULL, subscribe, NULL);
+	//pthread_join(tid, NULL);
 
-	pthread_t tid;
-	pthread_create(&tid, NULL, subscribe, NULL);
-	pthread_join(tid, NULL);
 
 }
 
-void* listener_thread()
+void* fake_broker_thread()
 {
-	//ENVIAMOS SUBSCRIPCION Y ESCUCHAMOS
-
-
+	//SERVIDOR QUE ESCUCHA EN PUERTO TAL! 6001
+	//PRINTF ALGO DE MENSAJE
+	//RESPONDE ACK
 }
 
+
+
+/*
+subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
+
+
+
+
+*/
 void subscribe(queue_code queue_code) {
 
 	char* ip = config_get_string_value(config, "BROKER_IP");
