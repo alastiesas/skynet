@@ -36,20 +36,21 @@ int main(void)
 	log_info(log, "hola soy lasti123");
 
 	config = config_create("team.config");
-	bool test = config_has_property(config, "IP");
+	//bool test = config_has_property(config, "IP");
 
 
 	// hilo de servidor
 
-	pthread_t tid;
-	pthread_create(&tid, NULL, fake_broker_thread, NULL);
+	//pthread_t tid;
+	//pthread_create(&tid, NULL, fake_broker_thread, NULL);
 
 
 	subscribe(5);
 
-	pthread_join(tid, NULL);
+	//pthread_join(tid, NULL);
+
+	//printf(test ? "true" : "false");
 	/*
-	printf(test ? "true" : "false");
 	ip = config_get_string_value(config, "IP");
 
 	//char** test_list = config_get_array_value(config,"POSICIONES_ENTRENADORESE");

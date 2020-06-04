@@ -854,8 +854,9 @@ subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
 */
 void subscribe(queue_code queue_code) {
 
-	char* ip = config_get_string_value(config, "BROKER_IP");
-	char* port = config_get_string_value(config, "BROKER_PORT");
+	char* ip = config_get_string_value(config, "IP_BROKER");
+	char* port = config_get_string_value(config, "PUERTO_BROKER");
+
 	int32_t socket = connect_to_server(ip, port, log);
 
 	uint32_t id = config_get_string_value(config, "ID");
