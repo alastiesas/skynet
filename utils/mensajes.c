@@ -161,7 +161,7 @@ uint32_t receive_ID_proceso(uint32_t socket, t_log* logger){
 		log_info(logger, "Se recibio el ID del proceso: %d\n", ID_proceso);
 
 
-	return 0; //success
+	return ID_proceso;
 
 }
 
@@ -170,7 +170,8 @@ uint32_t receive_ID_proceso(uint32_t socket, t_log* logger){
 t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
 	t_message_new* new = malloc(sizeof(t_message_new));
-
+	new->location = malloc(sizeof(t_location));
+	new->location->position = malloc(sizeof(t_position));
 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
 
@@ -229,7 +230,7 @@ t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logge
 t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
 	t_message_catch* catch = malloc(sizeof(t_message_catch));
-
+	catch->position = malloc(sizeof(t_position));
 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
 

@@ -34,6 +34,7 @@ typedef struct
 	bool connected;
 	int32_t socket;
 	t_list* sent_messages; //mensajes que ya le envie a este suscriptor
+	t_log* log;
 
 } t_suscriber;
 
@@ -173,7 +174,7 @@ void termination();
 
 void specific_termination();
 
-t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, int32_t bytes);
+t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, uint32_t bytes);
 
 
 

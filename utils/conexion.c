@@ -99,8 +99,10 @@ void listen_messages(void* input)
 		int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 		if(recibido == -1)
 			log_error(logger, "Error del recv()");
-		else if(recibido == 0)
-			log_error(logger, "Se recibieron 0 bytes, se cierra el recv()");
+		else if(recibido == 0){
+			log_error(logger, "Se recibieron 0 bytes.\n Llegue a bloquearme en el recv() pero luego se cerro la conexion.\n TODO reintentar conexion");
+			exit(EXIT_FAILURE);
+		}
 		else {
 			log_info(logger, "se recibieron %d bytes", recibido);
 
@@ -124,16 +126,16 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 		switch (cod_op) {
 		case PRUEBA:
 
-			msg = recibir_mensaje(socket, &size, logger);
+			message = recibir_mensaje(socket, &size, logger);
 
-			log_info(logger, "Se recibio el mensaje: %s", msg);
+			log_info(logger, "Se recibio el mensaje: %s", (char*) message);
 			break;
 
 		case OPERATION_NEW:
 			log_info(logger, "Se recibe el mensaje:\n");
 			//new = receive_new(socket, &size, logger);
 			message = (void*)receive_new(socket, &size, logger);			//se guarda en mensaje(void*)
-			//imprimir_new();	//el recv ya imprime
+
 			//free(new->pokemon_name);
 			//free(new->location->position);
 			//free(new->location);
@@ -143,7 +145,7 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 			log_info(logger, "Se recibe el mensaje:\n");
 			//catch = receive_catch(socket, &size, logger);
 			message = (void*)receive_catch(socket, &size, logger);			//se guarda en mensaje(void*)
-			//imprimir_catch();		//el recv ya imprime
+
 			//free(catch->pokemon_name);
 			//free(catch->position);
 			break;
@@ -152,7 +154,7 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 			log_warning(logger, "Aun no recibio la cod_op %d, intente otro dia, finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);
 		}
-		free(msg);//tambien se borraria?
+		//free(msg);//tambien se borraria? si, no se usa
 		//free(catch);
 		//free(new);
 		return message;
