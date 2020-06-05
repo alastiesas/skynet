@@ -12,8 +12,16 @@
 #include <conexion.h>
 #include <mensajes.h>
 
-char* IP_BROKER;
+char* IP;
 char* PORT;
+char* memory_size;
+char* min_partition_size;
+char* memory_algorithm;
+char* replacement_algorithm;
+char* free_partition_algorithm;
+char* compaction_frequency;
+
+void* mem;
 
 typedef struct
 {
@@ -92,6 +100,17 @@ typedef struct
 	pthread_cond_t broadcast;
 
 } t_semaforos;
+
+typedef struct
+{
+	uint32_t size;
+	uint32_t start_pos;
+	uint32_t end_pos;
+	bool free;
+
+} t_partition;
+
+
 
 uint32_t ID_GLOBAL;
 uint32_t size_subs_new;			//para mantener la cantidad de suscriptores tambien hay que usar semaforos?
@@ -175,6 +194,10 @@ void termination();
 void specific_termination();
 
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, uint32_t bytes);
+
+void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data);
+int32_t find_free_position();
+void free_some_space();
 
 
 

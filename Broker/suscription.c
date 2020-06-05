@@ -132,6 +132,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	suscriber->log = log_create(nombre, file, LOG_CONSOLE, LOG_LEVEL_TRACE);
 
 
+
 	send_received_message(suscriber, my_semaphores, my_queue, my_queueIDs, count);	//loop infinito
 
 }
@@ -189,6 +190,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 			log_debug(suscriber->log, "Se va a enviar el mensaje de ID: %d", (int)elemento);
 
 			//obtener el mensaje con ese ID
+	//TODO implementar funcion de busqueda segun algoritmo
 			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &message_data, suscriber->log);
 			if(mensaje != NULL){	//en modo sin memoria, siempre va a encontrar el mensaje
 				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, &message_data, bytes);
