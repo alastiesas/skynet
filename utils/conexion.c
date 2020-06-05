@@ -154,6 +154,8 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 			log_warning(logger, "Aun no recibio la cod_op %d, intente otro dia, finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);
 		}
+		send_ACK(socket, logger);
+		log_info(logger, "Se envio la confirmacion de la recepcion del mensaje");
 		//free(msg);//tambien se borraria? si, no se usa
 		//free(catch);
 		//free(new);
