@@ -36,11 +36,17 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	queue_code cola;
 	cola = receive_cola(socket_cliente, logger);
 
-//TODO verificar si es un proceso que ya se habia suscrito antes, y verificar que se este suscribiendo a la misma cola
-	//si ya estaba conectado, no se puede volver a suscribir
-	//si no estaba conectado, pasar el flag a conectado
-	//verificar que se suscribe a la misma cola
-	//actualizar el nuevo socket
+//TODO verificar si es un proceso que ya se habia suscrito antes,
+	switch(cola){
+	case COLA_NEW:
+		//buscar sub en la lista de subs de la cola elegida. (un ID de proceso se puede suscribir a todas las colas independientemente)
+		//si se encuentra y esta conectado, ERROR. Responder con ack de error
+		//si se encuentra, y no conectado, actualizar. (socket y flag)
+		//si no se encuentra, camino normal
+		break;
+	default:
+		break;
+	}
 
 	//crear el t_suscriber
 	t_suscriber* suscriber = malloc(sizeof(t_suscriber));
@@ -178,43 +184,49 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 		//-----------------------------------------------------------------------------------------------
 
 		while(!list_is_empty(not_sent_ids)){
-//tomar el primer ID de mensaje que falte enviar, y sacarlo de la lista
+			//tomar el primer ID de mensaje que falte enviar, y sacarlo de la lista
 			elemento = list_remove(not_sent_ids, 0);
 			log_debug(suscriber->log, "Se va a enviar el mensaje de ID: %d", (int)elemento);
 
-//obtener el mensaje con ese ID
+			//obtener el mensaje con ese ID
 			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &message_data, suscriber->log);
-			paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, &message_data, bytes);
+			if(mensaje != NULL){	//en modo sin memoria, siempre va a encontrar el mensaje
+				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, &message_data, bytes);
 
-//enviar el mensaje
-			result = send_paquete(suscriber->socket, paquete);
+				//enviar el mensaje
+				result = send_paquete(suscriber->socket, paquete);
 
-//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
-			if(result == -1){
-				suscriber->connected = false;
-				log_info(suscriber->log, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
-				pthread_exit(NULL);
-			}
-			else
-				log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber);
-//agregar el ID del mensaje como enviado en suscriber->sent_messages
-			list_add(suscriber->sent_messages, elemento);
+				//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
+				if(result == -1){
+					suscriber->connected = false;
+					log_info(suscriber->log, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
+					suscriber->socket = 0;
+					pthread_exit(NULL);
+				}
+				else
+					log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber);
+				//agregar el ID del mensaje como enviado en suscriber->sent_messages
+				list_add(suscriber->sent_messages, elemento);
 
-//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
-			pthread_mutex_lock(&(semaforos->mutex_cola));
-				list_add(mensaje->subs_enviados, suscriber->ID_suscriber);
+				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
+				pthread_mutex_lock(&(semaforos->mutex_cola));
+				list_add(mensaje->subs_enviados, (void*)suscriber->ID_suscriber);
 				//verificar si el mensaje ya fue enviado a todos para borrar de la cola. (sigue en la cache)
-			pthread_mutex_unlock(&(semaforos->mutex_cola));
+				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
-//esperar confirmacion del mensaje
-			receive_ACK(suscriber->socket, suscriber->log);
+				//esperar confirmacion del mensaje
+				receive_ACK(suscriber->socket, suscriber->log);
 
-//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
-			pthread_mutex_lock(&(semaforos->mutex_cola));
-				list_add(mensaje->subs_confirmados, suscriber->ID_suscriber);
-			pthread_mutex_unlock(&(semaforos->mutex_cola));
+				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
+				pthread_mutex_lock(&(semaforos->mutex_cola));
+				list_add(mensaje->subs_confirmados, (void*)suscriber->ID_suscriber);
+				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
-			free(message_data);
+				free(message_data);
+			}
+			else{
+				log_info(suscriber->log, "El mensaje de ID %d ya no se encuentra en la memoria", (uint32_t)elemento);
+			}
 		}
 
 
