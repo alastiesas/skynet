@@ -47,6 +47,14 @@ int main(void)
 
 	subscribe(5);
 
+
+
+
+	pthread_t tid;
+	pthread_create(&tid, NULL, sender_thread, NULL);
+
+	pthread_join(tid, NULL);
+
 	//pthread_join(tid, NULL);
 
 	//printf(test ? "true" : "false");

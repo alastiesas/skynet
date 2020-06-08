@@ -42,6 +42,8 @@ sem_t sem_exec;
 t_list* messages_list;
 sem_t sem_messages_list;
 sem_t sem_messages;
+sem_t sem_messages_recieve_list;
+
 
 typedef enum {
 	EMPTY = 0,
@@ -118,9 +120,15 @@ typedef struct
 typedef struct
 {
 	pthread_t tid;
-	t_target target;
-	uint32_t message_id;
+	char* pokemon;
+	t_position* position;
 } t_message_team;
+
+typedef struct
+{
+	pthread_t tid;
+	uint32_t message_id;
+} t_message_team_receive;
 
 
 int size_array (char*);
@@ -704,6 +712,10 @@ void short_term_scheduler()
 				printf("aca llego bien2\n");
 				t_message_team* message = malloc(sizeof(t_message_team));
 				message->tid = trainer_exec->tid;
+				strcpy(message->pokemon, trainer_exec->target->pokemon);
+				message->position = malloc(sizeof(t_position));
+				*message->position->x = *trainer_exec->target->position->x;
+				*message->position->y = *trainer_exec->target->position->y;
 				//message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
 				list_add(messages_list,message);
 				sem_post(&sem_messages_list);
@@ -712,8 +724,8 @@ void short_term_scheduler()
 				printf("aca llego bien4\n");
 
 
-				//PENSAR QUE VA EN MESSAGE LIST ??
-				//TARGET, tid del entrenador, correlative_id??
+				//PENSAR QUE VA EN MESSAGE LIST ?? DONE
+				//TARGET, tid del entrenador, correlative_id?? SIN TARGET -> position + pokemon
 
 				transition_exec_to_block();
 			}
@@ -818,13 +830,35 @@ void* exec_thread()
 
 void* sender_thread()
 {
-	/*
+
 	sem_init(&sem_messages_list, 0, 0);
 	sem_init(&sem_messages, 0, 0);
+	sem_init(&sem_messages_recieve_list, 0, 0);
 	while(1){
 		sem_wait(&sem_messages);
+		sem_wait(&sem_messages_list);
+		t_message_team* message = list_remove(messages_list, 0);
+		sem_post(&sem_messages_list);
+		t_message_catch* catch = create_message_catch_long(message->pokemon, message->position->x, message->position->y);
+
+		t_package* package = serialize_catch(catch);
+		destroy_message_catch(catch);
+		int32_t correlative_id = send_message("127.0.0.1", "6001", package);
+
+
+
+		t_message_team_receive* message_recieve = malloc(sizeof(t_message_team_receive));
+		message_recieve->tid = message->tid;
+		message_recieve->message_id = correlative_id;
+		destroy_message_team(message);
+
+		sem_wait(&sem_messages_recieve_list);
+		list_add(messages_list, message_recieve);
+		sem_post(&sem_messages_recieve_list);
+
+		printf("salio para el broker\n");
 	}
-	*/
+
 	//send al broker, (pokemon, posicion, el entrenador)
 
 	//
@@ -832,6 +866,7 @@ void* sender_thread()
 	//pthread_t tid;
 	//pthread_create(&tid, NULL, subscribe, NULL);
 	//pthread_join(tid, NULL);
+
 
 
 }
@@ -860,6 +895,7 @@ void subscribe(queue_code queue_code) {
 	int32_t socket = connect_to_server(ip, port, log);
 
 	uint32_t id = config_get_string_value(config, "ID");
+	//id = 5;
 	t_package* package = serialize_suscripcion(atoi(id), queue_code);
 
 	send_paquete(socket, package);
@@ -882,4 +918,19 @@ void subscribe(queue_code queue_code) {
 }
 
 
+int32_t send_message(char* ip, char* port, t_package* package) {
+
+	int32_t socket = connect_to_server(ip, port, log);
+	send_paquete(socket, package);
+
+	int32_t correlative_id = receive_ID(socket, log);
+	send_ACK(socket, log);
+	return correlative_id;
+}
+
+void destroy_message_team(t_message_team* message){
+	free(message->pokemon);
+	free(message->position);
+	free(message);
+}
 #endif /* TEAM_H_ */
