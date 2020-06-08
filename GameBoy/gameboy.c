@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 		} else if (strcmp(argv[2], "NEW_POKEMON") == 0) {
 			queue_code = COLA_NEW;
 		} else {
-			exit(EXIT_FAILURE);
+			exit_failure();
 		}
 		subscribe_timed(queue_code, atoi(argv[3]));
 
@@ -90,10 +90,10 @@ int main(int argc, char* argv[]) {
 					package = serialize_message_new(new);
 					destroy_message_new(new);
 				} else {
-					exit(EXIT_FAILURE);
+					exit_failure();
 				}
 			} else {
-				exit(EXIT_FAILURE);
+				exit_failure();
 			}
 
 		} else if (strcmp(argv[1], "GAMECARD") == 0) {
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 				destroy_message_new(new);
 
 			} else {
-				exit(EXIT_FAILURE);
+				exit_failure();
 			}
 
 		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6 && strcmp(argv[2], "APPEARED_POKEMON") == 0) {
@@ -137,36 +137,32 @@ int main(int argc, char* argv[]) {
 			destroy_message_appeared(appeared);
 
 		} else {
-			exit(EXIT_FAILURE);
+			exit_failure();
 		}
 		send_message(ip, port, package);
 
 	}
 
+	log_warning("pide el tp que sea './gameboy' y no './gameBoy'");
 	puts("ending gameboy");
 	log_destroy(logger);
 	config_destroy(config);
 	return EXIT_SUCCESS;
 }
 
-/*int32_t posX = atoi(argv[4]);	//convierte a int el argumento de main
-
-	int32_t posY = atoi(argv[5]);
-	int32_t cantidad = atoi(argv[6]);
-
-	t_new* new = malloc(sizeof(t_new));
-	new->id = 0;
-	strcpy(new->nombre, argv[3]);				//valgrind dice "use of uninitialized value of size 4 en strcpy." Pero no aclara si es esta linea
-	uint32_t size_name = strlen(new->nombre)+1;
-	new->size_nombre = size_name;
-	new->posX = posX;				//convertir string a int?
-	new->posY = posY;
-	new->cantidad = cantidad;
-	printf("Se guardaron todos los datos en la estructura a serializar\n");
-
-	//serializar
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete = serialize_new(new); pending1
-
-	free(new->nombre);
-	free(new);*/
+void exit_failure(){
+	printf("\n//gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]"
+			"\n//gameboy BROKER APPEARED_POKEMON [POKEMON] [POSX] [POSY] [ID_CORRELATIVO]"
+			"\n//gameboy BROKER GET_POKEMON [POKEMON]"
+			"\n//gameboy BROKER CATCH_POKEMON [POKEMON] [POSX] [POSY]"
+			"\n//gameboy BROKER CAUGHT_POKEMON [ID_CORRELATIVO] [OK/FAIL]"
+			"\n"
+			"\n//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]"
+			"\n"
+			"\n//gameboy GAMECARD NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD] [ID_MENSAJE]"
+			"\n//gameboy GAMECARD GET_POKEMON [POKEMON] [ID_MENSAJE]"
+			"\n//gameboy GAMECARD CATCH_POKEMON [POKEMON] [POSX] [POSY] [ID_MENSAJE]"
+			"\n"
+			"\n//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]\n");
+	exit(EXIT_FAILURE);
+}

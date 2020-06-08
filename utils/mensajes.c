@@ -223,6 +223,7 @@ t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logge
 	if(*size != sizeof(new->id) + sizeof(new->size_pokemon_name) + strlen(new->pokemon_name)+1 + sizeof(new->location->position->x) + sizeof(new->location->position->y) + sizeof(new->location->amount))
 		log_error(logger, "Tamanio erroneo");
 
+
 	return new;
 
 }

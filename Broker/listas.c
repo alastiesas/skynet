@@ -13,17 +13,21 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 	}
 
 	pthread_mutex_lock(&mutex_cola);
-	elemento = list_find(cola, _soy_ID_buscado);
-	*bytes = elemento->bytes;
-	*datos_mensaje = malloc(*bytes);
-	size = *bytes;
-	memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
+		elemento = list_find(cola, _soy_ID_buscado);
+		if(elemento != NULL){
+			*bytes = elemento->bytes;
+			*datos_mensaje = malloc(*bytes);
+			size = *bytes;
+			memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
+		}
 	pthread_mutex_unlock(&mutex_cola);
 
-	log_trace(logsub, "Se encontro el t_pending de ID: %d", elemento->ID_mensaje);
-	log_trace(logsub, "Adentro de la struct hay %d bytes", elemento->bytes);
 
-	if(elemento == NULL)
+	if(elemento != NULL){
+		log_trace(logsub, "Se encontro el t_pending de ID: %d", elemento->ID_mensaje);
+		log_trace(logsub, "Adentro de la struct hay %d bytes", elemento->bytes);
+	}
+	else
 		log_error(logsub, "No se encontro el mensaje que tenia que estar en la cola\n");
 
 	return elemento;

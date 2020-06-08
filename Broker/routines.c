@@ -8,11 +8,10 @@ void initialization() {
 
 void generic_initialization() {
 
-	ID_GLOBAL = 1;
 	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_TRACE); //pending clean
 	config = config_create("broker.config"); //pending clean
-	IP_BROKER = config_get_string_value(config, "IP_BROKER");
-	PORT = config_get_string_value(config, "PORT");
+	IP = config_get_string_value(config, "IP_BROKER");
+	PORT = config_get_string_value(config, "PUERTO_BROKER");
 }
 
 void initialize_queues() {
@@ -38,6 +37,22 @@ void initialize_queues() {
 }
 
 void specific_initialization() {
+
+	ID_GLOBAL = 1;
+
+	memory_size = config_get_string_value(config, "TAMANO_MEMORIA");
+	min_partition_size = config_get_string_value(config, "TAMANO_MINIMO_PARTICION");
+
+	memory_algorithm = config_get_string_value(config, "ALGORITMO_MEMORIA");
+
+	free_partition_algorithm = config_get_string_value(config, "ALGORITMO_PARTICION_LIBRE");
+	compaction_frequency = config_get_string_value(config, "FRECUENCIA_COMPACTACION");
+
+	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
+
+
+	mem = malloc(atoi(memory_size));
+
 
 	queues = malloc(sizeof(t_queues));
 	suscribers = malloc(sizeof(t_suscribers));
@@ -116,4 +131,8 @@ void specific_termination() {
 	free(semaphores_localized);
 	free(semaphores_catch);
 	free(semaphores_caught);
+}
+
+void memory_init(){
+
 }

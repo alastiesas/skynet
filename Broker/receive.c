@@ -126,6 +126,9 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 		ID_GLOBAL++;
 	pthread_mutex_unlock(&mutex_ID_global);
 
+//TODO guardar mensaje en la memoria segun algoritmo
+	//save_message_partitions();
+
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
 
@@ -136,4 +139,33 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos, total_queue_messages);
 
 }
+
+
+void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data){
+
+	uint32_t free_position;
+
+	free_position = find_free_position();
+
+	if(free_position != -1)
+		memmove(mem + free_position, message_data, size_message);
+	else
+		free_some_space();
+}
+
+
+int32_t find_free_position(){
+
+	uint32_t posicion;
+
+	//si encuentra lugar libre, return position, sino, return -1
+
+	return posicion;
+}
+
+void free_some_space(){
+	//chequear si borrar mensaje o compactar
+}
+
+
 
