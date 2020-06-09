@@ -110,6 +110,7 @@ typedef struct
 
 } t_partition;
 
+t_list* partitions;
 
 
 uint32_t ID_GLOBAL;
@@ -131,6 +132,7 @@ t_semaforos* semaphores_get;
 t_semaforos* semaphores_localized;
 t_semaforos* semaphores_catch;
 t_semaforos* semaphores_caught;
+
 
 pthread_t listening_thread;
 
@@ -193,12 +195,16 @@ void termination();
 
 void specific_termination();
 
+void memory_init();
+
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, uint32_t bytes);
 
 void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data);
 int32_t find_free_position();
 void free_some_space();
 
+bool is_free_partition(void *partition);
+uint32_t find_free_partition_index(uint32_t size_message);
 
 
 #endif /* BROKER_H_ */

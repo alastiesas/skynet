@@ -51,7 +51,8 @@ void specific_initialization() {
 	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
 
 
-	mem = malloc(atoi(memory_size));
+	memory_init();
+
 
 
 	queues = malloc(sizeof(t_queues));
@@ -134,5 +135,13 @@ void specific_termination() {
 }
 
 void memory_init(){
+	mem = malloc(atoi(memory_size));
 
+	t_partition* first_partition = malloc(sizeof(*first_partition));
+	first_partition->start_pos = atoi(mem);
+	first_partition->size = atoi(memory_size);
+	first_partition->end_pos = atoi(mem) + atoi(memory_size);
+	first_partition->free = true;
+
+	list_add(partitions, first_partition);
 }
