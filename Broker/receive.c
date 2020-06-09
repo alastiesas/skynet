@@ -143,7 +143,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 
 void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data){
 
-	uint32_t* free_partition_index = find_free_partition_index(size_message);
+	uint32_t free_partition_index = find_free_partition_index(size_message);
 
 	if(free_partition_index != -1){
 
@@ -163,7 +163,7 @@ void save_message_partitions(uint32_t message_id, uint32_t size_message, void* m
 		//grabo el mensaje en la posicion
 		memmove(new_partition->start_pos, message_data, size_message);
 
-		list_add_in_index(partitions, new_partition);
+		list_add_in_index(partitions,free_partition_index , new_partition);
 
 		//TODO: chequear si add in index no reemplaza el index actual
 	}
@@ -177,41 +177,36 @@ bool is_free_partition(void *partition){
 }
 
 
-uint32_t* find_free_partition_index(uint32_t size_message){
+uint32_t find_free_partition_index(uint32_t size_message){
 
-	uint32_t* free_partition_index = -1;
+	uint32_t free_partition_index = -1;
 
-	switch (free_partition_algorithm) {
-		case "FF":
-			for (int i = 0; i < list_size(partitions); ++i) {
-					t_partition *partition = (t_partition*)list_get(partitions, i);
-					if (partition->free == true && partition->size >= size_message) {
-						free_partition_index = i;
-						break;
-					}
-				}
-			break;
-		case "BF":
 
-			uint32_t* tamanio_restante_ant = size_message;
-			uint32_t* tamanio_restante = 0;
+	if (strcmp(free_partition_algorithm, "FF") == 0) {
+		for (int i = 0; i < list_size(partitions); ++i) {
+			t_partition *partition = (t_partition*)list_get(partitions, i);
+			if (partition->free == true && partition->size >= size_message) {
+				free_partition_index = i;
+				break;
+			}
+		}
 
-			for (int i = 0; i < list_size(partitions); ++i) {
-					t_partition *partition = (t_partition*)list_get(partitions, i);
+	}else if (strcmp(free_partition_algorithm, "BF") == 0) {
 
-					tamanio_restante = partition->size - size_message;
+		uint32_t tamanio_restante_ant = size_message;
+		uint32_t tamanio_restante = 0;
 
-					if (partition->free == true && partition->size >= size_message && tamanio_restante <= tamanio_restante_ant) {
-						free_partition_index = i;
-						tamanio_restante_ant = tamanio_restante;
-						break;
-					}
-				}
-			break;
+		for (int i = 0; i < list_size(partitions); ++i) {
+			t_partition *partition = (t_partition*)list_get(partitions, i);
+			tamanio_restante = partition->size - size_message;
+			if (partition->free == true && partition->size >= size_message && tamanio_restante <= tamanio_restante_ant) {
+				free_partition_index = i;
+				tamanio_restante_ant = tamanio_restante;
+				break;
+			}
+		}
+
 	}
-
-
-	//FIFO
 
 
 	//si encuentra particicon libre, devuelve su indice, sino, return NULL;

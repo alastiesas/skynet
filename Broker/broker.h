@@ -204,7 +204,7 @@ int32_t find_free_position();
 void free_some_space();
 
 bool is_free_partition(void *partition);
-t_partition* find_free_partition(uint32_t size_message);
+uint32_t find_free_partition_index(uint32_t size_message);
 
 
 #endif /* BROKER_H_ */
