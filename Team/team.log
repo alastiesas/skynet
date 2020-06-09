@@ -45,3 +45,34 @@
 [INFO] 19:30:00:236 team program/(6363:6363): hola soy lasti123
 [INFO] 19:30:00:238 team program/(6363:6363): Conexion creada
 
+[INFO] 22:26:38:813 team program/(7893:7893): hola soy lasti123
+[INFO] 22:26:38:819 team program/(7893:7893): Conexion creada
+
+[INFO] 22:26:38:823 team program/(7893:7893): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:09:40:248 team program/(5136:5136): hola soy lasti123
+[INFO] 18:09:40:252 team program/(5136:5136): Conexion creada
+
+[INFO] 18:09:40:258 team program/(5136:5136): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:09:40:267 team program/(5136:5143): Conexion creada
+
+[INFO] 18:09:40:267 team program/(5136:5142): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:09:40:270 team program/(5136:5143): Se recibio el ID de mensaje: 1
+
+[INFO] 18:09:40:270 team program/(5136:5143): Se envio la confirmacion (4 bytes)
+[INFO] 18:10:25:538 team program/(5170:5170): hola soy lasti123
+[INFO] 18:10:25:545 team program/(5170:5170): Conexion creada
+
+[INFO] 18:10:25:547 team program/(5170:5170): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:10:25:554 team program/(5170:5177): Conexion creada
+
+[INFO] 18:10:25:557 team program/(5170:5176): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:10:25:559 team program/(5170:5177): Se recibio el ID de mensaje: 1
+
+[INFO] 18:10:25:559 team program/(5170:5177): Se envio la confirmacion (4 bytes)
