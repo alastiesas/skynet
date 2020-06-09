@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	log_warning("pide el tp que sea './gameboy' y no './gameBoy'");
+	//log_warning("pide el tp que sea './gameboy' y no './gameBoy'");
 	puts("ending gameboy");
 	log_destroy(logger);
 	config_destroy(config);

@@ -46,19 +46,19 @@ int main(void)
 
 
 	subscribe(5);
-
+	sleep(5);
 
 
 
 	pthread_t tid;
 	pthread_create(&tid, NULL, sender_thread, NULL);
 
-	pthread_join(tid, NULL);
+	//pthread_join(tid, NULL);
 
 	//pthread_join(tid, NULL);
 
 	//printf(test ? "true" : "false");
-	/*
+
 	ip = config_get_string_value(config, "IP");
 
 	//char** test_list = config_get_array_value(config,"POSICIONES_ENTRENADORESE");
@@ -126,8 +126,8 @@ int main(void)
 	objetives_list = initialize_global_objectives(new_list);
 
 
-	pthread_t tid;
-	pthread_t tid2;
+	//pthread_t tid;
+	//pthread_t tid2;
 	pthread_attr_t attr;
 
 	printf("aca llego!!!\n");
@@ -145,7 +145,7 @@ int main(void)
 
 
 	pthread_join(exec_tid, NULL);
-	*/
+
 	//HASTA ACA DEJAMOS COMENTADO
 
 	/*

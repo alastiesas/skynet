@@ -76,3 +76,239 @@ esperando recibir cod_op, por vez numero: 1
 [INFO] 18:10:25:559 team program/(5170:5177): Se recibio el ID de mensaje: 1
 
 [INFO] 18:10:25:559 team program/(5170:5177): Se envio la confirmacion (4 bytes)
+[INFO] 18:43:26:169 team program/(3845:3845): hola soy lasti123
+[WARNING] 18:43:26:175 team program/(3845:3845): Error de conexion con el team
+
+[INFO] 18:43:26:175 team program/(3845:3845): Reintentando en 10 segundos
+
+[WARNING] 18:43:36:175 team program/(3845:3845): Error de conexion con el team
+
+[INFO] 18:43:36:176 team program/(3845:3845): Reintentando en 10 segundos
+
+[INFO] 18:47:41:617 team program/(4525:4525): hola soy lasti123
+[INFO] 18:47:41:617 team program/(4525:4525): Conexion creada
+
+[INFO] 18:47:41:618 team program/(4525:4525): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:47:41:622 team program/(4525:4527): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:54:24:210 team program/(5006:5006): hola soy lasti123
+[INFO] 18:54:24:210 team program/(5006:5006): Conexion creada
+
+[INFO] 18:54:24:217 team program/(5006:5006): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:54:24:222 team program/(5006:5009): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:56:46:731 team program/(5163:5163): hola soy lasti123
+[INFO] 18:56:46:732 team program/(5163:5163): Conexion creada
+
+[INFO] 18:56:46:733 team program/(5163:5163): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:56:46:735 team program/(5163:5165): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:57:48:762 team program/(5266:5266): hola soy lasti123
+[INFO] 18:57:48:765 team program/(5266:5266): Conexion creada
+
+[INFO] 18:57:48:766 team program/(5266:5266): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:57:48:768 team program/(5266:5269): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:57:58:783 team program/(5266:5270): Conexion creada
+
+[INFO] 18:57:58:784 team program/(5266:5270): Se recibio el ID de mensaje: 1
+
+[INFO] 18:57:58:784 team program/(5266:5270): Se envio la confirmacion (4 bytes)
+[INFO] 18:58:49:516 team program/(5345:5345): hola soy lasti123
+[INFO] 18:58:49:519 team program/(5345:5345): Conexion creada
+
+[INFO] 18:58:49:520 team program/(5345:5345): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 18:58:49:526 team program/(5345:5351): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 18:58:59:539 team program/(5345:5352): Conexion creada
+
+[INFO] 18:58:59:547 team program/(5345:5352): Se recibio el ID de mensaje: 2
+
+[INFO] 18:58:59:547 team program/(5345:5352): Se envio la confirmacion (4 bytes)
+[ERROR] 18:58:59:893 team program/(5345:5351): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[ERROR] 18:58:59:893 team program/(5006:5009): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[ERROR] 18:58:59:893 team program/(4525:4527): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 18:59:40:457 team program/(5438:5438): hola soy lasti123
+[WARNING] 18:59:40:458 team program/(5438:5438): Error de conexion con el team
+
+[INFO] 18:59:40:458 team program/(5438:5438): Reintentando en 10 segundos
+
+[WARNING] 18:59:50:458 team program/(5438:5438): Error de conexion con el team
+
+[INFO] 18:59:50:458 team program/(5438:5438): Reintentando en 10 segundos
+
+[WARNING] 19:00:00:459 team program/(5438:5438): Error de conexion con el team
+
+[INFO] 19:00:00:459 team program/(5438:5438): Reintentando en 10 segundos
+
+[WARNING] 19:00:10:460 team program/(5438:5438): Error de conexion con el team
+
+[INFO] 19:00:10:460 team program/(5438:5438): Reintentando en 10 segundos
+
+[INFO] 19:00:19:812 team program/(5648:5648): hola soy lasti123
+[INFO] 19:00:19:824 team program/(5648:5648): Conexion creada
+
+[INFO] 19:00:19:831 team program/(5648:5648): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:00:19:842 team program/(5648:5654): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:00:20:658 team program/(5438:5438): Conexion creada
+
+[INFO] 19:00:20:663 team program/(5438:5438): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:00:20:668 team program/(5438:5660): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:00:29:854 team program/(5648:5655): Conexion creada
+
+[INFO] 19:00:29:866 team program/(5648:5655): Se recibio el ID de mensaje: 1
+
+[INFO] 19:00:29:866 team program/(5648:5655): Se envio la confirmacion (4 bytes)
+[INFO] 19:00:30:680 team program/(5438:5661): Conexion creada
+
+[INFO] 19:00:30:683 team program/(5438:5661): Se recibio el ID de mensaje: 2
+
+[INFO] 19:00:30:683 team program/(5438:5661): Se envio la confirmacion (4 bytes)
+[ERROR] 19:00:30:844 team program/(5438:5660): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[ERROR] 19:00:30:847 team program/(5648:5654): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 19:02:51:338 team program/(5800:5800): hola soy lasti123
+[INFO] 19:02:51:339 team program/(5800:5800): Conexion creada
+
+[INFO] 19:02:51:343 team program/(5800:5800): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:02:51:343 team program/(5800:5806): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:03:01:357 team program/(5800:5807): Conexion creada
+
+[INFO] 19:03:01:363 team program/(5800:5807): Se recibio el ID de mensaje: 1
+
+[INFO] 19:03:01:363 team program/(5800:5807): Se envio la confirmacion (4 bytes)
+[INFO] 19:05:23:381 team program/(5971:5971): hola soy lasti123
+[INFO] 19:05:23:387 team program/(5971:5971): Conexion creada
+
+[INFO] 19:05:23:392 team program/(5971:5971): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:05:23:406 team program/(5971:5977): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:05:33:414 team program/(5971:5978): Conexion creada
+
+[INFO] 19:05:33:423 team program/(5971:5978): Se recibio el ID de mensaje: 2
+
+[INFO] 19:05:33:423 team program/(5971:5978): Se envio la confirmacion (4 bytes)
+[ERROR] 19:05:33:613 team program/(5971:5977): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 19:07:05:314 team program/(6038:6038): hola soy lasti123
+[INFO] 19:07:05:316 team program/(6038:6038): Conexion creada
+
+[INFO] 19:07:05:317 team program/(6038:6038): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:07:05:319 team program/(6038:6044): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:07:15:332 team program/(6038:6045): Conexion creada
+
+[INFO] 19:07:15:339 team program/(6038:6045): Se recibio el ID de mensaje: 1
+
+[INFO] 19:07:15:339 team program/(6038:6045): Se envio la confirmacion (4 bytes)
+[INFO] 19:08:40:933 team program/(6314:6314): hola soy lasti123
+[INFO] 19:08:40:936 team program/(6314:6314): Conexion creada
+
+[INFO] 19:08:40:940 team program/(6314:6314): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:08:40:941 team program/(6314:6321): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:08:50:951 team program/(6314:6322): Conexion creada
+
+[INFO] 19:08:50:956 team program/(6314:6322): Se recibio el ID de mensaje: 2
+
+[INFO] 19:08:50:956 team program/(6314:6322): Se envio la confirmacion (4 bytes)
+[INFO] 19:09:12:690 team program/(6351:6351): hola soy lasti123
+[INFO] 19:09:12:696 team program/(6351:6351): Conexion creada
+
+[INFO] 19:09:12:697 team program/(6351:6351): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:09:12:700 team program/(6351:6362): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:09:22:711 team program/(6351:6363): Conexion creada
+
+[INFO] 19:09:22:716 team program/(6351:6363): Se recibio el ID de mensaje: 1
+
+[INFO] 19:09:22:716 team program/(6351:6363): Se envio la confirmacion (4 bytes)
+[INFO] 19:12:44:969 team program/(6541:6541): hola soy lasti123
+[INFO] 19:12:44:969 team program/(6541:6541): Conexion creada
+
+[INFO] 19:12:44:972 team program/(6541:6541): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:12:44:976 team program/(6541:6547): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:12:59:992 team program/(6541:6549): Conexion creada
+
+[INFO] 19:12:59:997 team program/(6541:6549): Se recibio el ID de mensaje: 1
+
+[INFO] 19:12:59:997 team program/(6541:6549): Se envio la confirmacion (4 bytes)
+[INFO] 19:15:24:434 team program/(6837:6837): hola soy lasti123
+[INFO] 19:15:24:434 team program/(6837:6837): Conexion creada
+
+[INFO] 19:15:24:437 team program/(6837:6837): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:15:24:439 team program/(6837:6843): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:15:39:463 team program/(6837:6869): Conexion creada
+
+[INFO] 19:15:39:468 team program/(6837:6869): Se recibio el ID de mensaje: 1
+
+[INFO] 19:15:39:468 team program/(6837:6869): Se envio la confirmacion (4 bytes)
+[INFO] 19:16:09:511 team program/(6945:6945): hola soy lasti123
+[INFO] 19:16:09:523 team program/(6945:6945): Conexion creada
+
+[INFO] 19:16:09:524 team program/(6945:6945): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:16:09:524 team program/(6945:6951): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:16:24:539 team program/(6945:6952): Conexion creada
+
+[INFO] 19:16:24:544 team program/(6945:6952): Se recibio el ID de mensaje: 1
+
+[INFO] 19:16:24:544 team program/(6945:6952): Se envio la confirmacion (4 bytes)
+[INFO] 19:41:44:777 team program/(8281:8281): hola soy lasti123
+[INFO] 19:41:44:777 team program/(8281:8281): Conexion creada
+
+[INFO] 19:41:44:779 team program/(8281:8281): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:41:44:781 team program/(8281:8283): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:41:59:793 team program/(8281:8288): Conexion creada
+
+[INFO] 19:41:59:798 team program/(8281:8288): Se recibio el ID de mensaje: 1
+
+[INFO] 19:41:59:798 team program/(8281:8288): Se envio la confirmacion (4 bytes)

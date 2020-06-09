@@ -511,7 +511,8 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 {
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
-		trainer->target->pokemon = pokemon;
+		strcpy(&(trainer->target->pokemon),&pokemon);
+		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
 		trainer->target->catching = catching;
@@ -520,7 +521,8 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 	else if(strcmp(type,"BLOCK") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
-		trainer->target->pokemon = pokemon;
+		strcpy(&(trainer->target->pokemon),&pokemon);
+		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
 		trainer->target->catching = catching;
@@ -708,15 +710,21 @@ void short_term_scheduler()
 			printf("the trainer exec has %d\n",trainer_exec->target->catching);
 			if(trainer_exec->target->catching){
 				printf("aca llego bien11\n");
-				sem_wait(&sem_messages_list);
+
 				printf("aca llego bien2\n");
 				t_message_team* message = malloc(sizeof(t_message_team));
+				printf("aca llego bien2\n");
 				message->tid = trainer_exec->tid;
-				strcpy(message->pokemon, trainer_exec->target->pokemon);
+				printf("aca llego bien2\n");
+				//strcpy(&(message->pokemon), &(trainer_exec->target->pokemon));
+				printf("aca llego bien2\n");
+				message->pokemon = "pikachu";
 				message->position = malloc(sizeof(t_position));
-				*message->position->x = *trainer_exec->target->position->x;
-				*message->position->y = *trainer_exec->target->position->y;
+				message->position->x = trainer_exec->target->position->x;
+				message->position->y = trainer_exec->target->position->y;
+				printf("string cpy %s\n", message->pokemon);
 				//message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
+				sem_wait(&sem_messages_list);
 				list_add(messages_list,message);
 				sem_post(&sem_messages_list);
 				printf("aca llego bien3\n");
@@ -831,12 +839,13 @@ void* exec_thread()
 void* sender_thread()
 {
 
-	sem_init(&sem_messages_list, 0, 0);
+	sem_init(&sem_messages_list, 0, 1);
 	sem_init(&sem_messages, 0, 0);
 	sem_init(&sem_messages_recieve_list, 0, 0);
 	while(1){
 		sem_wait(&sem_messages);
 		sem_wait(&sem_messages_list);
+		printf("ACA SI LLEGO X1 \n");
 		t_message_team* message = list_remove(messages_list, 0);
 		sem_post(&sem_messages_list);
 		t_message_catch* catch = create_message_catch_long(message->pokemon, message->position->x, message->position->y);
@@ -844,19 +853,21 @@ void* sender_thread()
 		t_package* package = serialize_catch(catch);
 		destroy_message_catch(catch);
 		int32_t correlative_id = send_message("127.0.0.1", "6001", package);
-
+		printf("salio para el broker\n");
 
 
 		t_message_team_receive* message_recieve = malloc(sizeof(t_message_team_receive));
 		message_recieve->tid = message->tid;
 		message_recieve->message_id = correlative_id;
-		destroy_message_team(message);
+		//printf("limpiando message team \n");
+		//destroy_message_team(message);
+		//printf("ya se limpio message team \n");
 
 		sem_wait(&sem_messages_recieve_list);
 		list_add(messages_list, message_recieve);
 		sem_post(&sem_messages_recieve_list);
 
-		printf("salio para el broker\n");
+
 	}
 
 	//send al broker, (pokemon, posicion, el entrenador)
