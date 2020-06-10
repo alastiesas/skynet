@@ -1993,3 +1993,22 @@ esperando recibir cod_op, por vez numero: 1
 [INFO] 12:24:59:189 team program/(22369:22374): Reintentando en 10 segundos
 
 [INFO] 13:31:59:523 team program/(23654:23654): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 13:34:45:896 team program/(23871:23871): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 13:34:55:899 team program/(23871:23876): Error de conexion con el team
+
+[INFO] 13:34:55:899 team program/(23871:23876): Reintentando en 10 segundos
+
+[INFO] 13:39:08:29 team program/(24100:24100): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 13:39:18:33 team program/(24100:24105): Error de conexion con el team
+
+[INFO] 13:39:18:33 team program/(24100:24105): Reintentando en 10 segundos
+
+[WARNING] 13:39:28:34 team program/(24100:24105): Error de conexion con el team
+
+[INFO] 13:39:28:34 team program/(24100:24105): Reintentando en 10 segundos
+
+[INFO] 13:46:33:578 team program/(24357:24357): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 13:46:43:582 team program/(24357:24362): Error de conexion con el team
+
+[INFO] 13:46:43:582 team program/(24357:24362): Reintentando en 10 segundos
+

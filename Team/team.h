@@ -9,13 +9,12 @@
 #define TEAM_H_
 
 #include"includes.h"
+#include"utilities.h"
 #include"team_structs.h"
 
-
-
+//GLOBALS
 t_config* config;
 t_log* log;
-
 t_list* new_list;
 t_list* ready_list;
 t_list* block_list;
@@ -32,13 +31,10 @@ sem_t sem_messages_list;
 sem_t sem_messages;
 sem_t sem_messages_recieve_list;
 t_algorithm algorithm = FIFO;
+//FIN GLOBALS
 
 
 
-
-int size_array (char*);
-int char_count(char* array, char parameter);
-int size_array_config(char** array);
 
 t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa todos los entrenadores del conig
 void initialize_trainers();//inicializa un entrenador (pthread) en new_list
@@ -50,7 +46,7 @@ void initialize_global_objectives();
 void add_caught(t_list* list, char* pokemon);
 bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
-void *trainer_thread(t_callback* callback_thread);
+void* trainer_thread(t_callback* callback_thread);
 uint32_t dinstance(t_position* current, t_position* destiny);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
 bool trainer_full(t_trainer* trainer);
@@ -85,32 +81,6 @@ void* sender_thread();
 
 
 void subscribe(queue_code queue_code);
-
-
-int size_array (char* array)
-{
-	return char_count(array,'|');
-}
-
-int char_count(char* array, char parameter)
-{
-	int size_test =  strlen (array);
-	int count = 1;
-	for(int i = 0; i< size_test ; i++)
-		if(array[i] == parameter)
-					count++;
-	return count;
-}
-
-int size_array_config(char** array)
-{
-	int j = 0;
-		while(array[j] != NULL){
-			//printf("test_objetivos %s\n", array[j]);
-			j++;
-		}
-		return j;
-}
 
 
 void callback_fifo(t_trainer* trainer){
@@ -268,7 +238,7 @@ bool success_global_objective(t_list* global_objectives)
 	return (bool) list_all_satisfy(global_objectives,&success_objective);
 }
 
-void *trainer_thread(t_callback* callback_thread)
+void* trainer_thread(t_callback* callback_thread)
 {
 	//if(/*si es 0 menor*/)
 		//funcion cambiar valor global de variable interrumption
