@@ -1982,3 +1982,13 @@ esperando recibir cod_op, por vez numero: 1
 
 [INFO] 12:07:39:586 team program/(21724:21724): hola soy lasti123
 [INFO] 12:14:11:416 team program/(21945:21945): hola soy lasti123
+[INFO] 12:19:53:492 team program/(22183:22183): hola soy lasti123
+[WARNING] 12:20:03:497 team program/(22183:22188): Error de conexion con el team
+
+[INFO] 12:20:03:497 team program/(22183:22188): Reintentando en 10 segundos
+
+[INFO] 12:24:49:177 team program/(22369:22369): hola soy lasti123
+[WARNING] 12:24:59:189 team program/(22369:22374): Error de conexion con el team
+
+[INFO] 12:24:59:189 team program/(22369:22374): Reintentando en 10 segundos
+

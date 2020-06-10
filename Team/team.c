@@ -125,9 +125,9 @@ int main(void)
 
 	initialize_trainers();
 
-	objetives_list = list_create();
+	//objetives_list = list_create();
 
-	objetives_list = initialize_global_objectives(new_list);
+	initialize_global_objectives();
 
 
 	//pthread_t tid;

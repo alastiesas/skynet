@@ -50,12 +50,12 @@ int char_count(char* array, char parameter);
 int size_array_config(char** array);
 
 t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa todos los entrenadores del conig
-void initialize_trainers();//inicializa un entrenador (pthread)
+void initialize_trainers();//inicializa un entrenador (pthread) en new_list
 
 void state_change(uint32_t index, t_list* from,t_list* to);
 t_index* search_index(t_index* index ,t_objective* objective);
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
-t_list* initialize_global_objectives(t_list* list);
+void initialize_global_objectives();
 void add_caught(t_list* list, char* pokemon);
 bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
@@ -259,11 +259,10 @@ t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* train
 }
 
 
-t_list* initialize_global_objectives(t_list* list)
+void initialize_global_objectives()
 {
 	t_list* list_global_objectives = list_create();
-	list_global_objectives = (t_list*) list_fold( list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
-	return list_global_objectives;
+	objetives_list = (t_list*) list_fold( new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
 }
 
 bool success_objective(t_objective* objective)
