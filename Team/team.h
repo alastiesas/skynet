@@ -8,18 +8,9 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
+#include"includes.h"
 #include"team_structs.h"
-#include<stdio.h>
-#include<stdlib.h>
-#include<commons/log.h>
-#include<commons/string.h>
-#include<commons/config.h>
-#include<commons/collections/list.h>
-#include<readline/readline.h>
-#include<utils.h>
-#include<serialize.h>
-#include<conexion.h>
-#include<mensajes.h>
+
 
 
 t_config* config;
@@ -64,6 +55,7 @@ uint32_t dinstance(t_position* current, t_position* destiny);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
 bool trainer_full(t_trainer* trainer);
 bool trainer_free_space(t_trainer* trainer);
+
 void transition_new_to_ready(uint32_t index);
 void transition_ready_to_exec(uint32_t index);
 void transition_exec_to_ready();
@@ -71,6 +63,7 @@ void transition_exec_to_block();
 void transition_exec_to_exit();
 void transition_block_to_ready(uint32_t index);
 void transition_block_to_exit(uint32_t index);
+
 void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
@@ -238,7 +231,7 @@ bool pokemon_is_needed(char* pokemon)
 	printf("holaaaaaaaaaa\n");
 
 	if(objective == NULL)
-		printf("la concha de la lora\n");
+		printf("no necesitamos un %s\n", pokemon);
 	//return (objective->count > (objective->caught + objective->catching));
 	return objective->count > (objective->caught + objective->catching);
 }
