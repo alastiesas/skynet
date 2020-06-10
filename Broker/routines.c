@@ -40,7 +40,7 @@ void specific_initialization() {
 
 	ID_GLOBAL = 1;
 
-	memory_size = config_get_string_value(config, "TAMANO_MEMORIA");
+	memory_size = atoi(config_get_string_value(config, "TAMANO_MEMORIA"));
 	min_partition_size = config_get_string_value(config, "TAMANO_MINIMO_PARTICION");
 
 	memory_algorithm = config_get_string_value(config, "ALGORITMO_MEMORIA");
@@ -132,16 +132,4 @@ void specific_termination() {
 	free(semaphores_localized);
 	free(semaphores_catch);
 	free(semaphores_caught);
-}
-
-void memory_init(){
-	mem = malloc(atoi(memory_size));
-
-	t_partition* first_partition = malloc(sizeof(*first_partition));
-	first_partition->start_pos = atoi(mem);
-	first_partition->size = atoi(memory_size);
-	first_partition->end_pos = atoi(mem) + atoi(memory_size);
-	first_partition->free = true;
-
-	list_add(partitions, first_partition);
 }

@@ -141,82 +141,38 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 }
 
 
-void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data){
-
-	uint32_t free_partition_index = find_free_partition_index(size_message);
-
-	if(free_partition_index != -1){
-
-		t_partition *free_partition = (t_partition*)list_get(partitions, free_partition_index);
-		t_partition* new_partition = malloc(sizeof(*new_partition));
-
-		//Creo la nueva particion nueva
-		new_partition->start_pos = free_partition->start_pos;
-		new_partition->free = false;
-		new_partition->size = size_message;
-		new_partition->end_pos = new_partition->start_pos + size_message;
-
-		//Muevo la particion libre
-		free_partition->start_pos = free_partition->start_pos + size_message;
-		free_partition->size = free_partition->size - size_message;
-
-		//grabo el mensaje en la posicion
-		memmove(new_partition->start_pos, message_data, size_message);
-
-		list_add_in_index(partitions,free_partition_index , new_partition);
-
-		//TODO: chequear si add in index no reemplaza el index actual
-	}
-
-	else
-		free_some_space();
-}
-
-bool is_free_partition(void *partition){
-	        return ((t_partition*)partition)->free == true;
-}
-
-
-uint32_t find_free_partition_index(uint32_t size_message){
-
-	uint32_t free_partition_index = -1;
-
-
-	if (strcmp(free_partition_algorithm, "FF") == 0) {
-		for (int i = 0; i < list_size(partitions); ++i) {
-			t_partition *partition = (t_partition*)list_get(partitions, i);
-			if (partition->free == true && partition->size >= size_message) {
-				free_partition_index = i;
-				break;
-			}
-		}
-
-	}else if (strcmp(free_partition_algorithm, "BF") == 0) {
-
-		uint32_t tamanio_restante_ant = size_message;
-		uint32_t tamanio_restante = 0;
-
-		for (int i = 0; i < list_size(partitions); ++i) {
-			t_partition *partition = (t_partition*)list_get(partitions, i);
-			tamanio_restante = partition->size - size_message;
-			if (partition->free == true && partition->size >= size_message && tamanio_restante <= tamanio_restante_ant) {
-				free_partition_index = i;
-				tamanio_restante_ant = tamanio_restante;
-				break;
-			}
-		}
-
-	}
-
-
-	//si encuentra particicon libre, devuelve su indice, sino, return NULL;
-
-	return free_partition_index;
-}
-
-void free_some_space(){
-	//chequear si borrar mensaje o compactar
-}
-
-
-
+//void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data){
+//
+//	uint32_t free_partition_index = find_free_partition_index(size_message);
+//
+//	if(free_partition_index != -1){
+//
+//		t_partition *free_partition = (t_partition*)list_get(partitions, free_partition_index);
+//		t_partition* new_partition = malloc(sizeof(*new_partition));
+//
+//		//Creo la nueva particion nueva
+//		new_partition->start_pos = free_partition->start_pos;
+//		new_partition->free = false;
+//		new_partition->size = size_message;
+//		new_partition->end_pos = new_partition->start_pos + size_message;
+//
+//		//Muevo la particion libre
+//		free_partition->start_pos = free_partition->start_pos + size_message;
+//		free_partition->size = free_partition->size - size_message;
+//
+//		//grabo el mensaje en la posicion
+//		memmove(new_partition->start_pos, message_data, size_message);
+//
+//		list_add_in_index(partitions, free_partition_index, new_partition);
+//
+//		//TODO: chequear si add in index no reemplaza el index actual
+//
+//	}
+//
+//	else
+//		free_some_space();
+//}
+//
+//void free_some_space(){
+//	//chequear si borrar mensaje o compactar
+//}
