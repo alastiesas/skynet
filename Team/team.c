@@ -48,8 +48,8 @@ int main(void)
 	//pthread_create(&tid, NULL, fake_broker_thread, NULL);
 
 
-	subscribe(5);
-	sleep(5);
+	//subscribe(5);
+	//sleep(5);
 
 
 

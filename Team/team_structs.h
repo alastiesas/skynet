@@ -14,6 +14,8 @@
 #include<pthread.h>
 #include<stdio.h>
 #include<structs.h>
+#include<commons/string.h>
+#include<utils.h>
 
 typedef enum {
 	EMPTY = 0,
@@ -23,7 +25,7 @@ typedef enum {
 	SJFC = 4,
 } t_algorithm;
 
-t_algorithm algorithm = FIFO;
+
 
 typedef enum {
 	FREE= 0,
@@ -99,5 +101,9 @@ typedef struct
 	pthread_t tid;
 	uint32_t message_id;
 } t_message_team_receive;
+
+t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons);
+t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons);
+t_position* create_position_from_config(char* positions);
 
 #endif /* TEAM_STRUCTS_H_ */

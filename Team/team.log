@@ -1816,3 +1816,38 @@ esperando recibir cod_op, por vez numero: 1
 [INFO] 22:36:09:461 team program/(10157:10157): Reintentando en 10 segundos
 
 [INFO] 22:36:20:956 team program/(10855:10855): hola soy lasti123
+[INFO] 08:14:36:227 team program/(17548:17548): hola soy lasti123
+[WARNING] 08:14:36:233 team program/(17548:17548): Error de conexion con el team
+
+[INFO] 08:14:36:233 team program/(17548:17548): Reintentando en 10 segundos
+
+[WARNING] 08:14:46:233 team program/(17548:17548): Error de conexion con el team
+
+[INFO] 08:14:46:234 team program/(17548:17548): Reintentando en 10 segundos
+
+[INFO] 08:15:02:742 team program/(17606:17606): hola soy lasti123
+[INFO] 08:17:27:627 team program/(17691:17691): hola soy lasti123
+[INFO] 08:17:45:591 team program/(17725:17725): hola soy lasti123
+[INFO] 08:18:18:609 team program/(17807:17807): hola soy lasti123
+[INFO] 08:19:40:775 team program/(17933:17933): hola soy lasti123
+[INFO] 08:20:31:194 team program/(18002:18002): hola soy lasti123
+[INFO] 08:20:50:603 team program/(18060:18060): hola soy lasti123
+[INFO] 08:21:20:506 team program/(18124:18124): hola soy lasti123
+[INFO] 08:22:07:534 team program/(18196:18196): hola soy lasti123
+[INFO] 08:24:43:618 team program/(18314:18314): hola soy lasti123
+[WARNING] 08:24:53:643 team program/(18314:18319): Error de conexion con el team
+
+[INFO] 08:24:53:643 team program/(18314:18319): Reintentando en 10 segundos
+
+[INFO] 08:25:18:434 team program/(18386:18386): hola soy lasti123
+[INFO] 08:27:40:152 team program/(18543:18543): hola soy lasti123
+[WARNING] 08:27:50:158 team program/(18543:18548): Error de conexion con el team
+
+[INFO] 08:27:50:158 team program/(18543:18548): Reintentando en 10 segundos
+
+[INFO] 08:29:01:169 team program/(18636:18636): hola soy lasti123
+[INFO] 08:55:09:298 team program/(19014:19014): hola soy lasti123
+[WARNING] 08:55:19:303 team program/(19014:19020): Error de conexion con el team
+
+[INFO] 08:55:19:303 team program/(19014:19020): Reintentando en 10 segundos
+

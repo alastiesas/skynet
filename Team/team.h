@@ -40,7 +40,7 @@ t_list* messages_list;
 sem_t sem_messages_list;
 sem_t sem_messages;
 sem_t sem_messages_recieve_list;
-
+t_algorithm algorithm = FIFO;
 
 
 
@@ -48,7 +48,7 @@ sem_t sem_messages_recieve_list;
 int size_array (char*);
 int char_count(char* array, char parameter);
 int size_array_config(char** array);
-t_trainer* construct_trainer(char* positions, char*, char*);//ESTE <-- -- -- -- -- --
+t_trainer* init_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//ESTE <-- -- -- -- -- --
 t_position* construct_position(char*);//ESTE <-- -- -- -- -- --
 void initialize_trainers(char**,char**,char**);
 void state_change(uint32_t index, t_list* from,t_list* to);
@@ -136,22 +136,9 @@ void callback_fifo(t_trainer* trainer){
 
 }
 
-t_trainer* construct_trainer(char* positions, char* objectives, char* pokemons)
+t_trainer* init_trainer(char* config_position, char* onfig_objectives, char* config_pokemons)
 {
-	t_trainer* trainer = malloc(sizeof(t_trainer));
-	trainer->action = FREE;
-	trainer->target = malloc(sizeof(t_target));
-	trainer->target->position = NULL;
-	trainer->target->distance = NULL;
-	trainer->target->pokemon = NULL;
-	trainer->burst = 0;
-	trainer->quantum = 0;
-	trainer->action_burst = 0;
-	sem_init(&trainer->sem_thread, 0, 0);
-	trainer->position = construct_position(positions);
-	trainer->objectives = string_split(objectives, "|");
-	trainer->pokemons = string_split(pokemons, "|");
-	//struct x
+	t_trainer* trainer = create_trainer_from_config(config_position, onfig_objectives, config_pokemons);
 	// LO QUE HABLAMOS CON AYUDANTE 2
 
 	t_callback* callback_thread = malloc(sizeof(t_callback));
@@ -160,12 +147,6 @@ t_trainer* construct_trainer(char* positions, char* objectives, char* pokemons)
 	callback_thread->callback = &callback_fifo;
 	pthread_create(&(trainer->tid), NULL, trainer_thread, callback_thread);
 
-	/*
-	printf("test debug pokemon %d\n",trainer->position->x);
-	printf("test debug pokemon %d\n",trainer->position->y);
-	printf("test debug pokemon %s\n",trainer->objectives[0]);
-	printf("test debug pokemon %s\n",trainer->pokemons[2]);
-	*/
 	return trainer;
 }
 
@@ -184,7 +165,7 @@ void initialize_trainers(char** positions_config,char** objectives_config,char**
 {
 	int k = 0;
 	while(positions_config[k]){
-		t_trainer* test_entrenador = construct_trainer(positions_config[k], objectives_config[k], pokemons_config[k]);
+		t_trainer* test_entrenador = init_trainer(positions_config[k], objectives_config[k], pokemons_config[k]);
 		list_add(new_list, test_entrenador);
 		k++;
 	}
@@ -423,7 +404,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 {
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
-		strcpy(trainer->target->pokemon,pokemon);
+		strcpy(&trainer->target->pokemon,&pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -433,7 +414,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 	else if(strcmp(type,"BLOCK") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
-		strcpy(trainer->target->pokemon,pokemon);
+		strcpy(&trainer->target->pokemon,&pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -459,7 +440,7 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			t_trainer* trainer_new = NULL;
 			t_trainer* trainer_block = NULL;
 			int32_t closest_from_new = closest_free_trainer(new_list, position);
-			printf("aca llleoogoogogoogog\n");
+
 			int32_t closest_from_block = closest_free_trainer(block_list, position);
 
 			if(closest_from_new >= 0){
