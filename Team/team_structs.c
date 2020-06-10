@@ -20,8 +20,8 @@ t_trainer* create_trainer(t_position* position, char** objectives, char** pokemo
 	trainer->action_burst = 0;//create
 	sem_init(&trainer->sem_thread, 0, 0);//create
 	trainer->position = position;//create parametro
-	trainer->objectives = objectives, "|";//create parametro
-	trainer->pokemons = pokemons, "|";//create parametro
+	trainer->objectives = objectives;//create parametro
+	trainer->pokemons = pokemons;//create parametro
 	return trainer;
 }
 
@@ -34,9 +34,9 @@ t_trainer* create_trainer_from_config(char* config_position, char* config_object
 
 }
 
-t_position* create_position_from_config(char* positions) {
+t_position* create_position_from_config(char* config_position) {
 	t_position* position = malloc(sizeof(t_position));
-	char ** positions_split = string_split(positions, "|");
+	char ** positions_split = string_split(config_position, "|");
 	position->x = atoi(positions_split[0]);
 	position->y = atoi(positions_split[1]);
 

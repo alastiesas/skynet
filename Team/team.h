@@ -48,9 +48,10 @@ t_algorithm algorithm = FIFO;
 int size_array (char*);
 int char_count(char* array, char parameter);
 int size_array_config(char** array);
-t_trainer* init_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//ESTE <-- -- -- -- -- --
-t_position* construct_position(char*);//ESTE <-- -- -- -- -- --
-void initialize_trainers(char**,char**,char**);
+
+t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa todos los entrenadores del conig
+void initialize_trainers();//inicializa un entrenador (pthread)
+
 void state_change(uint32_t index, t_list* from,t_list* to);
 t_index* search_index(t_index* index ,t_objective* objective);
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
@@ -136,7 +137,7 @@ void callback_fifo(t_trainer* trainer){
 
 }
 
-t_trainer* init_trainer(char* config_position, char* onfig_objectives, char* config_pokemons)
+t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons)
 {
 	t_trainer* trainer = create_trainer_from_config(config_position, onfig_objectives, config_pokemons);
 	// LO QUE HABLAMOS CON AYUDANTE 2
@@ -150,24 +151,17 @@ t_trainer* init_trainer(char* config_position, char* onfig_objectives, char* con
 	return trainer;
 }
 
-t_position* construct_position(char* positions)
+
+void initialize_trainers()
 {
-	t_position* position = malloc(sizeof(t_position));
-	char ** positions_split = string_split(positions, "|");
-	position->x = atoi(positions_split[0]);
-	position->y = atoi(positions_split[1]);
-
-
-	return position;
-}
-
-void initialize_trainers(char** positions_config,char** objectives_config,char** pokemons_config)
-{
-	int k = 0;
-	while(positions_config[k]){
-		t_trainer* test_entrenador = init_trainer(positions_config[k], objectives_config[k], pokemons_config[k]);
+	char** positions_config = config_get_array_value(config,"POSICIONES_ENTRENADORES");
+	char** objectives_config = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
+	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
+	int pos = 0;
+	while(positions_config[pos]){
+		t_trainer* test_entrenador = initialize_trainer(positions_config[pos], objectives_config[pos], pokemons_config[pos]);
 		list_add(new_list, test_entrenador);
-		k++;
+		pos++;
 	}
 }
 

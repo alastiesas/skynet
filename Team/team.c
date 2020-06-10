@@ -39,6 +39,8 @@ int main(void)
 	log_info(log, "hola soy lasti123");
 
 	config = config_create("team.config");
+	ip = config_get_string_value(config, "IP");
+	puerto = config_get_string_value(config, "PUERTO");
 	//bool test = config_has_property(config, "IP");
 
 
@@ -62,7 +64,6 @@ int main(void)
 
 	//printf(test ? "true" : "false");
 
-	ip = config_get_string_value(config, "IP");
 
 	//char** test_list = config_get_array_value(config,"POSICIONES_ENTRENADORESE");
 	char** test_postions = config_get_array_value(config,"POSICIONES_ENTRENADORES");
@@ -96,7 +97,7 @@ int main(void)
 	printf("el count termina con %d\n", count);
 
 
-	puerto = config_get_string_value(config, "PUERTO");
+
 
 	messages_list = list_create();
 
@@ -122,7 +123,7 @@ int main(void)
 	add_to_poke_map("Pikachu",(void*) test_position_1);
 	add_to_poke_map("Charmander",(void*) test_position_2);
 
-	initialize_trainers(test_postions, test_objetivos, test_pokemons);
+	initialize_trainers();
 
 	objetives_list = list_create();
 
