@@ -8,6 +8,7 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
+#include"team_structs.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<commons/log.h>
@@ -15,14 +16,10 @@
 #include<commons/config.h>
 #include<commons/collections/list.h>
 #include<readline/readline.h>
-#include <utils.h>
-#include <stdbool.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <serialize.h>
-#include <conexion.h>
-#include <mensajes.h>
-#include <structs.h>
+#include<utils.h>
+#include<serialize.h>
+#include<conexion.h>
+#include<mensajes.h>
 
 
 t_config* config;
@@ -45,96 +42,13 @@ sem_t sem_messages;
 sem_t sem_messages_recieve_list;
 
 
-typedef enum {
-	EMPTY = 0,
-	FIFO= 1,
-	RR = 2,
-	SJFS = 3,
-	SJFC = 4,
-} t_algorithm;
 
-t_algorithm algorithm = FIFO;
-
-typedef enum {
-	FREE= 0,
-	MOVE = 1,
-	CATCHING = 2,
-	TRADE = 3,
-} t_action;
-
-typedef struct {
-	char* pokemon;
-	t_position* position;
-	uint32_t distance;
-	bool catching;
-} t_target;
-
-typedef struct
-{
-	pthread_t tid;
-	//pthread_attr_t attr;
-	sem_t sem_thread;
-	t_action action;
-	uint32_t quantum;
-	uint32_t burst;
-	uint32_t action_burst;
-	//esto reemplaza a target->position y target->pokemon
-	//t_objective* objetivo ( target->position, nombre del pokemon y la distancia hasta el pokemon)
-	//t_position* action_position;
-	t_target* target;
-
-	t_position* position;
-	char** objectives;
-	char** pokemons;
-} t_trainer;
-
-typedef struct
-{
-	char* pokemon;
-	uint32_t count;
-	uint32_t caught;
-	uint32_t catching;
-} t_objective;
-
-typedef struct
-{
-	char* string;
-	t_objective* objective;
-} t_index;
-
-typedef struct
-{
-	t_trainer* trainer;
-	void(*callback)(void*);
-
-} t_callback;
-
-
-typedef struct
-{
-	pthread_t tid;
-	t_message_catch* message;
-
-} t_catch;
-
-typedef struct
-{
-	pthread_t tid;
-	char* pokemon;
-	t_position* position;
-} t_message_team;
-
-typedef struct
-{
-	pthread_t tid;
-	uint32_t message_id;
-} t_message_team_receive;
 
 
 int size_array (char*);
 int char_count(char* array, char parameter);
 int size_array_config(char** array);
-t_trainer* construct_trainer(char* positions, char**, char**);
+t_trainer* construct_trainer(char* positions, char*, char*);//ESTE <-- -- -- -- -- --
 t_position* construct_position(char*);
 void initialize_trainers(char**,char**,char**);
 void state_change(uint32_t index, t_list* from,t_list* to);
@@ -222,7 +136,7 @@ void callback_fifo(t_trainer* trainer){
 
 }
 
-t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons)
+t_trainer* construct_trainer(char* positions, char* objectives, char* pokemons)
 {
 	t_trainer* trainer = malloc(sizeof(t_trainer));
 	trainer->action = FREE;
@@ -240,10 +154,9 @@ t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons
 	//struct x
 	// LO QUE HABLAMOS CON AYUDANTE 2
 
-	// ACA VA CALLBACK
 	t_callback* callback_thread = malloc(sizeof(t_callback));
 	callback_thread->trainer = trainer;
-	//ACA VA SEGUN ALGORITMO
+
 	callback_thread->callback = &callback_fifo;
 	pthread_create(&(trainer->tid), NULL, trainer_thread, callback_thread);
 
@@ -396,7 +309,7 @@ void *trainer_thread(t_callback* callback_thread)
 		//while(1) agregar
 	t_trainer* trainer = callback_thread->trainer;
 
-	printf("hola soy el entrenador %d\n", trainer->tid);
+	printf("hola soy el entrenador %d\n", (int)trainer->tid);
 	printf("aca no esta llegando123\n");
 	while(1){
 		printf("ACA PASO 1\n");
@@ -431,7 +344,6 @@ void *trainer_thread(t_callback* callback_thread)
 				trainer->action = FREE;
 				break;
 		}
-		//aca va el callback
 		callback_thread->callback(trainer);
 	}
 
@@ -511,7 +423,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 {
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
-		strcpy(&(trainer->target->pokemon),&pokemon);
+		strcpy(trainer->target->pokemon,pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -521,7 +433,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 	else if(strcmp(type,"BLOCK") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
-		strcpy(&(trainer->target->pokemon),&pokemon);
+		strcpy(trainer->target->pokemon,pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -628,13 +540,13 @@ bool trainer_free_space(t_trainer* trainer)
 	return !trainer_full(trainer);
 }
 
-transition_new_to_ready(uint32_t index)
+void transition_new_to_ready(uint32_t index)
 {
 	state_change(index,new_list,ready_list);
 	context_changes++;
 }
 
-transition_ready_to_exec(uint32_t index)
+void transition_ready_to_exec(uint32_t index)
 {
 	state_change(index,ready_list,exec_list);
 	context_changes++;
@@ -643,31 +555,31 @@ transition_ready_to_exec(uint32_t index)
 	sem_post(&trainer->sem_thread);
 }
 
-transition_exec_to_ready()
+void transition_exec_to_ready()
 {
 	state_change(0,exec_list,ready_list);
 	context_changes++;
 }
 
-transition_exec_to_block()
+void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
 	context_changes++;
 }
 
-transition_exec_to_exit()
+void transition_exec_to_exit()
 {
 	state_change(0,exec_list,exit_list);
 	context_changes++;
 }
 
-transition_block_to_ready(uint32_t index)
+void transition_block_to_ready(uint32_t index)
 {
 	state_change(index,block_list,ready_list);
 	context_changes++;
 }
 
-transition_block_to_exit(uint32_t index)
+void transition_block_to_exit(uint32_t index)
 {
 	state_change(index,block_list,exit_list);
 	context_changes++;
@@ -882,12 +794,12 @@ void* sender_thread()
 
 }
 
-void* fake_broker_thread()
+/*void* fake_broker_thread()
 {
 	//SERVIDOR QUE ESCUCHA EN PUERTO TAL! 6001
 	//PRINTF ALGO DE MENSAJE
 	//RESPONDE ACK
-}
+}//*/
 
 
 
@@ -905,7 +817,7 @@ void subscribe(queue_code queue_code) {
 
 	int32_t socket = connect_to_server(ip, port, log);
 
-	uint32_t id = config_get_string_value(config, "ID");
+	uint32_t id = config_get_int_value(config, "ID");
 	//id = 5;
 	t_package* package = serialize_suscripcion(atoi(id), queue_code);
 

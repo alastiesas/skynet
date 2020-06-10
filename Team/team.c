@@ -4,9 +4,7 @@
  *  Created on: 11 abr. 2020
  *      Author: utnso
  */
-#include <stdio.h>
 #include "team.h"
-#include <stdint.h>
 
 
 
@@ -24,11 +22,16 @@ void *myThreadFun(void *vargp)
 
 int main(void)
 {
-	uint32_t a = 123;
-	int conexion;
+
+	/*char* nombre = "Federico";
+	printf("mi nombre es %s\n", nombre);
+	char* copy = malloc(sizeof(nombre));
+	strcpy(copy, nombre);
+	printf("copiado: %s", copy);//*/
+
+
 	char* ip;
 	char* puerto;
-
 	//config = config_create("team.config");
 	//log = log_create("team.log", "team", LOG_CONSOLE, LOG_LEVEL_INFO);
 
@@ -128,7 +131,6 @@ int main(void)
 
 	//pthread_t tid;
 	//pthread_t tid2;
-	pthread_attr_t attr;
 
 	printf("aca llego!!!\n");
 	long_term_scheduler();
