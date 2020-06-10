@@ -49,7 +49,7 @@ int size_array (char*);
 int char_count(char* array, char parameter);
 int size_array_config(char** array);
 t_trainer* construct_trainer(char* positions, char*, char*);//ESTE <-- -- -- -- -- --
-t_position* construct_position(char*);
+t_position* construct_position(char*);//ESTE <-- -- -- -- -- --
 void initialize_trainers(char**,char**,char**);
 void state_change(uint32_t index, t_list* from,t_list* to);
 t_index* search_index(t_index* index ,t_objective* objective);
