@@ -33,7 +33,6 @@ typedef struct
 
 } t_pending;
 
-#include "listas.h"
 
 typedef struct
 {
@@ -45,6 +44,8 @@ typedef struct
 	t_log* log;
 
 } t_suscriber;
+
+#include "listas.h"
 
 typedef struct
 {

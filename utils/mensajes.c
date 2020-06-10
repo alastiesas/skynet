@@ -114,22 +114,40 @@ int32_t send_ACK(uint32_t socket, t_log* logger){
 
 }
 
+int32_t send_ACK_failure(uint32_t socket, t_log* logger){
+
+	int32_t ACK = 2;
+	int32_t result;
+	log_debug(logger, "Intentando enviar confirmacion de error");
+	if((result = send(socket, &ACK, sizeof(int32_t), 0)) == -1)
+		log_error(logger, "Error al enviar confirmacion de error");
+	else
+		log_info(logger, "Se envio la confirmacion de error (%d bytes)", result);
+
+	return result;
+
+}
+
 int32_t receive_ACK(uint32_t socket, t_log* logger){
 	int32_t ACK;
 
-	int32_t resultado;
-	if((resultado = recv(socket, &ACK, sizeof(int32_t), MSG_WAITALL)) == -1){
+	int32_t resultado = recv(socket, &ACK, sizeof(int32_t), MSG_WAITALL);
+	if(resultado == -1){
 		log_error(logger, "Error al recibir la confirmacion del mensaje\n");
 		return -1; //failure
 	}
-	else
+	if(ACK == 1){
 		log_info(logger, "Se recibio la confirmacion del mensaje enviado\n");
-
-	if(ACK != 1){
-		log_warning(logger, "La confirmacion debe ser 1, no %d", ACK);
+	}
+	else if(ACK == 2){
+		log_error(logger, "El proceso responde error en la solicitud\n");
+		return -1;
+	}
+	else{
+		log_warning(logger, "La confirmacion recibida no puede ser %d", ACK);
 		return -1; //failure
 	}
-	else
+
 		return 0; //success
 
 }

@@ -136,7 +136,7 @@ void specific_termination() {
 
 void memory_init(){
 	mem = malloc(atoi(memory_size));
-
+/*
 	t_partition* first_partition = malloc(sizeof(*first_partition));
 	first_partition->start_pos = atoi(mem);
 	first_partition->size = atoi(memory_size);
@@ -144,4 +144,5 @@ void memory_init(){
 	first_partition->free = true;
 
 	list_add(partitions, first_partition);
+	*/
 }

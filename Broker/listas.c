@@ -1,8 +1,5 @@
 #include "listas.h"
 
-void encontrar_mensaje(){
-
-}
 
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
@@ -31,6 +28,21 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		log_error(logsub, "No se encontro el mensaje que tenia que estar en la cola\n");
 
 	return elemento;
+}
+
+t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_mutex_t mutex_subs){
+	t_suscriber* suscriber;
+
+	bool _soy_ID_buscado(void* p){
+		return ((t_suscriber*) p)->ID_suscriber == (uint32_t) ID_encontrar;
+	}
+
+	pthread_mutex_lock(&mutex_subs);
+		suscriber = list_find(subs, _soy_ID_buscado);
+	pthread_mutex_unlock(&mutex_subs);
+
+
+	return suscriber;
 }
 
 void encontrar_numero(t_list *lista, void* numero_buscado, t_list* elementos_coincidentes) {
