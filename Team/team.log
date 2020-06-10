@@ -1851,3 +1851,8 @@ esperando recibir cod_op, por vez numero: 1
 
 [INFO] 08:55:19:303 team program/(19014:19020): Reintentando en 10 segundos
 
+[INFO] 08:59:08:169 team program/(19340:19340): hola soy lasti123
+[WARNING] 08:59:18:191 team program/(19340:19345): Error de conexion con el team
+
+[INFO] 08:59:18:191 team program/(19340:19345): Reintentando en 10 segundos
+
