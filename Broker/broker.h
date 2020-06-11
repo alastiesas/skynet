@@ -14,11 +14,11 @@
 
 char* IP;
 char* PORT;
-char* memory_size;
+uint32_t memory_size;
 char* min_partition_size;
 char* memory_algorithm;
 char* replacement_algorithm;
-char* free_partition_algorithm;
+char* free_partition_algorithm; //rename
 char* compaction_frequency;
 
 void* mem;
@@ -102,13 +102,11 @@ typedef struct
 
 } t_semaforos;
 
-typedef struct
-{
+typedef struct {
+	bool available;
+	uint32_t final_position;
+	uint32_t initial_position;
 	uint32_t size;
-	uint32_t start_pos;
-	uint32_t end_pos;
-	bool free;
-
 } t_partition;
 
 t_list* partitions;
