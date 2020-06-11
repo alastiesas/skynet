@@ -104,8 +104,8 @@ typedef struct
 
 typedef struct {
 	bool available;
-	uint32_t final_position;
-	uint32_t initial_position;
+	void* final_position;
+	void* initial_position;
 	uint32_t size;
 } t_partition;
 
@@ -205,5 +205,6 @@ void free_some_space();
 bool is_free_partition(void *partition);
 uint32_t find_free_partition_index(uint32_t size_message);
 
+void dump_cache(void);
 
 #endif /* BROKER_H_ */
