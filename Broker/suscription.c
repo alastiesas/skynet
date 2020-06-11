@@ -99,7 +99,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	}
 
 	if(suscriber == NULL){
-		log_info("Se suscribe por primera vez a la cola %s, el proceso %d", queue_name, ID_proceso);
+		log_info(logger, "Se suscribe por primera vez a la cola %s, el proceso %d", queue_name, (uint32_t) ID_proceso);
 		//camino normal
 
 		//crear el t_suscriber
@@ -155,14 +155,14 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 
 	}
 	else if(suscriber->connected == false){
-		log_info("Se esta reconectando a la cola %s, el proceso %d", queue_name, ID_proceso);
+		log_info(logger, "Se esta reconectando a la cola %s, el proceso %d", queue_name, (uint32_t) ID_proceso);
 		//Solo actualizar que esta conectado (socket, flag y logger), y tomar la referencia de suscriber
 		suscriber->socket = socket_cliente;
 		suscriber->connected = true;
 		//el logger ya estaba creado, no hace falta actualizar
 	}
 	else{
-		log_error("Ya esta conectado a la cola %s, el proceso %d. Debe desconectar primero.", queue_name, ID_proceso);
+		log_error(logger, "Ya esta conectado a la cola %s, el proceso %d. Debe desconectar primero.", queue_name, (uint32_t) ID_proceso);
 	//enviar falla en la confirmacion. (ack de error)
 		send_ACK_failure(socket_cliente, logger);
 		pthread_exit(NULL);

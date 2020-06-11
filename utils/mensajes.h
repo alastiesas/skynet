@@ -44,6 +44,7 @@ t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* l
 int32_t send_ID(int32_t ID, uint32_t socket, t_log* logger);
 int32_t receive_ID(uint32_t socket, t_log* logger);
 int32_t send_ACK(uint32_t socket, t_log* logger);
+int32_t send_ACK_failure(uint32_t socket, t_log* logger);
 int32_t receive_ACK(uint32_t socket, t_log* logger);
 uint32_t receive_size(uint32_t socket, t_log* logger);
 uint32_t receive_ID_proceso(uint32_t socket, t_log* logger);

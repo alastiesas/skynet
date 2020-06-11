@@ -141,7 +141,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 }
 
 
-//void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data){
+//void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data){
 //
 //	uint32_t free_partition_index = find_free_partition_index(size_message);
 //
@@ -163,11 +163,16 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 //		//grabo el mensaje en la posicion
 //		memmove(new_partition->start_pos, message_data, size_message);
 //
-//		list_add_in_index(partitions,free_partition_index , new_partition);
+//		list_add_in_index(partitions, free_partition_index, new_partition);
 //
 //		//TODO: chequear si add in index no reemplaza el index actual
+//
 //	}
 //
 //	else
 //		free_some_space();
+//}
+//
+//void free_some_space(){
+//	//chequear si borrar mensaje o compactar
 //}

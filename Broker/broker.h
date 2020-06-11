@@ -198,7 +198,7 @@ void memory_init();
 
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, uint32_t bytes);
 
-void save_message_partitions(uint32_t message_id, uint32_t size_message, void* message_data);
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data);
 int32_t find_free_position();
 void free_some_space();
 
