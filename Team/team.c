@@ -22,32 +22,15 @@ void *myThreadFun(void *vargp)
 
 int main(void)
 {
-
-	/*char* nombre = "Federico";
-	printf("mi nombre es %s\n", nombre);
-	char* copy = malloc(sizeof(nombre));
-	strcpy(copy, nombre);
-	printf("copiado: %s", copy);//*/
-
-
 	char* ip;
 	char* puerto;
-	//config = config_create("team.config");
-	//log = log_create("team.log", "team", LOG_CONSOLE, LOG_LEVEL_INFO);
 
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
-	log_info(log, "hola soy lasti123");
+	log_info(log, "STARTING TEAM PROGRAM, GOOD LUCK");
 
 	config = config_create("team.config");
 	ip = config_get_string_value(config, "IP");
 	puerto = config_get_string_value(config, "PUERTO");
-	//bool test = config_has_property(config, "IP");
-
-
-	// hilo de servidor
-
-	//pthread_t tid;
-	//pthread_create(&tid, NULL, fake_broker_thread, NULL);
 
 
 	//subscribe(5);
@@ -124,9 +107,6 @@ int main(void)
 	add_to_poke_map("Charmander",(void*) test_position_2);
 
 	initialize_trainers();
-
-	//objetives_list = list_create();
-
 	initialize_global_objectives();
 
 

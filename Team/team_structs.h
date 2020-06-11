@@ -8,14 +8,7 @@
 #ifndef TEAM_STRUCTS_H_
 #define TEAM_STRUCTS_H_
 
-#include<stdbool.h>
-#include<semaphore.h>
-#include<stdint.h>
-#include<pthread.h>
-#include<stdio.h>
-#include<structs.h>
-#include<commons/string.h>
-#include<utils.h>
+#include"includes.h"
 
 typedef enum {
 	EMPTY = 0,
