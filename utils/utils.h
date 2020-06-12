@@ -14,7 +14,7 @@
 #include<commons/string.h>
 #include<commons/config.h>
 #include<readline/readline.h>
-#include "structs.h"
+#include"structs.h"
 #include<signal.h>
 #include<unistd.h>
 #include<sys/socket.h>
