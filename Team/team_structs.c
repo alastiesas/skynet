@@ -65,3 +65,7 @@ bool trainer_full(t_trainer* trainer) {
 bool trainer_free_space(t_trainer* trainer) {
 	return !trainer_full(trainer);
 }
+
+bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position){
+	return  dinstance(trainer->position, position) <= dinstance(trainer2->position, position);
+}

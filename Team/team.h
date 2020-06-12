@@ -68,7 +68,6 @@ void move(t_trainer* trainer);
 void trainer_assign_job(char* pokemon, t_list* positions);
 void long_term_scheduler();
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching);
-bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
 void callback_fifo(t_trainer* trainer);
 void* exec_thread();
 void add_catching(t_list* list, char* pokemon);
@@ -364,9 +363,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 }
 
-bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position){
-	return  dinstance(trainer->position, position) <= dinstance(trainer2->position, position);
-}
+
 
 void trainer_assign_job(char* pokemon, t_list* positions)
 {
