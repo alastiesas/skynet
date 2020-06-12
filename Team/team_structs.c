@@ -43,3 +43,25 @@ t_position* create_position_from_config(char* config_position) {
 
 	return position;
 }
+
+bool success_objective(t_objective* objective) {
+	return objective->count == objective->caught;
+}
+
+uint32_t dinstance(t_position* current, t_position* destiny) {
+	uint32_t distance_x = abs(current->x-destiny->x);
+	uint32_t distance_y = abs(current->y-destiny->y);
+
+	return distance_x + distance_y;
+}
+
+bool trainer_full(t_trainer* trainer) {
+	bool response = false;
+	if(size_array_config(trainer->pokemons) ==  size_array_config(trainer->objectives))
+		response = true;
+	return response;
+}
+
+bool trainer_free_space(t_trainer* trainer) {
+	return !trainer_full(trainer);
+}

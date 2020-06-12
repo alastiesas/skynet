@@ -2012,3 +2012,8 @@ esperando recibir cod_op, por vez numero: 1
 
 [INFO] 13:46:43:582 team program/(24357:24362): Reintentando en 10 segundos
 
+[INFO] 13:58:14:406 team program/(24776:24776): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 13:58:24:420 team program/(24776:24781): Error de conexion con el team
+
+[INFO] 13:58:24:420 team program/(24776:24781): Reintentando en 10 segundos
+

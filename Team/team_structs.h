@@ -95,8 +95,18 @@ typedef struct
 	uint32_t message_id;
 } t_message_team_receive;
 
+
+//constructores
 t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons);
 t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons);
 t_position* create_position_from_config(char* positions);
+//FIN constructores
+
+//consultas
+bool success_objective(t_objective* objective);
+uint32_t dinstance(t_position* current, t_position* destiny);
+bool trainer_full(t_trainer* trainer);
+bool trainer_free_space(t_trainer* trainer);
+//FIN consultas
 
 #endif /* TEAM_STRUCTS_H_ */

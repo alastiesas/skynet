@@ -44,13 +44,9 @@ t_index* search_index(t_index* index ,t_objective* objective);
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
 void initialize_global_objectives();
 void add_caught(t_list* list, char* pokemon);
-bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
 void* trainer_thread(t_callback* callback_thread);
-uint32_t dinstance(t_position* current, t_position* destiny);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
-bool trainer_full(t_trainer* trainer);
-bool trainer_free_space(t_trainer* trainer);
 
 void transition_new_to_ready(uint32_t index);
 void transition_ready_to_exec(uint32_t index);
@@ -228,10 +224,6 @@ void initialize_global_objectives()
 	objetives_list = (t_list*) list_fold( new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
 }
 
-bool success_objective(t_objective* objective)
-{
-	return objective->count == objective->caught;
-}
 
 bool success_global_objective(t_list* global_objectives)
 {
@@ -290,13 +282,6 @@ void* trainer_thread(t_callback* callback_thread)
 	return NULL;
 }
 
-uint32_t dinstance(t_position* current, t_position* destiny)
-{
-	uint32_t distance_x = abs(current->x-destiny->x);
-	uint32_t distance_y = abs(current->y-destiny->y);
-
-	return distance_x + distance_y;
-}
 
 int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 {
@@ -461,20 +446,6 @@ void add_to_poke_map(char* pokemon, t_position* position)
 	//buscar el pokemon en la lista y retornar el indice
 
 
-}
-
-
-bool trainer_full(t_trainer* trainer)
-{
-	bool response = false;
-	if(size_array_config(trainer->pokemons) ==  size_array_config(trainer->objectives))
-		response = true;
-	return response;
-}
-
-bool trainer_free_space(t_trainer* trainer)
-{
-	return !trainer_full(trainer);
 }
 
 void transition_new_to_ready(uint32_t index)
