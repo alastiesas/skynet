@@ -25,7 +25,7 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		log_trace(logsub, "Adentro de la struct hay %d bytes", elemento->bytes);
 	}
 	else
-		log_error(logsub, "No se encontro el mensaje que tenia que estar en la cola\n");
+		log_debug(logsub, "No esta el message_data en la cola, quizas este en la cache\n");
 
 	return elemento;
 }
