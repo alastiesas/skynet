@@ -268,7 +268,7 @@ t_message_appeared* receive_appeared(uint32_t socket_cliente, uint32_t* size, t_
 	if(recv(socket_cliente, &(appeared->correlative_id), sizeof(appeared->correlative_id), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el id de appeared");
 	else
-		log_info(logger, "id de appeared recibido: %d", appeared->correlative_id);
+		log_info(logger, "correlative_id de appeared recibido: %d", appeared->correlative_id);
 
 	//recibir size_pokemon_name de appeared
 	if(recv(socket_cliente, &(appeared->size_pokemon_name), sizeof(appeared->size_pokemon_name), MSG_WAITALL) == -1)
@@ -363,7 +363,7 @@ t_message_localized* receive_localized(uint32_t socket_cliente, uint32_t* size, 
 	if(recv(socket_cliente, &(localized->correlative_id), sizeof(localized->correlative_id), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el id de localized");
 	else
-		log_info(logger, "id de localized recibido: %d", localized->correlative_id);
+		log_info(logger, "correlative_id de localized recibido: %d", localized->correlative_id);
 
 	//recibir size_pokemon_name de localized
 	if(recv(socket_cliente, &(localized->size_pokemon_name), sizeof(localized->size_pokemon_name), MSG_WAITALL) == -1)
@@ -468,7 +468,42 @@ t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* l
 
 }
 
+t_message_caught* receive_caught(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
+	t_message_caught* caught = malloc(sizeof(t_message_caught));
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+	//recibir id de appeared
+	if(recv(socket_cliente, &(caught->id), sizeof(caught->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de appeared");
+	else
+		log_info(logger, "id de appeared recibido: %d", caught->id);
+
+	//recibir correlative_id de appeared
+	if(recv(socket_cliente, &(caught->correlative_id), sizeof(caught->correlative_id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de appeared");
+	else
+		log_info(logger, "correlative_id de appeared recibido: %d", caught->correlative_id);
+
+	//recibir resultado de appeared
+		if(recv(socket_cliente, &(caught->result), sizeof(caught->result), MSG_WAITALL) == -1)
+			log_error(logger, "Error al recibir el id de appeared");
+		else
+			log_info(logger, "resultado de appeared recibido: %d", caught->result);
+
+	if(*size != sizeof(caught->id) + sizeof(caught->correlative_id))
+		log_error(logger, "Tamanio erroneo");
+
+
+	return caught;
+
+}
 
 
 t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t mi_thread){
