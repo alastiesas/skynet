@@ -4,9 +4,7 @@
  *  Created on: 11 abr. 2020
  *      Author: utnso
  */
-#include <stdio.h>
 #include "team.h"
-#include <stdint.h>
 
 
 
@@ -24,29 +22,19 @@ void *myThreadFun(void *vargp)
 
 int main(void)
 {
-	uint32_t a = 123;
-	int conexion;
 	char* ip;
 	char* puerto;
 
-	//config = config_create("team.config");
-	//log = log_create("team.log", "team", LOG_CONSOLE, LOG_LEVEL_INFO);
-
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
-	log_info(log, "hola soy lasti123");
+	log_info(log, "STARTING TEAM PROGRAM, GOOD LUCK");
 
 	config = config_create("team.config");
-	//bool test = config_has_property(config, "IP");
+	ip = config_get_string_value(config, "IP");
+	puerto = config_get_string_value(config, "PUERTO");
 
 
-	// hilo de servidor
-
-	//pthread_t tid;
-	//pthread_create(&tid, NULL, fake_broker_thread, NULL);
-
-
-	subscribe(5);
-	sleep(5);
+	//subscribe(5);
+	//sleep(5);
 
 
 
@@ -59,7 +47,6 @@ int main(void)
 
 	//printf(test ? "true" : "false");
 
-	ip = config_get_string_value(config, "IP");
 
 	//char** test_list = config_get_array_value(config,"POSICIONES_ENTRENADORESE");
 	char** test_postions = config_get_array_value(config,"POSICIONES_ENTRENADORES");
@@ -83,7 +70,7 @@ int main(void)
 	printf("debug del test OBJETIVO %s\n", test_split_objetivo[0]);
 	printf("debug del test OBJETIVO 1 %s\n", test_split_objetivo[1]);
 
-	int j = size_array_config(test_split_objetivo);
+	int j = string_list_size(test_split_objetivo);
 
 
 
@@ -93,7 +80,7 @@ int main(void)
 	printf("el count termina con %d\n", count);
 
 
-	puerto = config_get_string_value(config, "PUERTO");
+
 
 	messages_list = list_create();
 
@@ -119,16 +106,12 @@ int main(void)
 	add_to_poke_map("Pikachu",(void*) test_position_1);
 	add_to_poke_map("Charmander",(void*) test_position_2);
 
-	initialize_trainers(test_postions, test_objetivos, test_pokemons);
-
-	objetives_list = list_create();
-
-	objetives_list = initialize_global_objectives(new_list);
+	initialize_trainers();
+	initialize_global_objectives();
 
 
 	//pthread_t tid;
 	//pthread_t tid2;
-	pthread_attr_t attr;
 
 	printf("aca llego!!!\n");
 	long_term_scheduler();

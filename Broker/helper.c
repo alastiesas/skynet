@@ -146,5 +146,22 @@ t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** m
 }
 
 
+//-------------------------Particiones
+
+void delete_message(uint32_t partition_list_index){
+	t_partition* partition_to_free;
+	/*
+
+	//mutex_cache
+	 partition_to_free = list_get(lista_global_de_particiones, partition_list_index);
+	 partition_to_free->free = true;
+	//mutex_cache
+
+
+	 */
+}
+
+
+
 
 

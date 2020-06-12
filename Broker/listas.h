@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <commons/collections/list.h>
+#include <commons/temporal.h>
+#include <commons/txt.h>
 
 void encontrar_numero(t_list *lista, void* numero_buscado, t_list* elementos_coincidentes);
 void no_contenido(t_list* lista_enviados, void* elemento_lista_global, t_list* resultado);
@@ -23,6 +25,7 @@ void imprimir_lista(t_list* lista, char* nombre);
 
 //TODO falta probar
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje, t_log* logsub);
+t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_mutex_t mutex_subs);
 
 
 #endif /* LISTAS_H_ */

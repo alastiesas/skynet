@@ -3,6 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+t_position* create_position(uint32_t position_x, uint32_t position_y) {
+	t_position* position = malloc(sizeof(t_position));
+	position->x = position_x;
+	position->y = position_y;
+
+	return position;
+}
+
+t_location* create_location(t_position* position, uint32_t amount) {
+	t_location* location = malloc(sizeof(t_location));
+	location->position = position;
+	location->amount = amount;
+	return location;
+}
+
+t_location* create_location_long(uint32_t position_x, uint32_t position_y, uint32_t amount) {
+	return create_location(create_position(position_x, position_y), amount);
+}
 
 t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position) {
 	t_message_appeared* appeared = malloc(sizeof(t_message_appeared));
@@ -14,13 +32,8 @@ t_message_appeared* create_message_appeared(char* pokemon_name, t_position* posi
 	appeared->position = position;
 	return appeared;
 }
-t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x,
-		uint32_t position_y) {
-
-	t_position* position = malloc(sizeof(t_position));
-	position->x = position_x;
-	position->y = position_y;
-	return create_message_appeared(pokemon_name, position);
+t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x, uint32_t position_y) {
+	return create_message_appeared(pokemon_name, create_position(position_x, position_y));
 }
 
 t_message_new* create_message_new(char* pokemon_name, t_location* location) {
@@ -34,13 +47,10 @@ t_message_new* create_message_new(char* pokemon_name, t_location* location) {
 	return new;
 }
 
-t_message_new* create_message_new_long(char* pokemon_name, uint32_t position_x,
-		uint32_t position_y, uint32_t amount) {
+t_message_new* create_message_new_long(char* pokemon_name, uint32_t position_x, uint32_t position_y, uint32_t amount) {
 
 	t_location* location = malloc(sizeof(t_location));
-	location->position = malloc(sizeof(t_position));
-	location->position->x = position_x;
-	location->position->y = position_y;
+	location->position = create_position(position_x, position_y);
 	location->amount = amount;
 	return create_message_new(pokemon_name, location);
 }
@@ -54,8 +64,7 @@ t_message_get* create_message_get(char* pokemon_name) {
 	return get;
 }
 
-t_message_localized* create_message_localized(uint32_t correlative_id,
-		char* pokemon_name, uint32_t position_amount, t_position* positions) {
+t_message_localized* create_message_localized(uint32_t correlative_id, char* pokemon_name, uint32_t position_amount, t_position* positions) {
 	t_message_localized* localized = malloc(sizeof(t_message_localized));
 	localized->id = 0; //El Broker se encarga de generar este dato
 	localized->correlative_id = correlative_id; //El que responde se encarga de generar este dato
@@ -78,11 +87,8 @@ t_message_catch* create_message_catch(char* pokemon_name, t_position* position) 
 	catch->position = position;
 	return catch;
 }
-t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx, uint32_t posy) {
-	t_position *position = malloc(sizeof(t_position));
-	position->x = posx;
-	position->y = posy;
-	return create_message_catch(pokemon, position);
+t_message_catch* create_message_catch_long(char* pokemon, uint32_t position_x, uint32_t position_y) {
+	return create_message_catch(pokemon, create_position(position_x, position_y));
 }
 
 t_message_caught* create_message_caught(uint32_t correlative_id, bool result) {

@@ -8,26 +8,13 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<commons/log.h>
-#include<commons/string.h>
-#include<commons/config.h>
-#include<commons/collections/list.h>
-#include<readline/readline.h>
-#include <utils.h>
-#include <stdbool.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <serialize.h>
-#include <conexion.h>
-#include <mensajes.h>
-#include <structs.h>
+#include"includes.h"
+#include"utilities.h"
+#include"team_structs.h"
 
-
+//GLOBALS
 t_config* config;
 t_log* log;
-
 t_list* new_list;
 t_list* ready_list;
 t_list* block_list;
@@ -43,112 +30,24 @@ t_list* messages_list;
 sem_t sem_messages_list;
 sem_t sem_messages;
 sem_t sem_messages_recieve_list;
-
-
-typedef enum {
-	EMPTY = 0,
-	FIFO= 1,
-	RR = 2,
-	SJFS = 3,
-	SJFC = 4,
-} t_algorithm;
-
 t_algorithm algorithm = FIFO;
-
-typedef enum {
-	FREE= 0,
-	MOVE = 1,
-	CATCHING = 2,
-	TRADE = 3,
-} t_action;
-
-typedef struct {
-	char* pokemon;
-	t_position* position;
-	uint32_t distance;
-	bool catching;
-} t_target;
-
-typedef struct
-{
-	pthread_t tid;
-	//pthread_attr_t attr;
-	sem_t sem_thread;
-	t_action action;
-	uint32_t quantum;
-	uint32_t burst;
-	uint32_t action_burst;
-	//esto reemplaza a target->position y target->pokemon
-	//t_objective* objetivo ( target->position, nombre del pokemon y la distancia hasta el pokemon)
-	//t_position* action_position;
-	t_target* target;
-
-	t_position* position;
-	char** objectives;
-	char** pokemons;
-} t_trainer;
-
-typedef struct
-{
-	char* pokemon;
-	uint32_t count;
-	uint32_t caught;
-	uint32_t catching;
-} t_objective;
-
-typedef struct
-{
-	char* string;
-	t_objective* objective;
-} t_index;
-
-typedef struct
-{
-	t_trainer* trainer;
-	void(*callback)(void*);
-
-} t_callback;
+//FIN GLOBALS
 
 
-typedef struct
-{
-	pthread_t tid;
-	t_message_catch* message;
-
-} t_catch;
-
-typedef struct
-{
-	pthread_t tid;
-	char* pokemon;
-	t_position* position;
-} t_message_team;
-
-typedef struct
-{
-	pthread_t tid;
-	uint32_t message_id;
-} t_message_team_receive;
 
 
-int size_array (char*);
-int char_count(char* array, char parameter);
-int size_array_config(char** array);
-t_trainer* construct_trainer(char* positions, char**, char**);
-t_position* construct_position(char*);
-void initialize_trainers(char**,char**,char**);
+t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa todos los entrenadores del conig
+void initialize_trainers();//inicializa un entrenador (pthread) en new_list
+
 void state_change(uint32_t index, t_list* from,t_list* to);
 t_index* search_index(t_index* index ,t_objective* objective);
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
-t_list* initialize_global_objectives(t_list* list);
+void initialize_global_objectives();
 void add_caught(t_list* list, char* pokemon);
-bool success_objective(t_objective* objective);
 bool success_global_objective(t_list* global_objectives);
-void *trainer_thread(t_callback* callback_thread);
-uint32_t dinstance(t_position* current, t_position* destiny);
+void* trainer_thread(t_callback* callback_thread);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
-bool trainer_full(t_trainer* trainer);
-bool trainer_free_space(t_trainer* trainer);
+
 void transition_new_to_ready(uint32_t index);
 void transition_ready_to_exec(uint32_t index);
 void transition_exec_to_ready();
@@ -156,6 +55,7 @@ void transition_exec_to_block();
 void transition_exec_to_exit();
 void transition_block_to_ready(uint32_t index);
 void transition_block_to_exit(uint32_t index);
+
 void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
@@ -168,7 +68,6 @@ void move(t_trainer* trainer);
 void trainer_assign_job(char* pokemon, t_list* positions);
 void long_term_scheduler();
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching);
-bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
 void callback_fifo(t_trainer* trainer);
 void* exec_thread();
 void add_catching(t_list* list, char* pokemon);
@@ -177,32 +76,6 @@ void* sender_thread();
 
 
 void subscribe(queue_code queue_code);
-
-
-int size_array (char* array)
-{
-	return char_count(array,'|');
-}
-
-int char_count(char* array, char parameter)
-{
-	int size_test =  strlen (array);
-	int count = 1;
-	for(int i = 0; i< size_test ; i++)
-		if(array[i] == parameter)
-					count++;
-	return count;
-}
-
-int size_array_config(char** array)
-{
-	int j = 0;
-		while(array[j] != NULL){
-			//printf("test_objetivos %s\n", array[j]);
-			j++;
-		}
-		return j;
-}
 
 
 void callback_fifo(t_trainer* trainer){
@@ -222,59 +95,38 @@ void callback_fifo(t_trainer* trainer){
 
 }
 
-t_trainer* construct_trainer(char* positions, char** objectives, char** pokemons)
+t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons)
 {
-	t_trainer* trainer = malloc(sizeof(t_trainer));
-	trainer->action = FREE;
-	trainer->target = malloc(sizeof(t_target));
-	trainer->target->position = NULL;
-	trainer->target->distance = NULL;
-	trainer->target->pokemon = NULL;
-	trainer->burst = 0;
-	trainer->quantum = 0;
-	trainer->action_burst = 0;
-	sem_init(&trainer->sem_thread, 0, 0);
-	trainer->position = construct_position(positions);
-	trainer->objectives = string_split(objectives, "|");
-	trainer->pokemons = string_split(pokemons, "|");
-	//struct x
+	t_trainer* trainer = create_trainer_from_config(config_position, onfig_objectives, config_pokemons);
 	// LO QUE HABLAMOS CON AYUDANTE 2
 
-	// ACA VA CALLBACK
 	t_callback* callback_thread = malloc(sizeof(t_callback));
 	callback_thread->trainer = trainer;
-	//ACA VA SEGUN ALGORITMO
+
 	callback_thread->callback = &callback_fifo;
 	pthread_create(&(trainer->tid), NULL, trainer_thread, callback_thread);
 
-	/*
-	printf("test debug pokemon %d\n",trainer->position->x);
-	printf("test debug pokemon %d\n",trainer->position->y);
-	printf("test debug pokemon %s\n",trainer->objectives[0]);
-	printf("test debug pokemon %s\n",trainer->pokemons[2]);
-	*/
 	return trainer;
 }
 
-t_position* construct_position(char* positions)
+
+void initialize_trainers()
 {
-	t_position* position = malloc(sizeof(t_position));
-	char ** positions_split = string_split(positions, "|");
-	position->x = atoi(positions_split[0]);
-	position->y = atoi(positions_split[1]);
-
-
-	return position;
-}
-
-void initialize_trainers(char** positions_config,char** objectives_config,char** pokemons_config)
-{
-	int k = 0;
-	while(positions_config[k]){
-		t_trainer* test_entrenador = construct_trainer(positions_config[k], objectives_config[k], pokemons_config[k]);
+	char** positions_config = config_get_array_value(config,"POSICIONES_ENTRENADORES");
+	char** objectives_config = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
+	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
+	int i = 0;
+	while(positions_config[i] != NULL){
+		t_trainer* test_entrenador = initialize_trainer(positions_config[i], objectives_config[i], pokemons_config[i]);
 		list_add(new_list, test_entrenador);
-		k++;
+		i++;
 	}
+	//TODO liberar memoria (todos los char**)
+	free_string_list(positions_config);
+	free_string_list(objectives_config);
+	free_string_list(pokemons_config);
+
+
 }
 
 void state_change(uint32_t index, t_list* from,t_list* to)
@@ -283,7 +135,6 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 	list_add(to, element);
 }
 
-//void *list_find(t_list *, bool(*closure)(void*));
 
 t_index* search_index(t_index* index ,t_objective* objective)
 {
@@ -350,7 +201,7 @@ bool pokemon_is_needed(char* pokemon)
 	printf("holaaaaaaaaaa\n");
 
 	if(objective == NULL)
-		printf("la concha de la lora\n");
+		printf("no necesitamos un %s\n", pokemon);
 	//return (objective->count > (objective->caught + objective->catching));
 	return objective->count > (objective->caught + objective->catching);
 }
@@ -371,24 +222,19 @@ t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* train
 }
 
 
-t_list* initialize_global_objectives(t_list* list)
+void initialize_global_objectives()
 {
 	t_list* list_global_objectives = list_create();
-	list_global_objectives = (t_list*) list_fold( list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
-	return list_global_objectives;
+	objetives_list = (t_list*) list_fold( new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
 }
 
-bool success_objective(t_objective* objective)
-{
-	return objective->count == objective->caught;
-}
 
 bool success_global_objective(t_list* global_objectives)
 {
 	return (bool) list_all_satisfy(global_objectives,&success_objective);
 }
 
-void *trainer_thread(t_callback* callback_thread)
+void* trainer_thread(t_callback* callback_thread)
 {
 	//if(/*si es 0 menor*/)
 		//funcion cambiar valor global de variable interrumption
@@ -396,7 +242,7 @@ void *trainer_thread(t_callback* callback_thread)
 		//while(1) agregar
 	t_trainer* trainer = callback_thread->trainer;
 
-	printf("hola soy el entrenador %d\n", trainer->tid);
+	printf("hola soy el entrenador %d\n", (int)trainer->tid);
 	printf("aca no esta llegando123\n");
 	while(1){
 		printf("ACA PASO 1\n");
@@ -431,7 +277,6 @@ void *trainer_thread(t_callback* callback_thread)
 				trainer->action = FREE;
 				break;
 		}
-		//aca va el callback
 		callback_thread->callback(trainer);
 	}
 
@@ -441,13 +286,6 @@ void *trainer_thread(t_callback* callback_thread)
 	return NULL;
 }
 
-uint32_t dinstance(t_position* current, t_position* destiny)
-{
-	uint32_t distance_x = abs(current->x-destiny->x);
-	uint32_t distance_y = abs(current->y-destiny->y);
-
-	return distance_x + distance_y;
-}
 
 int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 {
@@ -511,7 +349,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 {
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
-		strcpy(&(trainer->target->pokemon),&pokemon);
+		strcpy(&trainer->target->pokemon,&pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -521,7 +359,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 	else if(strcmp(type,"BLOCK") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
-		strcpy(&(trainer->target->pokemon),&pokemon);
+		strcpy(&trainer->target->pokemon,&pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -530,9 +368,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 }
 
-bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position){
-	return  dinstance(trainer->position, position) <= dinstance(trainer2->position, position);
-}
+
 
 void trainer_assign_job(char* pokemon, t_list* positions)
 {
@@ -547,7 +383,7 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			t_trainer* trainer_new = NULL;
 			t_trainer* trainer_block = NULL;
 			int32_t closest_from_new = closest_free_trainer(new_list, position);
-			printf("aca llleoogoogogoogog\n");
+
 			int32_t closest_from_block = closest_free_trainer(block_list, position);
 
 			if(closest_from_new >= 0){
@@ -614,27 +450,13 @@ void add_to_poke_map(char* pokemon, t_position* position)
 
 }
 
-
-bool trainer_full(t_trainer* trainer)
-{
-	bool response = false;
-	if(size_array_config(trainer->pokemons) ==  size_array_config(trainer->objectives))
-		response = true;
-	return response;
-}
-
-bool trainer_free_space(t_trainer* trainer)
-{
-	return !trainer_full(trainer);
-}
-
-transition_new_to_ready(uint32_t index)
+void transition_new_to_ready(uint32_t index)
 {
 	state_change(index,new_list,ready_list);
 	context_changes++;
 }
 
-transition_ready_to_exec(uint32_t index)
+void transition_ready_to_exec(uint32_t index)
 {
 	state_change(index,ready_list,exec_list);
 	context_changes++;
@@ -643,31 +465,31 @@ transition_ready_to_exec(uint32_t index)
 	sem_post(&trainer->sem_thread);
 }
 
-transition_exec_to_ready()
+void transition_exec_to_ready()
 {
 	state_change(0,exec_list,ready_list);
 	context_changes++;
 }
 
-transition_exec_to_block()
+void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
 	context_changes++;
 }
 
-transition_exec_to_exit()
+void transition_exec_to_exit()
 {
 	state_change(0,exec_list,exit_list);
 	context_changes++;
 }
 
-transition_block_to_ready(uint32_t index)
+void transition_block_to_ready(uint32_t index)
 {
 	state_change(index,block_list,ready_list);
 	context_changes++;
 }
 
-transition_block_to_exit(uint32_t index)
+void transition_block_to_exit(uint32_t index)
 {
 	state_change(index,block_list,exit_list);
 	context_changes++;
@@ -882,12 +704,12 @@ void* sender_thread()
 
 }
 
-void* fake_broker_thread()
+/*void* fake_broker_thread()
 {
 	//SERVIDOR QUE ESCUCHA EN PUERTO TAL! 6001
 	//PRINTF ALGO DE MENSAJE
 	//RESPONDE ACK
-}
+}//*/
 
 
 
@@ -905,7 +727,7 @@ void subscribe(queue_code queue_code) {
 
 	int32_t socket = connect_to_server(ip, port, log);
 
-	uint32_t id = config_get_string_value(config, "ID");
+	uint32_t id = config_get_int_value(config, "ID");
 	//id = 5;
 	t_package* package = serialize_suscripcion(atoi(id), queue_code);
 
