@@ -341,7 +341,7 @@ t_message_get* receive_get(uint32_t socket_cliente, uint32_t* size, t_log* logge
 	return get;
 
 }
-/*
+
 t_message_localized* receive_localized(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
 	t_message_localized* localized = malloc(sizeof(t_message_localized));
@@ -387,33 +387,33 @@ t_message_localized* receive_localized(uint32_t socket_cliente, uint32_t* size, 
 			log_info(logger, "size_nombre de localized recibido: %d", localized->position_amount);
 
 	//allocar memoria para las posiciones
-	//localized->positions = malloc(sizeof(t_position)*localized->position_amount);
+	localized->positions = malloc(sizeof(t_position)*localized->position_amount);
 
 	for(int i = 0; i < localized->position_amount; i++) {
-		//recibir posX de appeared positions[i]
-		localized->positions[i] = malloc(sizeof(t_position));
 
-		if(recv(socket_cliente, &(localized->positions[i]->x), sizeof(localized->positions[i]->x), MSG_WAITALL) == -1)
+		//recibir posX de appeared positions[i]
+		if(recv(socket_cliente, &(localized->positions[i].x), sizeof(localized->positions[i].x), MSG_WAITALL) == -1)
 			log_error(logger, "Error al recibir la posX de localized");
 		else
-			log_info(logger, "posX de new recibida: %d", localized->positions[i]->x);
+			log_info(logger, "posX de new recibida: %d", localized->positions[i].x);
 
 		//recibir posY de localized
-		if(recv(socket_cliente, &(localized->positions[i]->y), sizeof(localized->positions[i]->y), MSG_WAITALL) == -1)
+		if(recv(socket_cliente, &(localized->positions[i].y), sizeof(localized->positions[i].y), MSG_WAITALL) == -1)
 			log_error(logger, "Error al recibir la posY de localized");
 		else
-			log_info(logger, "posY de localized recibida: %d\n", localized->positions[i]->y);
+			log_info(logger, "posY de localized recibida: %d\n", localized->positions[i].y);
+
 	}
 
 
 
-	if(*size != sizeof(localized->id) + sizeof(localized->correlative_id) + sizeof(localized->size_pokemon_name) + strlen(localized->pokemon_name)+1 + sizeof(localized->position_amount) + (sizeof(localized->positions[0]->x) + sizeof(localized->positions[0]->y))*localized->position_amount)
+	if(*size != sizeof(localized->id) + sizeof(localized->correlative_id) + sizeof(localized->size_pokemon_name) + strlen(localized->pokemon_name)+1 + sizeof(localized->position_amount) + (sizeof(localized->positions[0].x) + sizeof(localized->positions[0].y))*localized->position_amount)
 		log_error(logger, "Tamanio erroneo");
 
 
 	return localized;
 
-}*/
+}
 
 t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
