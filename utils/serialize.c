@@ -13,7 +13,7 @@
 int32_t send_paquete(int32_t socket, t_package* paquete){
 	int32_t result;
 	uint32_t bytes = sizeof(int32_t)*2 + paquete->buffer->size;
-	printf("Bytes a enviar: %d\n", bytes);
+	printf("Bytes a enviar: (8 header) + %d de stream\n", (bytes - 8));
 
 	//meto el cod_op + size + mensaje t0d0 en un stream de datos
 	char* a_enviar = malloc(bytes);
