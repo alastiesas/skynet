@@ -125,9 +125,9 @@ void initialize_trainers()
 		i++;
 	}
 	//liberar memoria (todos los char**)
-	free_string_list(positions_config);
-	free_string_list(objectives_config);
-	free_string_list(pokemons_config);
+	//free_string_list(positions_config);
+	//free_string_list(objectives_config);
+	//free_string_list(pokemons_config);
 
 
 }
@@ -727,22 +727,22 @@ subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
 void process_message(operation_code op_code, void* message) {
 	switch(op_code) {
 	case OPERATION_NEW:
-
+		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_APPEARED:
-
+		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_GET:
-
+		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_LOCALIZED:
-
+		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_CATCH:
-
+		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_CAUGHT:
-
+		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	default:
 		printf("CODIGO DE OPERACION ERRONEO");
@@ -752,15 +752,13 @@ void process_message(operation_code op_code, void* message) {
 
 
 void subscribe(queue_code queue_code) {
-
+	printf("COD OPERATION%d\n", queue_code);
 	char* ip = config_get_string_value(config, "IP_BROKER");
 	char* port = config_get_string_value(config, "PUERTO_BROKER");
-
 	int32_t socket = connect_to_server(ip, port, log);
-
 	uint32_t id = config_get_int_value(config, "ID");
-	//id = 5;
-	t_package* package = serialize_suscripcion(atoi(id), queue_code);
+
+	t_package* package = serialize_suscripcion(id, queue_code);
 
 	send_paquete(socket, package);
 	if (receive_ACK(socket, log) == -1) {

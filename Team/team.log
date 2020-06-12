@@ -2065,3 +2065,61 @@ esperando recibir cod_op, por vez numero: 1
 
 [INFO] 15:09:19:593 team program/(10428:10433): Reintentando en 10 segundos
 
+[INFO] 18:43:52:498 team program/(4157:4157): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 18:43:52:504 team program/(4157:4157): Error de conexion con el team
+
+[INFO] 18:43:52:504 team program/(4157:4157): Reintentando en 10 segundos
+
+[WARNING] 18:44:02:506 team program/(4157:4157): Error de conexion con el team
+
+[INFO] 18:44:02:506 team program/(4157:4157): Reintentando en 10 segundos
+
+[INFO] 19:01:59:239 team program/(5699:5699): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:01:59:247 team program/(5699:5699): Conexion creada
+
+[INFO] 19:02:22:259 team program/(5757:5757): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:02:22:265 team program/(5757:5757): Conexion creada
+
+[INFO] 19:11:39:652 team program/(6338:6338): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:11:39:657 team program/(6338:6338): Conexion creada
+
+[INFO] 19:12:23:88 team program/(6570:6570): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:12:23:89 team program/(6570:6570): Conexion creada
+
+[INFO] 19:13:28:520 team program/(6667:6667): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:13:59:359 team program/(6667:6667): Conexion creada
+
+[INFO] 19:16:38:53 team program/(6746:6746): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:16:49:392 team program/(6746:6746): Conexion creada
+
+[INFO] 19:17:32:595 team program/(6818:6818): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:17:46:62 team program/(6818:6818): Conexion creada
+
+[INFO] 19:22:49:365 team program/(7030:7030): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:22:49:369 team program/(7030:7030): Conexion creada
+
+[INFO] 19:24:21:96 team program/(7154:7154): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:24:21:111 team program/(7154:7154): Conexion creada
+
+[INFO] 19:24:24:439 team program/(7170:7170): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:24:24:442 team program/(7170:7170): Conexion creada
+
+[INFO] 19:24:40:1 team program/(7199:7199): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:24:41:6 team program/(7199:7199): Conexion creada
+
+[INFO] 19:24:59:237 team program/(7250:7250): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:24:59:240 team program/(7250:7250): Conexion creada
+
+[INFO] 19:28:04:505 team program/(7768:7768): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:28:04:506 team program/(7768:7768): Conexion creada
+
+[INFO] 19:28:04:509 team program/(7768:7768): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 19:28:04:518 team program/(7768:7774): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 19:32:02:7 team program/(8251:8251): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 19:32:02:7 team program/(8251:8251): Conexion creada
+
+[ERROR] 19:32:02:18 team program/(8251:8251): El proceso responde error en la solicitud
+

@@ -33,8 +33,8 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-	//subscribe(5);
-	//sleep(5);
+	subscribe(5);
+	sleep(5);
 
 
 
