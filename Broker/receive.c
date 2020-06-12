@@ -126,8 +126,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 		ID_GLOBAL++;
 	pthread_mutex_unlock(&mutex_ID_global);
 
-//TODO guardar mensaje en la memoria segun algoritmo
-	//save_message_partitions();
+
 
 	//Enviar ID del mensaje
 	send_ID(t_mensaje->ID_mensaje, socket_cliente, logger);
@@ -135,26 +134,46 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//Recibir confirmacion de haber recibido la ID
 	receive_ACK(socket_cliente, logger);
 
+
+//---------------------------------------------------------------------------------------------
+
+	//En el caso de trabajar con memoria, agregar el mensaje a memoria
+	//La cola, la tenemos como estructura de manejo de la cache, ahi esta toda la informacion del mensaje, a quienes fue enviado y confirmado
+
+
+	//TODO guardar mensaje en la memoria segun algoritmo
+		//store_message_partition();
+						//no hace falta usar el mutex de cola para guardar el message_data
+
+//------------------------------------------------------------------------------------------------------
+	//La cola la tomamos como estructura administrativa, hay que actualizarla luego de que el mensaje ya este en la memoria
+
 	//Agregar mensaje a cola correspondiente
 	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos, total_queue_messages);
+
 
 }
 
 
 //void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data){
 //
-//	uint32_t free_partition_index = find_free_partition_index(size_message);
+//	uint32_t free_partition_index = find_free_partition_index(size_message);	//TODO meter mutex_cache adentro de esta funcion
 //
 //	if(free_partition_index != -1){
-//
-//		t_partition *free_partition = (t_partition*)list_get(partitions, free_partition_index);
+
 //		t_partition* new_partition = malloc(sizeof(*new_partition));
-//
-//		//Creo la nueva particion nueva
-//		new_partition->start_pos = free_partition->start_pos;
+
+		//Creo la nueva particion nueva
 //		new_partition->free = false;
 //		new_partition->size = size_message;
 //		new_partition->end_pos = new_partition->start_pos + size_message;
+//
+	//mutex_cache
+
+//		t_partition *free_partition = (t_partition*)list_get(partitions, free_partition_index);
+
+//		new_partition->start_pos = free_partition->start_pos;
+
 //
 //		//Muevo la particion libre
 //		free_partition->start_pos = free_partition->start_pos + size_message;
@@ -162,11 +181,12 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 //
 //		//grabo el mensaje en la posicion
 //		memmove(new_partition->start_pos, message_data, size_message);
+		//free(message_data);	//nadie va a volver a usar los datos en cola en modo con memoria
 //
 //		list_add_in_index(partitions, free_partition_index, new_partition);
 //
 //		//TODO: chequear si add in index no reemplaza el index actual
-//
+//	//mutex_cache
 //	}
 //
 //	else
@@ -175,4 +195,5 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 //
 //void free_some_space(){
 //	//chequear si borrar mensaje o compactar
+//TODO meter mutex_cache adentro de esta funcion
 //}

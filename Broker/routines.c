@@ -97,6 +97,8 @@ void specific_initialization() {
 	total_caught_messages = 0;
 	total_get_messages = 0;
 	total_localized_messages = 0;
+
+	pthread_mutex_init(&(mutex_cache), NULL);
 }
 
 void behavior() {

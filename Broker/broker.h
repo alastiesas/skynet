@@ -111,6 +111,7 @@ typedef struct {
 
 t_list* partitions;
 
+pthread_mutex_t mutex_cache;
 
 uint32_t ID_GLOBAL;
 uint32_t size_subs_new;			//para mantener la cantidad de suscriptores tambien hay que usar semaforos?
