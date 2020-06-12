@@ -104,7 +104,6 @@ void listen_messages(void* input)
 			exit(EXIT_FAILURE);
 		}
 		else {
-			log_info(logger, "se recibieron %d bytes", recibido);
 
 			log_info(logger, "se recibio el cod op: %d\n", cod_op);
 			void* message = process_request(cod_op, socket, logger);
@@ -141,15 +140,50 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 			//free(new->location);
 			break;
 
-		case OPERATION_CATCH:
+		case OPERATION_APPEARED:
 			log_info(logger, "Se recibe el mensaje:\n");
 			//catch = receive_catch(socket, &size, logger);
-			message = (void*)receive_catch(socket, &size, logger);			//se guarda en mensaje(void*)
+			message = (void*)receive_appeared(socket, &size, logger);			//se guarda en mensaje(void*)
 
 			//free(catch->pokemon_name);
 			//free(catch->position);
 			break;
 
+		case OPERATION_GET:
+					log_info(logger, "Se recibe el mensaje:\n");
+					//catch = receive_catch(socket, &size, logger);
+					message = (void*)receive_get(socket, &size, logger);			//se guarda en mensaje(void*)
+
+					//free(catch->pokemon_name);
+					//free(catch->position);
+					break;
+
+		case OPERATION_LOCALIZED:
+					log_info(logger, "Se recibe el mensaje:\n");
+					//catch = receive_catch(socket, &size, logger);
+					message = (void*)receive_localized(socket, &size, logger);			//se guarda en mensaje(void*)
+
+					//free(catch->pokemon_name);
+					//free(catch->position);
+					break;
+
+		case OPERATION_CATCH:
+					log_info(logger, "Se recibe el mensaje:\n");
+					//catch = receive_catch(socket, &size, logger);
+					message = (void*)receive_catch(socket, &size, logger);			//se guarda en mensaje(void*)
+
+					//free(catch->pokemon_name);
+					//free(catch->position);
+					break;
+
+		case OPERATION_CAUGHT:
+					log_info(logger, "Se recibe el mensaje:\n");
+					//catch = receive_catch(socket, &size, logger);
+					message = (void*)receive_caught(socket, &size, logger);			//se guarda en mensaje(void*)
+
+					//free(catch->pokemon_name);
+					//free(catch->position);
+					break;
 		default:
 			log_warning(logger, "Aun no recibio la cod_op %d, intente otro dia, finaliza el thread de conexion", cod_op);
 			pthread_exit(NULL);

@@ -35,11 +35,11 @@ t_algorithm algorithm = FIFO;
 
 
 
-
+//funciones iniciales
 t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa todos los entrenadores del conig
 void initialize_trainers();//inicializa un entrenador (pthread) en new_list
+//FIN funciones iniciales
 
-void state_change(uint32_t index, t_list* from,t_list* to);
 t_index* search_index(t_index* index ,t_objective* objective);
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
 void initialize_global_objectives();
@@ -48,6 +48,8 @@ bool success_global_objective(t_list* global_objectives);
 void* trainer_thread(t_callback* callback_thread);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
 
+//transiciones
+void state_change(uint32_t index, t_list* from,t_list* to);
 void transition_new_to_ready(uint32_t index);
 void transition_ready_to_exec(uint32_t index);
 void transition_exec_to_ready();
@@ -55,7 +57,7 @@ void transition_exec_to_block();
 void transition_exec_to_exit();
 void transition_block_to_ready(uint32_t index);
 void transition_block_to_exit(uint32_t index);
-
+//FIN transiciones
 void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
@@ -73,6 +75,7 @@ void* exec_thread();
 void add_catching(t_list* list, char* pokemon);
 bool pokemon_is_needed(char* pokemon);
 void* sender_thread();
+void process_message(operation_code op_code, void* message);
 
 
 void subscribe(queue_code queue_code);
@@ -121,7 +124,7 @@ void initialize_trainers()
 		list_add(new_list, test_entrenador);
 		i++;
 	}
-	//TODO liberar memoria (todos los char**)
+	//liberar memoria (todos los char**)
 	free_string_list(positions_config);
 	free_string_list(objectives_config);
 	free_string_list(pokemons_config);
@@ -129,11 +132,6 @@ void initialize_trainers()
 
 }
 
-void state_change(uint32_t index, t_list* from,t_list* to)
-{
-	void* element = list_remove(from, index);
-	list_add(to, element);
-}
 
 
 t_index* search_index(t_index* index ,t_objective* objective)
@@ -450,6 +448,13 @@ void add_to_poke_map(char* pokemon, t_position* position)
 
 }
 
+
+//transiciones
+void state_change(uint32_t index, t_list* from,t_list* to)
+{
+	void* element = list_remove(from, index);
+	list_add(to, element);
+}
 void transition_new_to_ready(uint32_t index)
 {
 	state_change(index,new_list,ready_list);
@@ -494,6 +499,7 @@ void transition_block_to_exit(uint32_t index)
 	state_change(index,block_list,exit_list);
 	context_changes++;
 }
+//FIN transiciones
 
 void fifo_algorithm()
 {
@@ -716,10 +722,35 @@ void* sender_thread()
 /*
 subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
 
-
-
-
 */
+
+void process_message(operation_code op_code, void* message) {
+	switch(op_code) {
+	case OPERATION_NEW:
+
+	break;
+	case OPERATION_APPEARED:
+
+	break;
+	case OPERATION_GET:
+
+	break;
+	case OPERATION_LOCALIZED:
+
+	break;
+	case OPERATION_CATCH:
+
+	break;
+	case OPERATION_CAUGHT:
+
+	break;
+	default:
+		printf("CODIGO DE OPERACION ERRONEO");
+	break;
+	}
+}
+
+
 void subscribe(queue_code queue_code) {
 
 	char* ip = config_get_string_value(config, "IP_BROKER");

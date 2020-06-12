@@ -51,7 +51,7 @@ void specific_initialization() {
 	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
 
 
-	memory_init();
+	//memory_init();
 
 
 
@@ -85,6 +85,11 @@ void specific_initialization() {
 	//sem_init(&(semaphores_new->nuevo_mensaje), 0, 0);
 
 	pthread_cond_init(&(semaphores_new->broadcast), NULL);
+	pthread_cond_init(&(semaphores_appeared->broadcast), NULL);
+	pthread_cond_init(&(semaphores_get->broadcast), NULL);
+	pthread_cond_init(&(semaphores_localized->broadcast), NULL);
+	pthread_cond_init(&(semaphores_catch->broadcast), NULL);
+	pthread_cond_init(&(semaphores_caught->broadcast), NULL);
 
 	total_new_messages = 0;
 	total_appeared_messages = 0;
@@ -97,7 +102,7 @@ void specific_initialization() {
 void behavior() {
 
 	pthread_create(&listening_thread, NULL, (void*) listening, NULL);
-	while (1) {} //pending clean
+	pthread_join(listening_thread, NULL);	//esa linea pending_clean en while(1) estaba consumiendo t0do el cpu hace meses jaja
 }
 
 void listening() {

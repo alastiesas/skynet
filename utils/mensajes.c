@@ -246,6 +246,175 @@ t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logge
 
 }
 
+t_message_appeared* receive_appeared(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+
+	t_message_appeared* appeared = malloc(sizeof(t_message_appeared));
+	appeared->position = malloc(sizeof(t_position));
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+	//recibir id de appeared
+	if(recv(socket_cliente, &(appeared->id), sizeof(appeared->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de appeared");
+	else
+		log_info(logger, "id de appeared recibido: %d", appeared->id);
+
+	//recibir correlative_id de appeared
+	if(recv(socket_cliente, &(appeared->correlative_id), sizeof(appeared->correlative_id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de appeared");
+	else
+		log_info(logger, "correlative_id de appeared recibido: %d", appeared->correlative_id);
+
+	//recibir size_pokemon_name de appeared
+	if(recv(socket_cliente, &(appeared->size_pokemon_name), sizeof(appeared->size_pokemon_name), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el size_nombre de appeared");
+	else
+		log_info(logger, "size_nombre de appeared recibido: %d", appeared->size_pokemon_name);
+
+	//allocar memoria para el nobmre
+	appeared->pokemon_name = malloc(appeared->size_pokemon_name);
+
+	//recibir nombre de appeared
+	if(recv(socket_cliente, appeared->pokemon_name, appeared->size_pokemon_name, MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el nombre de appeared");
+	else
+		log_info(logger, "nombre de appeared recibido: %s", appeared->pokemon_name);
+
+	//recibir posX de appeared
+	if(recv(socket_cliente, &(appeared->position->x), sizeof(appeared->position->x), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir la posX de appeared");
+	else
+		log_info(logger, "posX de appeared recibida: %d", appeared->position->x);
+
+	//recibir posY de appeared
+	if(recv(socket_cliente, &(appeared->position->y), sizeof(appeared->position->y), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir la posY de appeared");
+	else
+		log_info(logger, "posY de appeared recibida: %d\n", appeared->position->y);
+
+
+
+	if(*size != sizeof(appeared->id) + sizeof(appeared->correlative_id) + sizeof(appeared->size_pokemon_name) + strlen(appeared->pokemon_name)+1 + sizeof(appeared->position->x) + sizeof(appeared->position->y))
+		log_error(logger, "Tamanio erroneo");
+
+
+	return appeared;
+
+}
+
+t_message_get* receive_get(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+
+	t_message_get* get = malloc(sizeof(t_message_get));
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+	//recibir id de get
+	if(recv(socket_cliente, &(get->id), sizeof(get->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de get");
+	else
+		log_info(logger, "id de get recibido: %d", get->id);
+
+	//recibir size_pokemon_name de get
+	if(recv(socket_cliente, &(get->size_pokemon_name), sizeof(get->size_pokemon_name), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el size_nombre de get");
+	else
+		log_info(logger, "size_nombre de get recibido: %d", get->size_pokemon_name);
+
+	//allocar memoria para el nobmre
+	get->pokemon_name = malloc(get->size_pokemon_name);
+
+
+
+	if(*size != sizeof(get->id) + sizeof(get->size_pokemon_name) + strlen(get->pokemon_name)+1)
+		log_error(logger, "Tamanio erroneo");
+
+	return get;
+
+}
+
+t_message_localized* receive_localized(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+
+	t_message_localized* localized = malloc(sizeof(t_message_localized));
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+	//recibir id de localized
+	if(recv(socket_cliente, &(localized->id), sizeof(localized->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de localized");
+	else
+		log_info(logger, "id de localized recibido: %d", localized->id);
+
+	//recibir correlative_id de localized
+	if(recv(socket_cliente, &(localized->correlative_id), sizeof(localized->correlative_id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de localized");
+	else
+		log_info(logger, "correlative_id de localized recibido: %d", localized->correlative_id);
+
+	//recibir size_pokemon_name de localized
+	if(recv(socket_cliente, &(localized->size_pokemon_name), sizeof(localized->size_pokemon_name), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el size_nombre de localized");
+	else
+		log_info(logger, "size_nombre de localized recibido: %d", localized->size_pokemon_name);
+
+	//allocar memoria para el localized
+	localized->pokemon_name = malloc(localized->size_pokemon_name);
+
+	//recibir nombre de appeared
+	if(recv(socket_cliente, localized->pokemon_name, localized->size_pokemon_name, MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el nombre de localized");
+	else
+		log_info(logger, "nombre de localized recibido: %s", localized->pokemon_name);
+
+	//recibir position_amount de localized
+		if(recv(socket_cliente, &(localized->position_amount), sizeof(localized->position_amount), MSG_WAITALL) == -1)
+			log_error(logger, "Error al recibir el size_nombre de localized");
+		else
+			log_info(logger, "size_nombre de localized recibido: %d", localized->position_amount);
+
+	//allocar memoria para las posiciones
+	localized->positions = malloc(sizeof(t_position)*localized->position_amount);
+
+	for(int i = 0; i < localized->position_amount; i++) {
+
+		//recibir posX de appeared positions[i]
+		if(recv(socket_cliente, &(localized->positions[i].x), sizeof(localized->positions[i].x), MSG_WAITALL) == -1)
+			log_error(logger, "Error al recibir la posX de localized");
+		else
+			log_info(logger, "posX de new recibida: %d", localized->positions[i].x);
+
+		//recibir posY de localized
+		if(recv(socket_cliente, &(localized->positions[i].y), sizeof(localized->positions[i].y), MSG_WAITALL) == -1)
+			log_error(logger, "Error al recibir la posY de localized");
+		else
+			log_info(logger, "posY de localized recibida: %d\n", localized->positions[i].y);
+
+	}
+
+
+
+	if(*size != sizeof(localized->id) + sizeof(localized->correlative_id) + sizeof(localized->size_pokemon_name) + strlen(localized->pokemon_name)+1 + sizeof(localized->position_amount) + (sizeof(localized->positions[0].x) + sizeof(localized->positions[0].y))*localized->position_amount)
+		log_error(logger, "Tamanio erroneo");
+
+
+	return localized;
+
+}
+
 t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
 	t_message_catch* catch = malloc(sizeof(t_message_catch));
@@ -292,7 +461,6 @@ t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* l
 		log_info(logger, "posY de catch recibida: %d\n", catch->position->y);
 
 
-
 	if(*size != sizeof(catch->id) + sizeof(catch->size_pokemon_name) + strlen(catch->pokemon_name)+1 + sizeof(catch->position->x) + sizeof(catch->position->y))
 		log_error(logger, "Tamanio erroneo");
 
@@ -300,7 +468,42 @@ t_message_catch* receive_catch(uint32_t socket_cliente, uint32_t* size, t_log* l
 
 }
 
+t_message_caught* receive_caught(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
+	t_message_caught* caught = malloc(sizeof(t_message_caught));
+
+	log_info(logger, "Esperando recibir tamanio del stream\n");
+
+	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el tamanio del stream");
+	else
+		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+
+	//recibir id de appeared
+	if(recv(socket_cliente, &(caught->id), sizeof(caught->id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de appeared");
+	else
+		log_info(logger, "id de appeared recibido: %d", caught->id);
+
+	//recibir correlative_id de appeared
+	if(recv(socket_cliente, &(caught->correlative_id), sizeof(caught->correlative_id), MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el id de appeared");
+	else
+		log_info(logger, "correlative_id de appeared recibido: %d", caught->correlative_id);
+
+	//recibir resultado de appeared
+		if(recv(socket_cliente, &(caught->result), sizeof(caught->result), MSG_WAITALL) == -1)
+			log_error(logger, "Error al recibir el id de appeared");
+		else
+			log_info(logger, "resultado de appeared recibido: %d", caught->result);
+
+	if(*size != sizeof(caught->id) + sizeof(caught->correlative_id))
+		log_error(logger, "Tamanio erroneo");
+
+
+	return caught;
+
+}
 
 
 t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t mi_thread){
