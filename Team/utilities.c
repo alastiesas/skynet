@@ -35,11 +35,20 @@ int char_count(char* array, char parameter)
  * int size_array_config(char** array)
  * retorna el tamaño de un vector de strings con valor final NULL
  */
-int size_array_config(char** array)
+int string_list_size(char** string_list)
 {
 	int j = 0;
-		while(array[j] != NULL){
+		while(string_list[j] != NULL){
 			j++;
 		}
 		return j;
+}
+
+void free_string_list(char** string_list) {
+	int i = 0;
+	while(string_list[i] != NULL) {
+		free(string_list[i]);
+		i++;
+	}
+	free(string_list[i]);//NULL también debe liberarse
 }

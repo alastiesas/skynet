@@ -9,27 +9,27 @@
 
 t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons) {
 
-	t_trainer* trainer = malloc(sizeof(t_trainer));//create
-	trainer->action = FREE;//create
-	trainer->target = malloc(sizeof(t_target));//create
-	trainer->target->position = NULL;//create
-	trainer->target->distance = NULL;//create
-	trainer->target->pokemon = NULL;//create
-	trainer->burst = 0;//create
-	trainer->quantum = 0;//create
-	trainer->action_burst = 0;//create
-	sem_init(&trainer->sem_thread, 0, 0);//create
-	trainer->position = position;//create parametro
-	trainer->objectives = objectives;//create parametro
-	trainer->pokemons = pokemons;//create parametro
+	t_trainer* trainer = malloc(sizeof(t_trainer));
+	trainer->action = FREE;
+	trainer->target = malloc(sizeof(t_target));
+	trainer->target->position = NULL;
+	trainer->target->distance = NULL;
+	trainer->target->pokemon = NULL;
+	trainer->burst = 0;
+	trainer->quantum = 0;
+	trainer->action_burst = 0;
+	sem_init(&trainer->sem_thread, 0, 0);
+	trainer->position = position;
+	trainer->objectives = objectives;
+	trainer->pokemons = pokemons;
 	return trainer;
 }
 
 t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons) {
 
-	t_position* position = create_position_from_config(config_position);//create parametro
-	char** objectives = string_split(config_objectives, "|");//create parametro
-	char** pokemons = string_split(config_pokemons, "|");//create parametro
+	t_position* position = create_position_from_config(config_position);
+	char** objectives = string_split(config_objectives, "|");
+	char** pokemons = string_split(config_pokemons, "|");
 	return create_trainer(position, objectives, pokemons);
 
 }
@@ -57,7 +57,7 @@ uint32_t dinstance(t_position* current, t_position* destiny) {
 
 bool trainer_full(t_trainer* trainer) {
 	bool response = false;
-	if(size_array_config(trainer->pokemons) ==  size_array_config(trainer->objectives))
+	if(string_list_size(trainer->pokemons) ==  string_list_size(trainer->objectives))
 		response = true;
 	return response;
 }

@@ -115,12 +115,18 @@ void initialize_trainers()
 	char** positions_config = config_get_array_value(config,"POSICIONES_ENTRENADORES");
 	char** objectives_config = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
 	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
-	int pos = 0;
-	while(positions_config[pos]){
-		t_trainer* test_entrenador = initialize_trainer(positions_config[pos], objectives_config[pos], pokemons_config[pos]);
+	int i = 0;
+	while(positions_config[i] != NULL){
+		t_trainer* test_entrenador = initialize_trainer(positions_config[i], objectives_config[i], pokemons_config[i]);
 		list_add(new_list, test_entrenador);
-		pos++;
+		i++;
 	}
+	//TODO liberar memoria (todos los char**)
+	free_string_list(positions_config);
+	free_string_list(objectives_config);
+	free_string_list(pokemons_config);
+
+
 }
 
 void state_change(uint32_t index, t_list* from,t_list* to)
@@ -129,7 +135,6 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 	list_add(to, element);
 }
 
-//void *list_find(t_list *, bool(*closure)(void*));
 
 t_index* search_index(t_index* index ,t_objective* objective)
 {

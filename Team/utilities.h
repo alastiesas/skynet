@@ -14,6 +14,7 @@
 
 int size_array (char*);
 int char_count(char* array, char parameter);
-int size_array_config(char** array);
+int string_list_size(char** array);
+void free_string_list(char** string_list);
 
 #endif /* UTILITIES_H_ */

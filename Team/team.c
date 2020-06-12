@@ -70,7 +70,7 @@ int main(void)
 	printf("debug del test OBJETIVO %s\n", test_split_objetivo[0]);
 	printf("debug del test OBJETIVO 1 %s\n", test_split_objetivo[1]);
 
-	int j = size_array_config(test_split_objetivo);
+	int j = string_list_size(test_split_objetivo);
 
 
 
