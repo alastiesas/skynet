@@ -71,7 +71,7 @@ uint32_t get_available_partition_number(uint32_t size) {
 void memory_allocation() {
 
 	mem = malloc(memory_size);
-	create_partition(memory_size, true);
+	//create_partition(memory_size, true);
 
 }
 

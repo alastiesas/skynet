@@ -104,7 +104,6 @@ void listen_messages(void* input)
 			exit(EXIT_FAILURE);
 		}
 		else {
-			log_info(logger, "se recibieron %d bytes", recibido);
 
 			log_info(logger, "se recibio el cod op: %d\n", cod_op);
 			void* message = process_request(cod_op, socket, logger);
