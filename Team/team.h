@@ -820,14 +820,14 @@ void* exec_thread()
 				short_term_scheduler();
 			}
 			else{
-				printf("aca pasa al planificador de largo plazo\n");
+				//printf("aca pasa al planificador de largo plazo\n");
 				//post al planificador de largo plazo
 			}
 
 
 			//printf("la lista de block queda %d\n",list_size(block_list));
 			//printf("la lista de new queda %d\n",list_size(new_list));
-			printf("cantidad de CPU %d\n", cpu_cycles);
+			//printf("cantidad de CPU %d\n", cpu_cycles);
 			//if a funcion que consula objetivos globales
 			//BREAK PARA CORTAR WHILE CUANDO TERMINAN OBJETIVOS
 		}
