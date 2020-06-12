@@ -50,6 +50,7 @@ uint32_t receive_size(uint32_t socket, t_log* logger);
 uint32_t receive_ID_proceso(uint32_t socket, t_log* logger);
 
 t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logger);
+t_message_new* receive_appeared(uint32_t socket_cliente, uint32_t* size, t_log* logger);
 
 t_log* initialize_thread(char * mi_nombre, char * proceso_a_conectar, pthread_t mi_thread);
 void enviar_muchos_mensajes(char* yo, char* el, uint32_t socket, t_log* logger);
