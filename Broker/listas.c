@@ -45,6 +45,80 @@ t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_m
 	return suscriber;
 }
 
+void dump_cache(void){
+
+	char* dump = string_new();
+	string_append(&dump, "\n-----------------------------------------------------------------------------------------------------------------------------\n");
+	string_append(&dump, "Dump: ");
+	char* time = temporal_get_string_time();
+	string_append(&dump, time);
+	free(time);
+
+	uint32_t list_amount;
+	uint32_t i;
+	//mutex_particiones TODO
+	list_amount = list_size(partitions);
+	for(i=1; i<(list_amount + 1); i++){
+		t_partition* partition = list_get(partitions, (i-1));
+
+		string_append(&dump, "\nParticion ");
+		char* num = string_itoa(i);
+		string_append(&dump, num);
+		free(num);
+		string_append(&dump, ": ");
+		char* initial = string_from_format("%p", partition->initial_position);
+		char* final = string_from_format("%p", partition->final_position);
+		string_append(&dump, initial);
+		string_append(&dump, " - ");
+		string_append(&dump, final);
+		free(initial);
+		free(final);
+
+		if(partition->available){
+			string_append(&dump, ".\t[L]");
+			string_append(&dump, "\tSize: ");
+			char* size = string_itoa(partition->size);
+			string_append(&dump, size);
+			free(size);
+			string_append(&dump, "b");
+		}
+		else{
+			string_append(&dump, ".\t[X]");
+			string_append(&dump, "\tSize: ");
+			char* size = string_itoa(partition->size);
+			string_append(&dump, size);
+			free(size);
+			string_append(&dump, "b");
+			//TODO agregar LRU
+			//TODO agregar COLA
+			//TODO agregar ID
+		}
+	}
+	//mutex_particiones TODO
+
+	string_append(&dump, "\n-----------------------------------------------------------------------------------------------------------------------------\n");
+
+	FILE* file_dump = txt_open_for_append("dump.txt");
+	txt_write_in_file(file_dump, dump);
+	txt_close_file(file_dump);
+
+	free(dump);
+}
+
+//------------------------------------- Funciones de prueba
+
+void imprimir_lista(t_list* lista, char* nombre){
+	int tamanio = list_size(lista);
+	int i;
+	void* contenido;
+
+	for(i=0; i<tamanio; i++){
+		contenido = list_get(lista, i);
+		printf("%s[%d] vale: %d\n", nombre, i, (int) contenido);
+	}
+
+}
+
 void encontrar_numero(t_list *lista, void* numero_buscado, t_list* elementos_coincidentes) {
 	bool _soy_el_numero_buscado(void *p) {
 		return p == numero_buscado;
@@ -100,15 +174,4 @@ t_list* no_enviados_lista(t_list* lista_global, t_list* lista_enviados, t_list**
 	return *resultado;
 }
 
-void imprimir_lista(t_list* lista, char* nombre){
-	int tamanio = list_size(lista);
-	int i;
-	void* contenido;
-
-	for(i=0; i<tamanio; i++){
-		contenido = list_get(lista, i);
-		printf("%s[%d] vale: %d\n", nombre, i, (int) contenido);
-	}
-
-}
 

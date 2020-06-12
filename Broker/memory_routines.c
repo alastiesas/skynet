@@ -72,6 +72,7 @@ void memory_allocation() {
 
 	mem = malloc(memory_size);
 	create_partition(memory_size, true);
+
 }
 
 void memory_compaction() {

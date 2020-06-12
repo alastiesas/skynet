@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <commons/collections/list.h>
+#include <commons/temporal.h>
+#include <commons/txt.h>
 
 void encontrar_numero(t_list *lista, void* numero_buscado, t_list* elementos_coincidentes);
 void no_contenido(t_list* lista_enviados, void* elemento_lista_global, t_list* resultado);
