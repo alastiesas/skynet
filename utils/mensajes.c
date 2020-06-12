@@ -248,7 +248,7 @@ t_message_new* receive_new(uint32_t socket_cliente, uint32_t* size, t_log* logge
 
 t_message_new* receive_appeared(uint32_t socket_cliente, uint32_t* size, t_log* logger){
 
-	t_message_appeared* appeared = malloc(sizeof(t_message_new));
+	t_message_appeared* appeared = malloc(sizeof(t_message_appeared));
 	appeared->position = malloc(sizeof(t_position));
 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
