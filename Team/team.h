@@ -75,6 +75,7 @@ void* exec_thread();
 void add_catching(t_list* list, char* pokemon);
 bool pokemon_is_needed(char* pokemon);
 void* sender_thread();
+void process_message(operation_code op_code, void* message);
 
 
 void subscribe(queue_code queue_code);
@@ -721,10 +722,35 @@ void* sender_thread()
 /*
 subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
 
-
-
-
 */
+
+void process_message(operation_code op_code, void* message) {
+	switch(op_code) {
+	case OPERATION_NEW:
+
+	break;
+	case OPERATION_APPEARED:
+
+	break;
+	case OPERATION_GET:
+
+	break;
+	case OPERATION_LOCALIZED:
+
+	break;
+	case OPERATION_CATCH:
+
+	break;
+	case OPERATION_CAUGHT:
+
+	break;
+	default:
+		printf("CODIGO DE OPERACION ERRONEO");
+	break;
+	}
+}
+
+
 void subscribe(queue_code queue_code) {
 
 	char* ip = config_get_string_value(config, "IP_BROKER");

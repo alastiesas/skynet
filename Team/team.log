@@ -2053,3 +2053,15 @@ esperando recibir cod_op, por vez numero: 1
 
 [INFO] 15:08:49:541 team program/(10428:10433): Reintentando en 10 segundos
 
+[WARNING] 15:08:59:542 team program/(10428:10433): Error de conexion con el team
+
+[INFO] 15:08:59:543 team program/(10428:10433): Reintentando en 10 segundos
+
+[WARNING] 15:09:09:543 team program/(10428:10433): Error de conexion con el team
+
+[INFO] 15:09:09:571 team program/(10428:10433): Reintentando en 10 segundos
+
+[WARNING] 15:09:19:571 team program/(10428:10433): Error de conexion con el team
+
+[INFO] 15:09:19:593 team program/(10428:10433): Reintentando en 10 segundos
+
