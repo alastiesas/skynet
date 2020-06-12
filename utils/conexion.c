@@ -97,6 +97,7 @@ void listen_messages(void* input)
 		operation_code cod_op;
 				//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
 		int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
+		printf("recv = %d", recibido);
 		if(recibido == -1)
 			log_error(logger, "Error del recv()");
 		else if(recibido == 0){

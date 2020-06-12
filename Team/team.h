@@ -730,19 +730,19 @@ void process_message(operation_code op_code, void* message) {
 		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_APPEARED:
-		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RESCIBIO UN  APPEARED, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_GET:
-		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RESCIBIO UN  GET, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_LOCALIZED:
-		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RESCIBIO UN  LOCALIZED, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_CATCH:
-		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RESCIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_CAUGHT:
-		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RESCIBIO UN  CAUGHT, PERO NO SE QUE HACER <----------------------------");
 	break;
 	default:
 		printf("CODIGO DE OPERACION ERRONEO");
@@ -771,7 +771,7 @@ void subscribe(queue_code queue_code) {
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
 	args->logger = log;
-	// agregar una funcion
+	args->function = process_message;
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
 

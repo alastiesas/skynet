@@ -2123,3 +2123,168 @@ esperando recibir cod_op, por vez numero: 1
 
 [ERROR] 19:32:02:18 team program/(8251:8251): El proceso responde error en la solicitud
 
+[INFO] 20:06:30:922 team program/(6635:6635): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:06:30:924 team program/(6635:6635): Conexion creada
+
+[INFO] 20:06:30:926 team program/(6635:6635): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:06:30:926 team program/(6635:6641): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:06:45:929 team program/(6635:6644): Conexion creada
+
+[INFO] 20:06:45:936 team program/(6635:6644): Se recibio el ID de mensaje: 1
+
+[INFO] 20:06:45:936 team program/(6635:6644): Se envio la confirmacion (4 bytes)
+[INFO] 20:06:45:937 team program/(6635:6641): se recibio el cod op: 5
+
+[INFO] 20:06:45:937 team program/(6635:6641): Se recibe el mensaje:
+
+[INFO] 20:06:45:937 team program/(6635:6641): Esperando recibir tamanio del stream
+
+[INFO] 20:06:45:937 team program/(6635:6641): Se solicito recibir un tamanio de stream de: 24
+
+[INFO] 20:06:45:937 team program/(6635:6641): id de catch recibido: 1
+[INFO] 20:06:45:937 team program/(6635:6641): size_nombre de catch recibido: 8
+[INFO] 20:06:45:937 team program/(6635:6641): nombre de catch recibido: pikachu
+[INFO] 20:06:45:937 team program/(6635:6641): posX de catch recibida: 4
+[INFO] 20:06:45:937 team program/(6635:6641): posY de catch recibida: 8
+
+[INFO] 20:06:45:937 team program/(6635:6641): Se envio la confirmacion (4 bytes)
+[INFO] 20:06:45:937 team program/(6635:6641): Se envio la confirmacion de la recepcion del mensaje
+[INFO] 20:09:32:332 team program/(6735:6735): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:09:32:333 team program/(6735:6735): Conexion creada
+
+[INFO] 20:09:32:334 team program/(6735:6735): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:09:32:340 team program/(6735:6741): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:09:47:346 team program/(6735:6742): Conexion creada
+
+[INFO] 20:09:47:348 team program/(6735:6742): Se recibio el ID de mensaje: 2
+
+[INFO] 20:09:47:348 team program/(6735:6742): Se envio la confirmacion (4 bytes)
+[ERROR] 20:11:00:100 team program/(6735:6741): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 20:12:17:245 team program/(6823:6823): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:12:17:246 team program/(6823:6823): Conexion creada
+
+[INFO] 20:12:17:247 team program/(6823:6823): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:12:17:248 team program/(6823:6829): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:12:32:251 team program/(6823:6836): Conexion creada
+
+[INFO] 20:12:32:252 team program/(6823:6836): Se recibio el ID de mensaje: 1
+
+[INFO] 20:12:32:252 team program/(6823:6836): Se envio la confirmacion (4 bytes)
+[ERROR] 20:13:25:315 team program/(6823:6829): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 20:21:19:403 team program/(7159:7159): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:21:19:407 team program/(7159:7159): Conexion creada
+
+[INFO] 20:21:19:413 team program/(7159:7159): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:21:19:414 team program/(7159:7165): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:23:43:987 team program/(7283:7283): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:23:43:988 team program/(7283:7283): Conexion creada
+
+[INFO] 20:23:43:989 team program/(7283:7283): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:23:43:992 team program/(7283:7289): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:25:23:885 team program/(7334:7334): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:25:23:886 team program/(7334:7334): Conexion creada
+
+[ERROR] 20:25:23:887 team program/(7334:7334): El proceso responde error en la solicitud
+
+[INFO] 20:25:52:759 team program/(7365:7365): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:25:52:760 team program/(7365:7365): Conexion creada
+
+[INFO] 20:25:52:773 team program/(7365:7365): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:25:52:776 team program/(7365:7373): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:30:10:84 team program/(7511:7511): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:30:10:84 team program/(7511:7511): Conexion creada
+
+[INFO] 20:30:10:85 team program/(7511:7511): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:30:10:86 team program/(7511:7517): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:30:12:521 team program/(7511:7517): se recibio el cod op: 6
+
+[INFO] 20:30:12:521 team program/(7511:7517): Se recibe el mensaje:
+
+[INFO] 20:30:12:521 team program/(7511:7517): Esperando recibir tamanio del stream
+
+[INFO] 20:30:12:521 team program/(7511:7517): Se solicito recibir un tamanio de stream de: 9
+
+[INFO] 20:30:12:521 team program/(7511:7517): id de appeared recibido: 1
+[INFO] 20:30:12:521 team program/(7511:7517): correlative_id de appeared recibido: 1
+[INFO] 20:30:12:521 team program/(7511:7517): resultado de appeared recibido: 1
+[ERROR] 20:30:12:521 team program/(7511:7517): Tamanio erroneo
+[INFO] 20:30:12:521 team program/(7511:7517): Se envio la confirmacion (4 bytes)
+[INFO] 20:30:12:522 team program/(7511:7517): Se envio la confirmacion de la recepcion del mensaje
+[INFO] 20:30:12:522 team program/(7511:7517): 
+esperando recibir cod_op, por vez numero: 2
+
+[INFO] 20:33:01:585 team program/(7609:7609): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:33:01:601 team program/(7609:7609): Conexion creada
+
+[INFO] 20:33:01:602 team program/(7609:7609): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:33:01:604 team program/(7609:7615): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:33:05:119 team program/(7609:7615): se recibio el cod op: 6
+
+[INFO] 20:33:05:119 team program/(7609:7615): Se recibe el mensaje:
+
+[INFO] 20:33:05:119 team program/(7609:7615): Esperando recibir tamanio del stream
+
+[INFO] 20:33:05:119 team program/(7609:7615): Se solicito recibir un tamanio de stream de: 9
+
+[INFO] 20:33:05:119 team program/(7609:7615): id de caught recibido: 1
+[INFO] 20:33:05:119 team program/(7609:7615): correlative_id de caught recibido: 1
+[INFO] 20:33:05:119 team program/(7609:7615): resultado de caught recibido: 1
+[ERROR] 20:33:05:119 team program/(7609:7615): Tamanio erroneo
+[INFO] 20:33:05:119 team program/(7609:7615): Se envio la confirmacion (4 bytes)
+[INFO] 20:33:05:119 team program/(7609:7615): Se envio la confirmacion de la recepcion del mensaje
+[INFO] 20:33:05:119 team program/(7609:7615): 
+esperando recibir cod_op, por vez numero: 2
+
+[INFO] 20:35:15:972 team program/(7689:7689): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 20:35:15:988 team program/(7689:7689): Conexion creada
+
+[INFO] 20:35:15:989 team program/(7689:7689): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 20:35:15:990 team program/(7689:7695): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 20:35:17:925 team program/(7689:7695): se recibio el cod op: 6
+
+[INFO] 20:35:17:925 team program/(7689:7695): Se recibe el mensaje:
+
+[INFO] 20:35:17:925 team program/(7689:7695): Esperando recibir tamanio del stream
+
+[INFO] 20:35:17:925 team program/(7689:7695): Se solicito recibir un tamanio de stream de: 9
+
+[INFO] 20:35:17:925 team program/(7689:7695): id de caught recibido: 1
+[INFO] 20:35:17:925 team program/(7689:7695): correlative_id de caught recibido: 1
+[INFO] 20:35:17:925 team program/(7689:7695): resultado de caught recibido: 1
+[ERROR] 20:35:17:925 team program/(7689:7695): Tamanio erroneo
+[INFO] 20:35:17:925 team program/(7689:7695): Se envio la confirmacion (4 bytes)
+[INFO] 20:35:17:925 team program/(7689:7695): Se envio la confirmacion de la recepcion del mensaje
+[INFO] 20:35:17:925 team program/(7689:7695): 
+esperando recibir cod_op, por vez numero: 2
+

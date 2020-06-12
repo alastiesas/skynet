@@ -483,19 +483,19 @@ t_message_caught* receive_caught(uint32_t socket_cliente, uint32_t* size, t_log*
 	if(recv(socket_cliente, &(caught->id), sizeof(caught->id), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el id de appeared");
 	else
-		log_info(logger, "id de appeared recibido: %d", caught->id);
+		log_info(logger, "id de caught recibido: %d", caught->id);
 
 	//recibir correlative_id de appeared
 	if(recv(socket_cliente, &(caught->correlative_id), sizeof(caught->correlative_id), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el id de appeared");
 	else
-		log_info(logger, "correlative_id de appeared recibido: %d", caught->correlative_id);
+		log_info(logger, "correlative_id de caught recibido: %d", caught->correlative_id);
 
 	//recibir resultado de appeared
 		if(recv(socket_cliente, &(caught->result), sizeof(caught->result), MSG_WAITALL) == -1)
 			log_error(logger, "Error al recibir el id de appeared");
 		else
-			log_info(logger, "resultado de appeared recibido: %d", caught->result);
+			log_info(logger, "resultado de caught recibido: %d", caught->result);
 
 	if(*size != sizeof(caught->id) + sizeof(caught->correlative_id))
 		log_error(logger, "Tamanio erroneo");

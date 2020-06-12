@@ -33,11 +33,11 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-	subscribe(5);
+	subscribe(6);
 	sleep(5);
 
 
-
+/*
 	pthread_t tid;
 	pthread_create(&tid, NULL, sender_thread, NULL);
 
