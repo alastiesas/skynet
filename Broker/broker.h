@@ -19,7 +19,8 @@ char* min_partition_size;
 char* memory_algorithm;
 char* replacement_algorithm;
 char* free_partition_algorithm; //rename
-char* compaction_frequency;
+uint32_t compaction_frequency;
+uint32_t count = 0; //rename
 
 void* mem;
 

@@ -46,7 +46,7 @@ void specific_initialization() {
 	memory_algorithm = config_get_string_value(config, "ALGORITMO_MEMORIA");
 
 	free_partition_algorithm = config_get_string_value(config, "ALGORITMO_PARTICION_LIBRE");
-	compaction_frequency = config_get_string_value(config, "FRECUENCIA_COMPACTACION");
+	compaction_frequency = atoi(config_get_string_value(config, "FRECUENCIA_COMPACTACION"));
 
 	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
 
