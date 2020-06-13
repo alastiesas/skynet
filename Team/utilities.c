@@ -52,3 +52,23 @@ void free_string_list(char** string_list) {
 	}
 	free(string_list[i]);//NULL también debe liberarse
 }
+
+t_index* search_index(t_index* index ,t_objective* objective)
+{
+	if(0 == strcmp(objective->pokemon, index->string)){
+		index->objective = objective;
+	}
+	return index;
+}
+
+t_objective* find_key(t_list* list, char* key)
+{
+	t_index* index = malloc(sizeof(t_index));
+	index->string = key;
+	index->objective = NULL;
+	//void*(*function)(void*, void*) = &search_index;
+	index = (t_index*) list_fold(list,(void*)index,(void*)&search_index);
+	t_objective* objective = index->objective;
+	free(index);
+	return objective;
+}

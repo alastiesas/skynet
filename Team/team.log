@@ -2288,3 +2288,34 @@ esperando recibir cod_op, por vez numero: 1
 [INFO] 20:35:17:925 team program/(7689:7695): 
 esperando recibir cod_op, por vez numero: 2
 
+[INFO] 21:28:41:707 team program/(8691:8691): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 21:28:41:708 team program/(8691:8691): Conexion creada
+
+[ERROR] 21:28:41:708 team program/(8691:8691): El proceso responde error en la solicitud
+
+[INFO] 21:28:58:515 team program/(8717:8717): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 21:28:58:515 team program/(8717:8717): Conexion creada
+
+[INFO] 21:28:58:532 team program/(8717:8717): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 21:28:58:533 team program/(8717:8723): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 00:20:23:600 team program/(11013:11013): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 00:20:23:601 team program/(11013:11013): Error de conexion con el team
+
+[INFO] 00:20:23:601 team program/(11013:11013): Reintentando en 10 segundos
+
+[INFO] 00:30:52:320 team program/(11520:11520): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 00:30:52:324 team program/(11520:11520): Error de conexion con el team
+
+[INFO] 00:30:52:324 team program/(11520:11520): Reintentando en 10 segundos
+
+[WARNING] 00:31:02:324 team program/(11520:11520): Error de conexion con el team
+
+[INFO] 00:31:02:324 team program/(11520:11520): Reintentando en 10 segundos
+
+[WARNING] 00:31:12:324 team program/(11520:11520): Error de conexion con el team
+
+[INFO] 00:31:12:324 team program/(11520:11520): Reintentando en 10 segundos
+

@@ -108,6 +108,7 @@ uint32_t dinstance(t_position* current, t_position* destiny);
 bool trainer_full(t_trainer* trainer);
 bool trainer_free_space(t_trainer* trainer);
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
+int32_t closest_free_trainer(t_list* entrenadores, t_position* destiny);
 //FIN consultas
 
 #endif /* TEAM_STRUCTS_H_ */

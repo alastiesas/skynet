@@ -12,41 +12,60 @@
 #include"utilities.h"
 #include"team_structs.h"
 
-//GLOBALS
+//---GLOBALS---
+
+//configuracion
 t_config* config;
 t_log* log;
+uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
+t_list* objetives_list;
+t_dictionary* poke_map;
+t_algorithm algorithm = FIFO;
+
+//planificación
 t_list* new_list;
 t_list* ready_list;
 t_list* block_list;
 t_list* exec_list;
 t_list* exit_list;
+
+
+//planificacion
 uint32_t context_changes = 0;
 uint32_t cpu_cycles = 0;
-t_list* objetives_list;
-uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
-t_dictionary* poke_map;
-sem_t sem_exec;
+
+//comunicacion
 t_list* messages_list;
+
+//semaforos
+sem_t sem_exec;
 sem_t sem_messages_list;
 sem_t sem_messages;
 sem_t sem_messages_recieve_list;
-t_algorithm algorithm = FIFO;
-//FIN GLOBALS
+
+//---FIN GLOBALS---
 
 
 
 //funciones iniciales
-t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa todos los entrenadores del conig
-void initialize_trainers();//inicializa un entrenador (pthread) en new_list
+t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
+void initialize_trainers();//inicializa todos los entrenadores del conig
+void initialize_global_objectives();
 //FIN funciones iniciales
 
-t_index* search_index(t_index* index ,t_objective* objective);
+//funciones de entrenadores
 t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
-void initialize_global_objectives();
+void* trainer_thread(t_callback* callback_thread);
+void trainer_assign_job(char* pokemon, t_list* positions);
+void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching);
+//FIN funciones de entrenadores
+
+//objetivos
 void add_caught(t_list* list, char* pokemon);
 bool success_global_objective(t_list* global_objectives);
-void* trainer_thread(t_callback* callback_thread);
-int32_t closest_free_trainer(t_list* entrenadores, t_position* posicion);
+bool pokemon_is_needed(char* pokemon);
+void add_catching(t_list* list, char* pokemon);
+//FIN objetivos
 
 //transiciones
 void state_change(uint32_t index, t_list* from,t_list* to);
@@ -58,27 +77,32 @@ void transition_exec_to_exit();
 void transition_block_to_ready(uint32_t index);
 void transition_block_to_exit(uint32_t index);
 //FIN transiciones
+
+//planificacion
+void long_term_scheduler();
+void* exec_thread();
 void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
 void sjfc_algorithm();
+void callback_fifo(t_trainer* trainer);
+//FIN planificacion
+
+//movimientos
 void move_up(t_trainer* trainer);
 void move_down(t_trainer* trainer);
 void move_right(t_trainer* trainer);
 void move_left(t_trainer* trainer);
 void move(t_trainer* trainer);
-void trainer_assign_job(char* pokemon, t_list* positions);
-void long_term_scheduler();
-void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching);
-void callback_fifo(t_trainer* trainer);
-void* exec_thread();
-void add_catching(t_list* list, char* pokemon);
-bool pokemon_is_needed(char* pokemon);
+//FIN movimientos
+
+
+//comunicación
 void* sender_thread();
 void process_message(operation_code op_code, void* message);
-
-
 void subscribe(queue_code queue_code);
+//FIN comunicación
+
 
 
 void callback_fifo(t_trainer* trainer){
@@ -134,25 +158,6 @@ void initialize_trainers()
 
 
 
-t_index* search_index(t_index* index ,t_objective* objective)
-{
-	if(0 == strcmp(objective->pokemon, index->string)){
-		index->objective = objective;
-	}
-	return index;
-}
-
-t_objective* find_key(t_list* list, char* key)
-{
-	t_index* index = malloc(sizeof(t_index));
-	index->string = key;
-	index->objective = NULL;
-	//void*(*function)(void*, void*) = &search_index;
-	index = (t_index*) list_fold(list,(void*)index,(void*)&search_index);
-	t_objective* objective = index->objective;
-	free(index);
-	return objective;
-}
 
 void add_objective(t_list* list, char* pokemon)
 {
@@ -282,49 +287,6 @@ void* trainer_thread(t_callback* callback_thread)
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
 	return NULL;
-}
-
-
-int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
-{
-	//printf("elements count %d\",list_trainer->elements_count);
-	int32_t i = -1;
-	int32_t index = -1;
-	printf("LA POSICION DE DESTINO ES (%d,%d)\n",destiny->x,destiny->y);
-	printf("el size de la lista es %d\n", list_size(list_trainer));
-
-	if(list_size(list_trainer) != 0)
-	{
-
-		t_link_element* element = list_trainer->head;
-		uint32_t distance = -1;
-		//uint32_t distance = dinstance(((t_trainer*)element->data)->position, destiny);
-		//t_trainer* trainer = (t_trainer*) element->data;
-
-		//element = element->next;
-		i = 0;
-		while(element != NULL) {
-			uint32_t distance_aux = dinstance(((t_trainer*)element->data)->position, destiny);
-			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
-			printf("distance actual %d\n" ,distance_aux);
-			printf("distance minima %d\n" ,distance);
-			printf("el actions es %d\n", ((t_trainer*)element->data)->action);
-			printf("is free  %d\n" ,trainer_free_space(((t_trainer*)element->data)));
-
-			if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && (distance_aux < distance || distance < 0)){
-				distance = distance_aux;
-				//trainer = (t_trainer*) element->data;
-				index = i;
-				printf("->SELECCIONADO %d\n",i);
-			}
-			else
-				printf("->NO SELECCIONADO %d\n",i);
-			element = element->next;
-			i++;
-		}
-	}
-	printf("El index que retorna %d\n",index);
-	return index;
 }
 
 //encuentra al entrenador mas cerca de la posicion en ambas listas
