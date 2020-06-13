@@ -76,7 +76,7 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 	int32_t i = -1;
 	int32_t index = -1;
 	printf("LA POSICION DE DESTINO ES (%d,%d)\n",destiny->x,destiny->y);
-	printf("el size de la lista es %d\n", list_size(list_trainer));
+	printf("el size de la lista de entrenadores es %d\n", list_size(list_trainer));
 
 	if(list_size(list_trainer) != 0)
 	{
@@ -91,10 +91,10 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 		while(element != NULL) {
 			uint32_t distance_aux = dinstance(((t_trainer*)element->data)->position, destiny);
 			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
-			printf("distance actual %d\n" ,distance_aux);
-			printf("distance minima %d\n" ,distance);
-			printf("el actions es %d\n", ((t_trainer*)element->data)->action);
-			printf("is free  %d\n" ,trainer_free_space(((t_trainer*)element->data)));
+			printf("distance actual de este entrenador: %d\n" ,distance_aux);
+			printf("distance minima: %d\n" ,distance);
+			printf("el actions es (0=libre): %d\n", ((t_trainer*)element->data)->action);
+			printf("teiene espacio en inventario: %d\n" ,trainer_free_space(((t_trainer*)element->data)));
 
 			if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && (distance_aux < distance || distance < 0)){
 				distance = distance_aux;
@@ -108,6 +108,6 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 			i++;
 		}
 	}
-	printf("El index que retorna %d\n",index);
+	printf("El trainer seleccionado fue: %d\n(indice en la lista actual)\n\n",index);
 	return index;
 }

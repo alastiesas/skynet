@@ -2319,3 +2319,1431 @@ esperando recibir cod_op, por vez numero: 1
 
 [INFO] 00:31:12:324 team program/(11520:11520): Reintentando en 10 segundos
 
+[INFO] 15:02:29:603 team program/(6624:6624): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:02:29:605 team program/(6624:6624): Conexion creada
+
+[INFO] 15:02:29:611 team program/(6624:6624): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:02:29:613 team program/(6624:6630): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:03:04:850 team program/(6646:6646): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:03:04:859 team program/(6646:6646): Conexion creada
+
+[INFO] 15:03:04:860 team program/(6646:6646): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:03:04:863 team program/(6646:6653): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:04:13:951 team program/(6675:6675): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:04:13:953 team program/(6675:6675): Conexion creada
+
+[INFO] 15:04:13:957 team program/(6675:6675): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:04:13:961 team program/(6675:6681): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:04:14:787 team program/(6675:6681): se recibio el cod op: 6
+
+[INFO] 15:04:14:787 team program/(6675:6681): Se recibe el mensaje:
+
+[INFO] 15:04:14:787 team program/(6675:6681): Esperando recibir tamanio del stream
+
+[INFO] 15:04:14:787 team program/(6675:6681): Se solicito recibir un tamanio de stream de: 9
+
+[INFO] 15:04:14:787 team program/(6675:6681): id de caught recibido: 1
+[INFO] 15:04:14:787 team program/(6675:6681): correlative_id de caught recibido: 1
+[INFO] 15:04:14:787 team program/(6675:6681): resultado de caught recibido: 1
+[ERROR] 15:04:14:787 team program/(6675:6681): Tamanio erroneo
+[INFO] 15:04:14:787 team program/(6675:6681): Se envio la confirmacion (4 bytes)
+[INFO] 15:04:14:787 team program/(6675:6681): Se envio la confirmacion de la recepcion del mensaje
+[INFO] 15:04:14:788 team program/(6675:6681): 
+esperando recibir cod_op, por vez numero: 2
+
+[INFO] 15:07:05:301 team program/(6752:6752): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:07:05:302 team program/(6752:6752): Conexion creada
+
+[ERROR] 15:07:05:303 team program/(6752:6752): El proceso responde error en la solicitud
+
+[INFO] 15:07:16:901 team program/(6769:6769): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:07:16:906 team program/(6769:6769): Conexion creada
+
+[ERROR] 15:07:16:910 team program/(6769:6769): El proceso responde error en la solicitud
+
+[INFO] 15:07:34:862 team program/(6791:6791): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:07:34:868 team program/(6791:6791): Conexion creada
+
+[INFO] 15:07:34:869 team program/(6791:6791): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:07:34:870 team program/(6791:6797): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:08:44:771 team program/(6852:6852): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:08:44:776 team program/(6852:6852): Conexion creada
+
+[ERROR] 15:08:44:781 team program/(6852:6852): El proceso responde error en la solicitud
+
+[INFO] 15:08:54:974 team program/(6874:6874): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:08:54:976 team program/(6874:6874): Conexion creada
+
+[INFO] 15:08:54:979 team program/(6874:6874): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:08:54:989 team program/(6874:6880): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:09:30:898 team program/(6874:6880): se recibio el cod op: 6
+
+[INFO] 15:09:30:898 team program/(6874:6880): Se recibe el mensaje:
+
+[INFO] 15:09:30:898 team program/(6874:6880): Esperando recibir tamanio del stream
+
+[INFO] 15:09:30:898 team program/(6874:6880): Se solicito recibir un tamanio de stream de: 9
+
+[INFO] 15:09:30:898 team program/(6874:6880): id de caught recibido: 1
+[INFO] 15:09:30:898 team program/(6874:6880): correlative_id de caught recibido: 1
+[INFO] 15:09:30:898 team program/(6874:6880): resultado de caught recibido: 1
+[ERROR] 15:09:30:898 team program/(6874:6880): Tamanio erroneo
+[INFO] 15:09:30:898 team program/(6874:6880): Se envio la confirmacion (4 bytes)
+[INFO] 15:09:30:898 team program/(6874:6880): Se envio la confirmacion de la recepcion del mensaje
+[INFO] 15:09:30:898 team program/(6874:6880): 
+esperando recibir cod_op, por vez numero: 2
+
+[ERROR] 15:11:35:355 team program/(6874:6880): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 15:12:05:770 team program/(6978:6978): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 15:12:05:771 team program/(6978:6978): Error de conexion con el team
+
+[INFO] 15:12:05:771 team program/(6978:6978): Reintentando en 10 segundos
+
+[WARNING] 15:12:15:772 team program/(6978:6978): Error de conexion con el team
+
+[INFO] 15:12:15:772 team program/(6978:6978): Reintentando en 10 segundos
+
+[WARNING] 15:12:25:772 team program/(6978:6978): Error de conexion con el team
+
+[INFO] 15:12:25:773 team program/(6978:6978): Reintentando en 10 segundos
+
+[WARNING] 15:12:35:774 team program/(6978:6978): Error de conexion con el team
+
+[INFO] 15:12:35:774 team program/(6978:6978): Reintentando en 10 segundos
+
+[WARNING] 15:12:45:774 team program/(6978:6978): Error de conexion con el team
+
+[INFO] 15:12:45:774 team program/(6978:6978): Reintentando en 10 segundos
+
+[WARNING] 15:12:55:774 team program/(6978:6978): Error de conexion con el team
+
+[INFO] 15:12:55:775 team program/(6978:6978): Reintentando en 10 segundos
+
+[INFO] 15:13:05:775 team program/(6978:6978): Conexion creada
+
+[INFO] 15:13:05:777 team program/(6978:6978): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:13:05:778 team program/(6978:7002): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:13:20:781 team program/(6978:7008): Conexion creada
+
+[INFO] 15:13:20:782 team program/(6978:7008): Se recibio el ID de mensaje: 1
+
+[INFO] 15:13:20:782 team program/(6978:7008): Se envio la confirmacion (4 bytes)
+[INFO] 15:29:43:801 team program/(7361:7361): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:29:43:809 team program/(7361:7361): Conexion creada
+
+[INFO] 15:29:43:816 team program/(7361:7361): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:29:43:818 team program/(7361:7367): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:29:58:820 team program/(7361:7368): Conexion creada
+
+[INFO] 15:29:58:820 team program/(7361:7368): Se recibio el ID de mensaje: 1
+
+[INFO] 15:29:58:820 team program/(7361:7368): Se envio la confirmacion (4 bytes)
+[INFO] 15:30:31:338 team program/(7425:7425): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:30:31:343 team program/(7425:7425): Conexion creada
+
+[ERROR] 15:30:31:344 team program/(7425:7425): El proceso responde error en la solicitud
+
+[ERROR] 15:30:43:585 team program/(7361:7367): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 15:36:25:861 team program/(7619:7619): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:36:25:868 team program/(7619:7619): Conexion creada
+
+[INFO] 15:36:25:876 team program/(7619:7619): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:36:25:880 team program/(7619:7625): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:36:40:881 team program/(7619:7628): Conexion creada
+
+[INFO] 15:36:40:882 team program/(7619:7628): Se recibio el ID de mensaje: 1
+
+[INFO] 15:36:40:883 team program/(7619:7628): Se envio la confirmacion (4 bytes)
+[ERROR] 15:40:32:332 team program/(7619:7625): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 15:41:44:402 team program/(7826:7826): STARTING TEAM PROGRAM, GOOD LUCK
+[INFO] 15:41:44:402 team program/(7826:7826): Conexion creada
+
+[INFO] 15:41:44:403 team program/(7826:7826): Se recibio la confirmacion del mensaje enviado
+
+[INFO] 15:41:44:403 team program/(7826:7829): 
+esperando recibir cod_op, por vez numero: 1
+
+[INFO] 15:41:59:410 team program/(7826:7833): Conexion creada
+
+[INFO] 15:41:59:411 team program/(7826:7833): Se recibio el ID de mensaje: 1
+
+[INFO] 15:41:59:411 team program/(7826:7833): Se envio la confirmacion (4 bytes)
+[ERROR] 15:44:50:467 team program/(7826:7829): Se recibieron 0 bytes.
+ Llegue a bloquearme en el recv() pero luego se cerro la conexion.
+ TODO reintentar conexion
+[INFO] 15:45:30:339 team program/(7974:7974): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 15:45:40:343 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:45:40:343 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:45:50:344 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:45:50:344 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:46:00:344 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:46:00:345 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:46:10:345 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:46:10:345 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:46:20:346 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:46:20:346 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:46:30:346 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:46:30:346 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:46:40:347 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:46:40:348 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:46:50:348 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:46:50:348 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:47:00:349 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:47:00:349 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:47:10:350 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:47:10:350 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:47:20:351 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:47:20:351 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:47:30:351 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:47:30:352 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:47:40:352 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:47:40:352 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:47:50:353 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:47:50:353 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:48:00:354 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:48:00:354 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:48:10:355 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:48:10:355 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:48:20:356 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:48:20:356 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:48:30:356 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:48:30:356 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:48:40:357 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:48:40:357 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:48:50:357 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:48:50:357 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:49:00:358 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:49:00:358 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:49:10:358 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:49:10:359 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:49:20:359 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:49:20:360 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:49:30:360 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:49:30:360 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:49:40:361 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:49:40:361 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:49:50:362 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:49:50:362 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:50:00:362 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:50:00:362 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:50:10:363 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:50:10:363 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:50:20:363 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:50:20:363 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:50:30:364 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:50:30:364 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:50:40:365 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:50:40:365 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:50:50:366 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:50:50:367 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:51:00:367 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:51:00:368 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:51:10:368 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:51:10:368 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:51:20:369 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:51:20:369 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:51:30:369 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:51:30:370 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:51:40:370 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:51:40:370 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:51:50:371 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:51:50:371 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:52:00:371 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:52:00:372 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:52:10:372 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:52:10:372 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:52:20:373 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:52:20:373 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:52:30:373 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:52:30:373 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:52:40:373 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:52:40:373 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:52:50:374 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:52:50:375 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:53:00:375 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:53:00:375 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:53:10:376 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:53:10:376 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:53:20:377 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:53:20:377 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:53:30:377 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:53:30:378 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:53:40:378 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:53:40:379 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:53:50:380 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:53:50:380 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:54:00:380 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:54:00:380 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:54:10:380 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:54:10:381 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:54:20:382 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:54:20:382 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:54:30:382 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:54:30:382 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:54:40:383 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:54:40:383 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:54:50:385 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:54:50:385 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:55:00:386 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:55:00:386 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:55:10:387 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:55:10:387 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:55:20:388 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:55:20:388 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:55:30:389 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:55:30:390 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:55:40:390 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:55:40:390 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:55:50:391 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:55:50:391 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:56:00:391 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:56:00:392 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:56:10:395 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:56:10:395 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:56:20:396 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:56:20:396 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:56:30:396 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:56:30:396 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:56:40:397 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:56:40:397 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:56:50:397 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:56:50:397 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:57:00:398 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:57:00:398 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:57:10:398 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:57:10:399 team program/(7974:7979): Reintentando en 10 segundos
+
+[INFO] 15:57:18:534 team program/(8229:8229): STARTING TEAM PROGRAM, GOOD LUCK
+[WARNING] 15:57:20:399 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:57:20:399 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:57:28:551 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:57:28:551 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:57:30:400 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:57:30:400 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:57:38:552 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:57:38:552 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:57:40:401 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:57:40:401 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:57:48:553 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:57:48:553 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:57:50:401 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:57:50:401 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:57:58:554 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:57:58:554 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:58:00:402 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:58:00:402 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:58:08:555 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:58:08:555 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:58:10:403 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:58:10:404 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:58:18:556 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:58:18:556 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:58:20:404 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:58:20:404 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:58:28:556 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:58:28:556 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:58:30:404 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:58:30:404 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:58:38:556 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:58:38:557 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:58:40:405 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:58:40:405 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:58:48:557 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:58:48:557 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:58:50:405 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:58:50:406 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:58:58:558 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:58:58:558 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:59:00:406 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:59:00:406 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:59:08:563 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:59:08:563 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:59:10:407 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:59:10:407 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:59:18:563 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:59:18:563 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:59:20:408 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:59:20:408 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:59:28:564 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:59:28:564 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:59:30:408 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:59:30:409 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:59:38:565 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:59:38:565 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:59:40:409 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:59:40:409 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:59:48:565 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:59:48:565 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 15:59:50:409 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 15:59:50:410 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 15:59:58:566 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 15:59:58:566 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:00:00:410 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 16:00:00:410 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 16:00:08:566 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:00:08:566 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:00:10:411 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 16:00:10:411 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 16:00:18:566 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:00:18:567 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:00:20:412 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 16:00:20:412 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 16:00:28:567 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:00:28:567 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:00:30:412 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 16:00:30:412 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 16:00:38:568 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:00:38:568 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:00:40:413 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 16:00:40:414 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 16:00:48:569 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:00:48:569 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:00:50:415 team program/(7974:7979): Error de conexion con el team
+
+[INFO] 16:00:50:415 team program/(7974:7979): Reintentando en 10 segundos
+
+[WARNING] 16:00:58:571 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:00:58:571 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:01:08:571 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:01:08:571 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:01:18:573 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:01:18:573 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:01:28:573 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:01:28:573 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:01:38:574 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:01:38:575 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:01:48:575 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:01:48:575 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:01:58:576 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:01:58:576 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:02:08:576 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:02:08:577 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:02:18:577 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:02:18:577 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:02:28:578 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:02:28:578 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:02:38:579 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:02:38:579 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:02:48:580 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:02:48:580 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:02:58:580 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:02:58:580 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:03:08:581 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:03:08:581 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:03:18:581 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:03:18:581 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:03:28:582 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:03:28:582 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:03:38:583 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:03:38:583 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:03:48:583 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:03:48:583 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:03:58:584 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:03:58:584 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:04:08:585 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:04:08:585 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:04:18:586 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:04:18:586 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:04:28:586 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:04:28:586 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:04:38:587 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:04:38:587 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:04:48:587 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:04:48:587 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:04:58:588 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:04:58:588 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:05:08:589 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:05:08:589 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:05:18:589 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:05:18:590 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:05:28:590 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:05:28:591 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:05:38:591 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:05:38:591 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:05:48:591 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:05:48:591 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:05:58:592 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:05:58:592 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:06:08:593 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:06:08:593 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:06:18:594 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:06:18:594 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:06:28:594 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:06:28:594 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:06:38:595 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:06:38:595 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:06:48:596 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:06:48:596 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:06:58:597 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:06:58:597 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:07:08:597 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:07:08:597 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:07:18:599 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:07:18:599 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:07:28:600 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:07:28:601 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:07:38:601 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:07:38:603 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:07:48:603 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:07:48:603 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:07:58:604 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:07:58:605 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:08:08:605 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:08:08:606 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:08:18:606 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:08:18:606 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:08:28:606 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:08:28:606 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:08:38:607 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:08:38:607 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:08:48:607 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:08:48:608 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:08:58:608 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:08:58:608 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:09:08:608 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:09:08:608 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:09:18:608 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:09:18:609 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:09:28:609 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:09:28:609 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:09:38:609 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:09:38:609 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:09:48:609 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:09:48:610 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:09:58:610 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:09:58:610 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:10:08:611 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:10:08:611 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:10:18:612 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:10:18:612 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:10:28:612 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:10:28:612 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:10:38:613 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:10:38:613 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:10:48:614 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:10:48:614 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:10:58:615 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:10:58:615 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:11:08:616 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:11:08:616 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:11:18:617 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:11:18:617 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:11:28:618 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:11:28:618 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:11:38:618 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:11:38:618 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:11:48:619 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:11:48:619 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:11:58:620 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:11:58:620 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:12:08:621 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:12:08:621 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:12:18:621 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:12:18:622 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:12:28:622 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:12:28:622 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:12:38:623 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:12:38:623 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:12:48:623 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:12:48:623 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:12:58:624 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:12:58:624 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:13:08:625 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:13:08:625 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:13:18:626 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:13:18:626 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:13:28:627 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:13:28:627 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:13:38:628 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:13:38:628 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:13:48:628 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:13:48:629 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:13:58:629 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:13:58:629 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:14:08:630 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:14:08:630 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:14:18:630 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:14:18:630 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:14:28:631 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:14:28:632 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:14:38:633 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:14:38:633 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:14:48:633 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:14:48:633 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:14:58:633 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:14:58:634 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:15:08:634 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:15:08:634 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:15:18:635 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:15:18:635 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:15:28:635 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:15:28:635 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:15:38:635 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:15:38:636 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:15:48:636 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:15:48:637 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:15:58:638 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:15:58:638 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:16:08:638 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:16:08:638 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:16:18:639 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:16:18:639 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:16:28:639 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:16:28:640 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:16:38:640 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:16:38:640 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:16:48:641 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:16:48:641 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:16:58:642 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:16:58:642 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:17:08:642 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:17:08:643 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:17:18:643 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:17:18:643 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:17:28:644 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:17:28:644 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:17:38:644 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:17:38:644 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:17:48:645 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:17:48:645 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:17:58:646 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:17:58:646 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:18:08:646 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:18:08:646 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:18:18:647 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:18:18:647 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:18:28:647 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:18:28:647 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:18:38:648 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:18:38:648 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:18:48:648 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:18:48:648 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:18:58:648 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:18:58:648 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:19:08:649 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:19:08:650 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:19:18:650 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:19:18:650 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:19:28:651 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:19:28:651 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:19:38:651 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:19:38:652 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:19:48:652 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:19:48:652 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:19:58:652 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:19:58:654 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:20:08:654 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:20:08:654 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:20:18:655 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:20:18:655 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:20:28:656 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:20:28:656 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:20:38:657 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:20:38:657 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:20:48:658 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:20:48:658 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:20:58:658 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:20:58:659 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:21:08:659 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:21:08:659 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:21:18:659 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:21:18:659 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:21:28:660 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:21:28:662 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:21:38:663 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:21:38:663 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:21:48:664 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:21:48:664 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:21:58:664 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:21:58:664 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:22:08:665 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:22:08:666 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:22:18:666 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:22:18:666 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:22:28:666 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:22:28:667 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:22:38:667 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:22:38:667 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:22:48:668 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:22:48:668 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:22:58:669 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:22:58:669 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:23:08:670 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:23:08:670 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:23:18:670 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:23:18:671 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:23:28:672 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:23:28:672 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:23:38:672 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:23:38:672 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:23:48:672 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:23:48:673 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:23:58:673 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:23:58:674 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:24:08:674 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:24:08:674 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:24:18:674 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:24:18:674 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:24:28:674 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:24:28:674 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:24:38:675 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:24:38:676 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:24:48:676 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:24:48:676 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:24:58:677 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:24:58:677 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:25:08:678 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:25:08:678 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:25:18:678 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:25:18:679 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:25:28:679 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:25:28:679 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:25:38:680 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:25:38:680 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:25:48:680 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:25:48:681 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:25:58:681 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:25:58:681 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:26:08:682 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:26:08:682 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:26:18:682 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:26:18:682 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:26:28:683 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:26:28:683 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:26:38:684 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:26:38:684 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:26:48:684 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:26:48:684 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:26:58:684 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:26:58:684 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:27:08:685 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:27:08:686 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:27:18:686 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:27:18:686 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:27:28:687 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:27:28:687 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:27:38:687 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:27:38:687 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:27:48:688 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:27:48:689 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:27:58:689 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:27:58:689 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:28:08:690 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:28:08:690 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:28:18:690 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:28:18:690 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:28:28:691 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:28:28:691 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:28:38:692 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:28:38:692 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:28:48:693 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:28:48:693 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:28:58:693 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:28:58:694 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:29:08:695 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:29:08:695 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:29:18:696 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:29:18:696 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:29:28:696 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:29:28:696 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:29:38:696 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:29:38:697 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:29:48:698 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:29:48:698 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:29:58:698 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:29:58:698 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:30:08:699 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:30:08:699 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:30:18:700 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:30:18:700 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:30:28:701 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:30:28:701 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:30:38:701 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:30:38:701 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:30:48:702 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:30:48:703 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:30:58:703 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:30:58:703 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:31:08:704 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:31:08:704 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:31:18:704 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:31:18:704 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:31:28:705 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:31:28:705 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:31:38:706 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:31:38:706 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:31:48:706 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:31:48:706 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:31:58:707 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:31:58:707 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:32:08:708 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:32:08:708 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:32:18:708 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:32:18:708 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:32:28:709 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:32:28:709 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:32:38:710 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:32:38:710 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:32:48:710 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:32:48:710 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:32:58:711 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:32:58:711 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:33:08:711 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:33:08:712 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:33:18:712 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:33:18:712 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:33:28:737 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:33:28:768 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:33:38:768 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:33:38:768 team program/(8229:8234): Reintentando en 10 segundos
+
+[WARNING] 16:33:48:769 team program/(8229:8234): Error de conexion con el team
+
+[INFO] 16:33:48:769 team program/(8229:8234): Reintentando en 10 segundos
+

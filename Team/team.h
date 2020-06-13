@@ -14,14 +14,19 @@
 
 //---GLOBALS---
 
+//logs: pueden desactivarse para no mostrarse en consola
+//
+
 //configuracion
 t_config* config;
 t_log* log;
 uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
 t_list* objetives_list;
-t_dictionary* poke_map;
 t_algorithm algorithm = FIFO;
 
+
+//de aca para abajo, revisar condiciones de carrera
+t_dictionary* poke_map;
 //planificación
 t_list* new_list;
 t_list* ready_list;
@@ -109,7 +114,6 @@ void callback_fifo(t_trainer* trainer){
 	if(trainer->action == CATCHING){
 			//llama funcion para enviar mensaje, recibe entrenador por parametro y hace post a hilo de sender
 			//sem_post(&sem_sender)
-			printf("aca no llega NUNCA\n");
 			sem_post(&sem_exec);
 			//signal a semaforo de exec
 		}
@@ -248,13 +252,13 @@ void* trainer_thread(t_callback* callback_thread)
 	printf("hola soy el entrenador %d\n", (int)trainer->tid);
 	printf("aca no esta llegando123\n");
 	while(1){
-		printf("ACA PASO 1\n");
+
 		sem_wait(&trainer->sem_thread);
-		printf("ACA PASO 2\n");
+
 		switch(trainer->action){
 			case MOVE:
-				printf("Me estoy moviendo, comando MOVE\n");
-				printf("Arranca con (%d,%d)\n", trainer->position->x,trainer->position->y);
+				printf("Me estoy moviendo (comando MOVE)\n");
+				printf("Posicion actual: (%d,%d)", trainer->position->x,trainer->position->y);
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y)
 					move(trainer);
@@ -338,12 +342,13 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 	if(pokemon_is_needed(pokemon)){
 		while(element != NULL) {
 			position = (t_position*) element->data;
-			printf("LA POSICION SIEMPRE ES (%d,%d)\n", position->x,position->y);
 			// se remplaza la position por lo que devuelva del diccionario
 			t_trainer* trainer_new = NULL;
 			t_trainer* trainer_block = NULL;
+			printf("---Buscar entrenador más cercano a (%d, %d) en la cola NEW---\n", position->x, position->y);
 			int32_t closest_from_new = closest_free_trainer(new_list, position);
 
+			printf("---Buscar entrenador más cercano a (%d. %d) en la cola BLOCKED---\n", position->x, position->y);
 			int32_t closest_from_block = closest_free_trainer(block_list, position);
 
 			if(closest_from_new >= 0){
@@ -489,25 +494,25 @@ void sjfc_algorithm()
 
 void short_term_scheduler()
 {
-	printf("aca llego bien\n");
+
 	if(list_size(exec_list)>0){
 		t_trainer* trainer_exec = (t_trainer*) list_get(exec_list,0);
-			printf("aca llego bien12\n");
+
 			//ACA CONSULTAMOS SI SALE POR I/0
 			printf("the trainer exec has %s\n",trainer_exec->target->pokemon);
 			printf("the trainer exec has %d\n",trainer_exec->target->position->x);
 			printf("the trainer exec has %d\n",trainer_exec->target->position->y);
 			printf("the trainer exec has %d\n",trainer_exec->target->catching);
 			if(trainer_exec->target->catching){
-				printf("aca llego bien11\n");
 
-				printf("aca llego bien2\n");
+
+
 				t_message_team* message = malloc(sizeof(t_message_team));
-				printf("aca llego bien2\n");
+
 				message->tid = trainer_exec->tid;
-				printf("aca llego bien2\n");
+
 				//strcpy(&(message->pokemon), &(trainer_exec->target->pokemon));
-				printf("aca llego bien2\n");
+
 				message->pokemon = "pikachu";
 				message->position = malloc(sizeof(t_position));
 				message->position->x = trainer_exec->target->position->x;
@@ -517,9 +522,9 @@ void short_term_scheduler()
 				sem_wait(&sem_messages_list);
 				list_add(messages_list,message);
 				sem_post(&sem_messages_list);
-				printf("aca llego bien3\n");
+
 				sem_post(&sem_messages);
-				printf("aca llego bien4\n");
+
 
 
 				//PENSAR QUE VA EN MESSAGE LIST ?? DONE
@@ -556,7 +561,7 @@ void move_up(t_trainer* trainer)
 	trainer->position->y++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf("Se movio UP\n");
+	printf(" -> move_up -> \n");
 }
 
 void move_down(t_trainer* trainer)
@@ -565,7 +570,7 @@ void move_down(t_trainer* trainer)
 	trainer->position->y--;
 	trainer->burst++;
 	cpu_cycles++;
-	printf("Se movio DOWN\n");
+	printf(" -> move_down -> \n");
 }
 
 void move_right(t_trainer* trainer)
@@ -574,7 +579,7 @@ void move_right(t_trainer* trainer)
 	trainer->position->x++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf("Se movio RIGHT\n");
+	printf(" -> move_right -> \n");
 }
 
 void move_left(t_trainer* trainer)
@@ -583,7 +588,7 @@ void move_left(t_trainer* trainer)
 	trainer->position->x--;
 	trainer->burst++;
 	cpu_cycles++;
-	printf("Se movio LEFT\n");
+	printf(" -> move_left -> ");
 }
 
 void move(t_trainer* trainer)

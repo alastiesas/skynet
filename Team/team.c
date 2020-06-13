@@ -33,11 +33,11 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-	subscribe(6);
-	sleep(5);
+	//subscribe(6);
+	//sleep(5);
 
 
-/*
+
 	pthread_t tid;
 	pthread_create(&tid, NULL, sender_thread, NULL);
 
@@ -179,6 +179,7 @@ int main(void)
 
 	printf("el peso es %d. \n", peso);
   */
+	sleep(9999999999);
 	exit(0);
 
 }
