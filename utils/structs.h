@@ -124,8 +124,8 @@ typedef struct {
 t_position* create_position(uint32_t position_x, uint32_t position_y);
 t_location* create_location(t_position* position, uint32_t amount);
 t_location* create_location_long(uint32_t position_x, uint32_t position_y, uint32_t amount);
-t_message_appeared* create_message_appeared(char* pokemon_name, t_position* position);
-t_message_appeared* create_message_appeared_long(char* pokemon_name, uint32_t position_x, uint32_t position_y);
+t_message_appeared* create_message_appeared(uint32_t correlative_id, char* pokemon_name, t_position* position);
+t_message_appeared* create_message_appeared_long(uint32_t correlative_id, char* pokemon_name, uint32_t position_x, uint32_t position_y);
 t_message_catch* create_message_catch(char* pokemon_name, t_position* position);
 t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx, uint32_t posy);
 t_message_caught* create_message_caught(uint32_t correlative_id, bool result);

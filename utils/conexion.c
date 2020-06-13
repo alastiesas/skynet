@@ -212,7 +212,8 @@ int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 
 		if (conexion == -1){
 			log_info(logger, "Reintentando en %d segundos\n", TIEMPO_REINTENTO);
-				sleep(TIEMPO_REINTENTO);
+			log_warning(logger, "El tiempo de reintento es independiente de cada proceso por config\n");
+				sleep(TIEMPO_REINTENTO);	//TODO pasar por argumento el tiempo de reintento
 		}
 
 		struct addrinfo hints;
