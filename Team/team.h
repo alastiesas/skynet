@@ -41,6 +41,7 @@ uint32_t cpu_cycles = 0;
 
 //comunicacion
 t_list* messages_list;
+t_dictionary* message_response;
 
 //semaforos
 sem_t sem_exec;
@@ -509,7 +510,7 @@ void short_term_scheduler()
 
 				t_message_team* message = malloc(sizeof(t_message_team));
 
-				message->tid = trainer_exec->tid;
+				message->trainer = trainer_exec;
 
 				//strcpy(&(message->pokemon), &(trainer_exec->target->pokemon));
 
@@ -636,7 +637,7 @@ void* sender_thread()
 
 	sem_init(&sem_messages_list, 0, 1);
 	sem_init(&sem_messages, 0, 0);
-	sem_init(&sem_messages_recieve_list, 0, 0);
+	sem_init(&sem_messages_recieve_list, 0, 1);
 	while(1){
 		sem_wait(&sem_messages);
 		sem_wait(&sem_messages_list);
@@ -650,18 +651,15 @@ void* sender_thread()
 		int32_t correlative_id = send_message("127.0.0.1", "6001", package);
 		printf("salio para el broker\n");
 
-
-		t_message_team_receive* message_recieve = malloc(sizeof(t_message_team_receive));
-		message_recieve->tid = message->tid;
-		message_recieve->message_id = correlative_id;
 		//printf("limpiando message team \n");
 		//destroy_message_team(message);
 		//printf("ya se limpio message team \n");
-
+		//char str_correlative_id = malloc(6);
+		char str_correlative_id[6];
+		sprintf(str_correlative_id,"%d",correlative_id);
 		sem_wait(&sem_messages_recieve_list);
-		list_add(messages_list, message_recieve);
+		dictionary_put(message_response,str_correlative_id,message->trainer);
 		sem_post(&sem_messages_recieve_list);
-
 
 	}
 
@@ -710,6 +708,21 @@ void process_message(operation_code op_code, void* message) {
 	break;
 	case OPERATION_CAUGHT:
 		printf("SE RESCIBIO UN  CAUGHT, PERO NO SE QUE HACER <----------------------------");
+		printf("EL ID ES %d\n",((t_message_caught*)(message))->id);
+		printf("EL CORRELATIVO ES %d\n",((t_message_caught*)(message))->correlative_id);
+		printf("EL RESULT ES %d\n",((t_message_caught*)(message))->result);
+
+		char str_correlative_id[6];
+		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
+		printf("aca no rompe\n");
+		if(dictionary_has_key(message_response,str_correlative_id) == 1){
+			t_trainer* trainer = (t_trainer*) dictionary_get(message_response, str_correlative_id);
+			printf("aca si rompe\n");
+			printf("THE POKEMON TARGET IS %s\n", (trainer->target->pokemon));
+		}
+		else
+			printf("SE IGNORA EL MENSAJE PERRO\n");
+
 	break;
 	default:
 		printf("CODIGO DE OPERACION ERRONEO");

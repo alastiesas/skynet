@@ -84,16 +84,11 @@ typedef struct
 
 typedef struct
 {
-	pthread_t tid;
+	t_trainer* trainer;
 	char* pokemon;
 	t_position* position;
 } t_message_team;
 
-typedef struct
-{
-	pthread_t tid;
-	uint32_t message_id;
-} t_message_team_receive;
 
 
 //constructores

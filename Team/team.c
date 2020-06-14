@@ -33,8 +33,8 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-	//subscribe(6);
-	//sleep(5);
+	subscribe(6);
+	sleep(5);
 
 
 
@@ -83,7 +83,7 @@ int main(void)
 
 
 	messages_list = list_create();
-
+	message_response = dictionary_create();
 	new_list = list_create();
 	ready_list = list_create();
 	block_list = list_create();
