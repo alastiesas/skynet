@@ -111,3 +111,63 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 	printf("El trainer seleccionado fue: %d\n(indice en la lista actual)\n\n",index);
 	return index;
 }
+
+void add_pokemon(t_trainer* trainer, char*pokemon)
+{
+	realloc(trainer->pokemons,sizeof(trainer->pokemons)+1);
+	uint32_t i = 0;
+
+
+	while(trainer->pokemons[i] != NULL)
+	{
+		i++;
+	}
+	strcpy(trainer->pokemons[i],&pokemon);
+	//trainer->pokemons[i] = pokemon;
+	trainer->pokemons[i+1] = NULL;
+}
+
+bool trainer_success_objective(t_trainer* trainer)
+{
+	//EL DICCIONARIO KEY->(cant,cantInv)
+	bool success = 1;
+	t_dictionary* dictionary = dictionary_create();
+	typedef struct
+	{
+		uint32_t count;
+		uint32_t caught;
+	} t_objective_aux;
+  uint32_t i = 0;
+	while(trainer->objectives[i] != NULL){
+		if(dictionary_has_key(dictionary,trainer->objectives[i])){
+			t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->objectives[i]);
+			objective_aux->count++;
+		}
+		else{
+			t_objective_aux* objective_aux = malloc(sizeof(t_objective_aux));
+			objective_aux->count = 1;
+			objective_aux->caught = 0;
+		}
+		i++;
+	}
+	i=0;
+
+	while(trainer->pokemons[i] != NULL){
+		if(dictionary_has_key(dictionary,trainer->pokemons[i])){
+			t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->pokemons[i]);
+			objective_aux->caught++;
+		}
+		i++;
+	}
+	i=0;
+
+	while(trainer->objectives[i] != NULL){
+		t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->pokemons[i]);
+		if(objective_aux->caught != objective_aux->count)
+			success = 0;
+		i++;
+	}
+	dictionary_destroy_and_destroy_elements(dictionary, free);
+
+	return success;
+}

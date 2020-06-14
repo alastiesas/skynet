@@ -95,6 +95,7 @@ typedef struct
 t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons);
 t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons);
 t_position* create_position_from_config(char* positions);
+void add_pokemon(t_trainer* trainer, char*pokemon);
 //FIN constructores
 
 //consultas

@@ -103,8 +103,8 @@ int main(void)
 	test_position_3->x = 3;
 	test_position_3->y = 3;
 
-	add_to_poke_map("Pikachu",(void*) test_position_1);
-	add_to_poke_map("Charmander",(void*) test_position_2);
+	add_to_poke_map("Charmander",(void*) test_position_1);
+	add_to_poke_map("Pikachu",(void*) test_position_2);
 
 	initialize_trainers();
 	initialize_global_objectives();
