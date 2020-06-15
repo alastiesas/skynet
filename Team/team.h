@@ -277,14 +277,14 @@ void* trainer_thread(t_callback* callback_thread)
 	t_trainer* trainer = callback_thread->trainer;
 
 	printf("hola soy el entrenador %d\n", (int)trainer->tid);
-	printf("aca no esta llegando123\n");
+	printf("mi target actual es: %s\n", trainer->target->pokemon);
 	while(1){
 
 		sem_wait(&trainer->sem_thread);
 
 		switch(trainer->action){
 			case MOVE:
-				printf("Me estoy moviendo (comando MOVE)\n");
+				printf("Me estoy moviendo (comando MOVE), mi objetivo: %s <----\n", trainer->target->pokemon);
 				printf("Posicion actual: (%d,%d)", trainer->position->x,trainer->position->y);
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y)
@@ -293,7 +293,7 @@ void* trainer_thread(t_callback* callback_thread)
 					trainer->action = CATCHING;
 				else
 					trainer->action = TRADE;
-				printf("Llegue a (%d,%d)\n", trainer->position->x,trainer->position->y);
+				printf("(%d,%d)\n", trainer->position->x,trainer->position->y);
 				break;
 			case CATCHING:
 				printf("Estoy atrapando pokemon, comando CATCHING\n");
@@ -338,6 +338,7 @@ void long_term_scheduler(){
 
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching)
 {
+	printf("\nse asignara al entrenado X a atrapar al pokemon %s, en la posicion (%d, %d)\n", pokemon, position->x, position->y);
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
 		strcpy(&trainer->target->pokemon,&pokemon);
@@ -361,8 +362,11 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 
 
 
-void trainer_assign_job(char* pokemon, t_list* positions)
+void trainer_assign_job(char* key, t_list* positions)
 {
+	char* pokemon = malloc((strlen(key)+1)*sizeof(char));
+	strcpy(pokemon, key);//sin esto rompe
+
 	t_link_element* element = positions->head;
 	t_position* position;
 	int32_t i = -1;
@@ -372,10 +376,10 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			// se remplaza la position por lo que devuelva del diccionario
 			t_trainer* trainer_new = NULL;
 			t_trainer* trainer_block = NULL;
-			printf("---Buscar entrenador más cercano a (%d, %d) en la cola NEW---\n", position->x, position->y);
+			printf("\n---Buscar entrenador más cercano a (%d, %d) en la cola NEW---\n", position->x, position->y);
 			int32_t closest_from_new = closest_free_trainer(new_list, position);
 
-			printf("---Buscar entrenador más cercano a (%d. %d) en la cola BLOCKED---\n", position->x, position->y);
+			printf("\n---Buscar entrenador más cercano a (%d. %d) en la cola BLOCKED---\n", position->x, position->y);
 			int32_t closest_from_block = closest_free_trainer(block_list, position);
 
 			if(closest_from_new >= 0){
@@ -404,8 +408,8 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			}
 
 			if(list_size(positions) == 0){
-				printf("lasti was here\n");
 				dictionary_remove_and_destroy(poke_map, pokemon,&list_destroy);
+
 			}
 
 			//si el size de positions es , deberia eliminar el pokemon del mapa
@@ -537,25 +541,15 @@ void short_term_scheduler()
 				t_message_team* message = malloc(sizeof(t_message_team));
 
 				message->trainer = trainer_exec;
-
-				//strcpy(&(message->pokemon), &(trainer_exec->target->pokemon));
-
-				message->pokemon = "pikachu";
+				strcpy(&(message->pokemon), &(trainer_exec->target->pokemon));
 				message->position = malloc(sizeof(t_position));
 				message->position->x = trainer_exec->target->position->x;
 				message->position->y = trainer_exec->target->position->y;
-				printf("string cpy %s\n", message->pokemon);
-				//message->message = construct_catch_long(trainer_exec->target->pokemon, trainer_exec->target->position->x, trainer_exec->target->position->y);
 				sem_wait(&sem_messages_list);
 				list_add(messages_list,message);
 				sem_post(&sem_messages_list);
 
 				sem_post(&sem_messages);
-
-
-
-				//PENSAR QUE VA EN MESSAGE LIST ?? DONE
-				//TARGET, tid del entrenador, correlative_id?? SIN TARGET -> position + pokemon
 
 				transition_exec_to_block();
 			}
@@ -588,7 +582,7 @@ void move_up(t_trainer* trainer)
 	trainer->position->y++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_up -> \n");
+	printf(" -> move_up -> ");
 }
 
 void move_down(t_trainer* trainer)
@@ -597,7 +591,7 @@ void move_down(t_trainer* trainer)
 	trainer->position->y--;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_down -> \n");
+	printf(" -> move_down -> ");
 }
 
 void move_right(t_trainer* trainer)
@@ -606,7 +600,7 @@ void move_right(t_trainer* trainer)
 	trainer->position->x++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_right -> \n");
+	printf(" -> move_right -> ");
 }
 
 void move_left(t_trainer* trainer)
@@ -615,7 +609,7 @@ void move_left(t_trainer* trainer)
 	trainer->position->x--;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_left -> ");
+	printf(" -> move_left ->");
 }
 
 void move(t_trainer* trainer)
@@ -637,7 +631,6 @@ void* exec_thread()
 	while(1){
 			//sem_wait(&sem_exec); Este seria el unico semaforo, despues cambiar
 			if(list_size(ready_list)>0 || list_size(exec_list)>0){
-				printf("acallego?\n");
 				sem_wait(&sem_exec);
 				short_term_scheduler();
 			}
@@ -756,16 +749,15 @@ void process_message(operation_code op_code, void* message) {
 				// SINO QUEDA EN FREE
 				if(trainer_success_objective(trainer) == 1){
 					printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
+					//DEBE pasar a eXIT TODO
+				} else{
+					printf("ESTE ENTRENADOR NO CUMPLIO TODOS SUS OBJETIVOS\n");
 				}
-				printf("ACA ROMPE3?\n");
 
 			}
 			sub_catching(objectives_list, trainer->target->pokemon);
-			printf("ACA ROMPE4?\n");
 			trainer->action = FREE;
 
-
-			printf("aca si rompe\n");
 			printf("THE POKEMON TARGET IS %s\n", (trainer->target->pokemon));
 		}
 		else

@@ -130,13 +130,14 @@ void add_pokemon(t_trainer* trainer, char*pokemon)
 bool trainer_success_objective(t_trainer* trainer)
 {
 	//EL DICCIONARIO KEY->(cant,cantInv)
-	bool success = 1;
+	bool success = 1;//true
 	t_dictionary* dictionary = dictionary_create();
 	typedef struct
 	{
 		uint32_t count;
 		uint32_t caught;
 	} t_objective_aux;
+
   uint32_t i = 0;
 	while(trainer->objectives[i] != NULL){
 		if(dictionary_has_key(dictionary,trainer->objectives[i])){
@@ -147,6 +148,7 @@ bool trainer_success_objective(t_trainer* trainer)
 			t_objective_aux* objective_aux = malloc(sizeof(t_objective_aux));
 			objective_aux->count = 1;
 			objective_aux->caught = 0;
+			dictionary_put(dictionary, trainer->objectives[i], objective_aux);
 		}
 		i++;
 	}
@@ -164,10 +166,10 @@ bool trainer_success_objective(t_trainer* trainer)
 	while(trainer->objectives[i] != NULL){
 		t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->pokemons[i]);
 		if(objective_aux->caught != objective_aux->count)
-			success = 0;
+			success = 0;//false
 		i++;
 	}
-	dictionary_destroy_and_destroy_elements(dictionary, free);
-
+	//dictionary_destroy_and_destroy_elements(dictionary, free);
+	//ACA HAY QUE LIMPIAR EL DICCIONARIO TODO
 	return success;
 }

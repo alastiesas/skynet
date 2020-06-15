@@ -33,8 +33,8 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-	subscribe(6);
-	sleep(5);
+	//subscribe(6);
+	//sleep(5);
 
 
 
@@ -113,14 +113,9 @@ int main(void)
 	//pthread_t tid;
 	//pthread_t tid2;
 
-	printf("aca llego!!!\n");
 	long_term_scheduler();
 	sleep(4);
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
-	printf("aca NO llego!!!\n");
-	printf("aca llego!!!\n");
-	sleep(4);
-	printf("aca NO llego!!!\n");
 
 	pthread_t exec_tid;
 
