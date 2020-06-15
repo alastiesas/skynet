@@ -132,7 +132,7 @@ int32_t receive_ACK(uint32_t socket, t_log* logger){
 	int32_t ACK;
 
 	int32_t resultado = recv(socket, &ACK, sizeof(int32_t), MSG_WAITALL);
-	if(resultado == -1){
+	if(resultado == (-1 || 0)){
 		log_error(logger, "Error al recibir la confirmacion del mensaje\n");
 		return -1; //failure
 	}
@@ -155,12 +155,12 @@ int32_t receive_ACK(uint32_t socket, t_log* logger){
 uint32_t receive_size(uint32_t socket, t_log* logger){
 
 	uint32_t size;
-	log_info(logger, "Esperando recibir tamanio del stream\n");
+	log_trace(logger, "Esperando recibir tamanio del stream\n");
 
 	if(recv(socket, &size, sizeof(uint32_t), MSG_WAITALL) == -1)
 		log_error(logger, "Error al recibir el tamanio del stream");
 	else
-		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", size);
+		log_debug(logger, "Se solicito recibir un tamanio de stream de: %d\n", size);
 
 
 	return size;

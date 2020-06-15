@@ -41,6 +41,10 @@ t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_m
 		suscriber = list_find(subs, _soy_ID_buscado);
 	pthread_mutex_unlock(&mutex_subs);
 
+	if(suscriber == NULL)
+		log_info(logger, "No se encontro el suscriptor %d en la lista", (int) ID_encontrar);
+	else
+		log_info(logger, "Si se encontro al suscriptor %d en la lista", (int) ID_encontrar);
 
 	return suscriber;
 }

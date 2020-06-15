@@ -27,7 +27,7 @@ int32_t send_paquete(int32_t socket, t_package* paquete){
 
 
 	printf("Se va a enviar: %s\n", (char *)a_enviar);
-	result = send(socket, a_enviar, bytes, 0);
+	result = send(socket, a_enviar, bytes, 0);	//El send manda los bytes, no tiene forma de saber si el otro proceso se cerro.
 													//TODO hacer reintento de envio si se enviaron una cantidad parcial de bytes
 	free(a_enviar);
 	free(paquete->buffer->stream);
