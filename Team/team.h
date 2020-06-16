@@ -660,10 +660,10 @@ void* sender_thread()
 	while(1){
 		sem_wait(&sem_messages);
 		sem_wait(&sem_messages_list);
-		printf("ACA SI LLEGO X1 \n");
 		t_message_team* message = list_remove(messages_list, 0);
 		sem_post(&sem_messages_list);
 		t_message_catch* catch = create_message_catch_long(message->pokemon, message->position->x, message->position->y);
+
 
 		t_package* package = serialize_catch(catch);
 		destroy_message_catch(catch);
@@ -677,7 +677,7 @@ void* sender_thread()
 		char str_correlative_id[6];
 		sprintf(str_correlative_id,"%d",correlative_id);
 		sem_wait(&sem_messages_recieve_list);
-		dictionary_put(message_response,str_correlative_id,message->trainer);
+		//dictionary_put(message_response,str_correlative_id,message->trainer);
 		sem_post(&sem_messages_recieve_list);
 
 	}
