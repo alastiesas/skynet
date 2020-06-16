@@ -677,7 +677,7 @@ void* sender_thread()
 		char str_correlative_id[6];
 		sprintf(str_correlative_id,"%d",correlative_id);
 		sem_wait(&sem_messages_recieve_list);
-		//dictionary_put(message_response,str_correlative_id,message->trainer);
+		dictionary_put(message_response,str_correlative_id,message->trainer);
 		sem_post(&sem_messages_recieve_list);
 
 	}
@@ -711,54 +711,57 @@ subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
 void process_message(operation_code op_code, void* message) {
 	switch(op_code) {
 	case OPERATION_NEW:
-		printf("SE RESCIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_APPEARED:
-		printf("SE RESCIBIO UN  APPEARED, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  APPEARED, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_GET:
-		printf("SE RESCIBIO UN  GET, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  GET, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_LOCALIZED:
-		printf("SE RESCIBIO UN  LOCALIZED, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  LOCALIZED, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_CATCH:
-		printf("SE RESCIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_CAUGHT:
-		printf("SE RESCIBIO UN  CAUGHT, PERO NO SE QUE HACER <----------------------------");
-		printf("EL ID ES %d\n",((t_message_caught*)(message))->id);
-		printf("EL CORRELATIVO ES %d\n",((t_message_caught*)(message))->correlative_id);
-		printf("EL RESULT ES %d\n",((t_message_caught*)(message))->result);
+		printf("SE RECIBIO UN  CAUGHT [");
+		printf("ID: %d, ",((t_message_caught*)(message))->id);
+		printf("CORRELATIVE_ID %d, ",((t_message_caught*)(message))->correlative_id);
+		printf("RESULT: %d]<----------\n",((t_message_caught*)(message))->result);
 
 		char str_correlative_id[6];
 		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
-
 		if(dictionary_has_key(message_response,str_correlative_id) == 1){
 			t_trainer* trainer = (t_trainer*) dictionary_get(message_response, str_correlative_id);
-			printf("ACA ROMPE133?\n");
 			if(((t_message_caught*)(message))->result){
 				//ACA ROMPE NOSE POR QUE?? REVISAR ADD_POKEMON QUIZAS
-				add_pokemon(objectives_list, /*trainer->target->pokemon*/"pikachu");
-				printf("ACA ROMPE1?\n");
-				add_caught(objectives_list, /*trainer->target->pokemon*/"pikachu");
-				printf("ACA ROMPE2?\n");
+				add_pokemon(trainer, trainer->target->pokemon);
+				add_caught(objectives_list, trainer->target->pokemon);
 				//OBJETVIO DEL ENTRANDOR ?
 				//OBJETIVO GLOBAL??
 				// SI SE CUMPLE ENTRENADOR PASA A EXIT
 				// SINO QUEDA EN FREE
 				if(trainer_success_objective(trainer) == 1){
 					printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
-					//DEBE pasar a eXIT TODO
+					trainer->action = FINISH;
+//TODO nos falta poder identificarlo dentro de la lista de blocked! (gregar ID y nombre (opcional) al trainer)
+//TODO DEBE pasar a EXIT
+//TODO como paso a exit tambient enemos verificar los objetivos globales para saber si el team termino
 				} else{
 					printf("ESTE ENTRENADOR NO CUMPLIO TODOS SUS OBJETIVOS\n");
+					trainer->action = FREE;
 				}
 
+			} else {
+				trainer->action = FREE;
 			}
 			sub_catching(objectives_list, trainer->target->pokemon);
-			trainer->action = FREE;
-
-			printf("THE POKEMON TARGET IS %s\n", (trainer->target->pokemon));
+			trainer->target->catching = 0;
+			trainer->target->position = NULL;
+			trainer->target->distance = NULL;
+			trainer->target->pokemon = NULL;
 		}
 		else
 			printf("SE IGNORA EL MENSAJE PERRO\n");

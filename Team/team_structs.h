@@ -25,6 +25,7 @@ typedef enum {
 	MOVE = 1,
 	CATCHING = 2,
 	TRADE = 3,
+	FINISH = 4,
 } t_action;
 
 typedef struct {
@@ -37,6 +38,7 @@ typedef struct {
 typedef struct
 {
 	pthread_t tid;
+
 	//pthread_attr_t attr;
 	sem_t sem_thread;
 	t_action action;
@@ -90,7 +92,7 @@ typedef struct
 } t_message_team;
 
 
-
+void debug_trainer(t_trainer* trainer);
 //constructores
 t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons);
 t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons);
