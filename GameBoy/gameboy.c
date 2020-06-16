@@ -64,8 +64,15 @@ int main(int argc, char* argv[]) {
 				destroy_message_get(get);
 			} else if (argc == 5 && strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
 				//gameboy BROKER CAUGHT_POKEMON [ID_CORRELATIVO] [OK/FAIL]
+				uint32_t result;
+				if(strcmp(argv[4], "OK") == 0)
+					result = 1;
+				else if(strcmp(argv[4], "FAIL") == 0)
+					result = 0;
+				else
+					exit_failure();
 				t_message_caught* caught;
-				caught = create_message_caught(atoi(argv[3]), atoi(argv[4]));
+				caught = create_message_caught(atoi(argv[3]), result);
 				package = serialize_caught(caught);
 				destroy_message_caught(caught);
 			} else if (argc == 6 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
