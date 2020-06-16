@@ -93,7 +93,10 @@ void dump_cache(void){
 			string_append(&dump, size);
 			free(size);
 			string_append(&dump, "b");
-			//TODO agregar LRU
+			string_append(&dump, "\tLRU: ");
+			char* lru = string_itoa(partition->lru);
+			string_append(&dump, lru);
+			free(lru);
 			//TODO agregar COLA
 			//TODO agregar ID
 		}

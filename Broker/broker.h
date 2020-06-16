@@ -20,7 +20,7 @@ char* memory_algorithm;
 char* replacement_algorithm;
 char* free_partition_algorithm; //rename
 uint32_t compaction_frequency;
-//uint32_t count_compaction = 0; //rename
+uint32_t count; //rename
 
 void* mem;
 
@@ -108,6 +108,7 @@ typedef struct {
 	void* final_position;
 	void* initial_position;
 	uint32_t size;
+	uint32_t lru;
 } t_partition;
 
 t_list* partitions;
@@ -207,8 +208,14 @@ int32_t find_free_position();
 void free_some_space();
 
 bool is_free_partition(void *partition);
-uint32_t find_free_partition_index(uint32_t size_message);
+void free_partition();
+uint32_t get_partition_number_to_delete();
 
 void dump_cache(void);
+
+void create_dynamic_partition(uint32_t size, bool available);
+void delete_dynamic_partition();
+t_partition* find_available_dynamic_partition(uint32_t size);
+uint32_t get_available_partition_number(uint32_t size);
 
 #endif /* BROKER_H_ */

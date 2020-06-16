@@ -50,6 +50,8 @@ void specific_initialization() {
 
 	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
 
+	count = 0;
+
 
 	//memory_init();
 
