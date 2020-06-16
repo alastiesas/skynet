@@ -108,6 +108,7 @@ typedef struct {
 	void* final_position;
 	void* initial_position;
 	uint32_t size;
+	uint32_t lru;
 } t_partition;
 
 t_list* partitions;
@@ -208,6 +209,8 @@ void free_some_space();
 
 bool is_free_partition(void *partition);
 uint32_t find_free_partition_index(uint32_t size_message);
+void free_partition();
+uint32_t get_partition_number_to_delete();
 
 void dump_cache(void);
 
