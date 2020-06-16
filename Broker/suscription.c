@@ -162,10 +162,16 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		//el logger ya estaba creado, no hace falta actualizar
 	}
 	else{
+		/*
 		log_error(logger, "Ya esta conectado a la cola %s, el proceso %d. Debe desconectar primero.", queue_name, (uint32_t) ID_proceso);
 	//enviar falla en la confirmacion. (ack de error)
 		send_ACK_failure(socket_cliente, logger);
 		pthread_exit(NULL);
+		*/
+
+		log_warning(logger, "Ya esta conectado a la cola %s, el proceso %d. Se toma el nuevo socket del suscriptor. (El viejo queda inutilizado)", queue_name, (uint32_t) ID_proceso);
+		suscriber->socket = socket_cliente;
+
 	}
 
 
@@ -242,14 +248,12 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				result = send_paquete(suscriber->socket, paquete);
 
 				//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
-				if(result == -1){
-					suscriber->connected = false;
-					log_info(suscriber->log, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
-					suscriber->socket = 0;
-					pthread_exit(NULL);
+				if(result == (-1 || 0)){
+					close_suscriber_thread(suscriber);
 				}
 				else
-					log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber);
+					log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d. El send dio: %d (no asegura que lo haya recibido)", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber, result);
+
 				//agregar el ID del mensaje como enviado en suscriber->sent_messages
 				list_add(suscriber->sent_messages, elemento);
 
@@ -260,7 +264,13 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
 				//esperar confirmacion del mensaje
-				receive_ACK(suscriber->socket, suscriber->log);
+				result = receive_ACK(suscriber->socket, suscriber->log);
+
+				if(result == -1){
+					close_suscriber_thread(suscriber);
+				}
+				else
+					log_info(logger, "El suscriptor confirma haber recibido el mensaje");
 
 				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
 				pthread_mutex_lock(&(semaforos->mutex_cola));
@@ -279,16 +289,24 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 	}
 }
 
+void close_suscriber_thread(t_suscriber* suscriber){
+	suscriber->connected = false;
+	log_info(suscriber->log, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
+	close(suscriber->socket);
+	suscriber->socket = 0;
+	pthread_exit(NULL);
+}
+
 queue_code receive_cola(uint32_t socket, t_log* logger){
 
 	queue_code cola;
 	int32_t resultado;
-	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == -1){
+	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
 		log_error(logger, "Error al recibir la cola a suscribirse\n");
 		return -1; //failure
 	}
 	else
-		log_info(logger, "Se recibio la cola a suscribirse: %d\n", cola);
+		log_debug(logger, "Se recibio la cola a suscribirse: %d\n", cola);
 
 	//verificar que sea una cola valida
 

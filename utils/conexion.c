@@ -242,6 +242,39 @@ int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 	return socket_cliente;
 }
 
+int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag){
 
+	int32_t result;
 
+	result = send(socket, a_enviar, bytes, flag);	//El send manda los bytes, no tiene forma de saber si el otro proceso se cerro.
+	if(result == -1)
+		printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
 
+	int32_t current_bytes = result;
+	while(result < bytes){
+		printf("Se enviaron %d bytes de %d\n", current_bytes, bytes);
+		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag);
+		if(result == -1)
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
+		current_bytes += result;
+	}
+
+	return result;
+}
+
+int32_t recv_with_retry_int(int32_t socket, void* a_enviar, size_t bytes, int32_t flag, char* que_recibo, t_log* logger){
+
+	int32_t result;
+
+	if((result = recv(socket, a_enviar, bytes, flag)) == -1)
+		log_error(logger, "Error al recibir el %s", que_recibo);
+	else
+		log_info(logger, "Se recibe %d para %s\n", (int)a_enviar, que_recibo);
+
+	if(result < bytes){
+		log_error(logger, "Se recibieron solo %d bytes de %d. /se desconecto el proceso?");
+	}		//en principio el flag MSG_WAITALL se va a quedar esperando a recibir t0do? no hace falta reintentar el recv
+				//TODO dice el man que si lo interrumpe una signal, va a recibir menos
+
+	return result;
+}
