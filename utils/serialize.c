@@ -27,8 +27,8 @@ int32_t send_paquete(int32_t socket, t_package* paquete){
 
 
 	printf("Se va a enviar: %s\n", (char *)a_enviar);
-	result = send(socket, a_enviar, bytes, 0);	//El send manda los bytes, no tiene forma de saber si el otro proceso se cerro.
-													//TODO hacer reintento de envio si se enviaron una cantidad parcial de bytes
+	result = send_with_retry(socket, a_enviar, bytes, 0);	//El send manda los bytes, no tiene forma de saber si el otro proceso se cerro.
+
 	free(a_enviar);
 	free(paquete->buffer->stream);
 	free(paquete->buffer);
@@ -36,6 +36,8 @@ int32_t send_paquete(int32_t socket, t_package* paquete){
 
 return result;
 }
+
+
 
 t_package* serialize_suscripcion(uint32_t ID_proceso, queue_code cola){
 	printf("NOOOOOO11\n");

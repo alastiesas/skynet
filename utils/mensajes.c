@@ -497,7 +497,7 @@ t_message_caught* receive_caught(uint32_t socket_cliente, uint32_t* size, t_log*
 		else
 			log_info(logger, "resultado de caught recibido: %d", caught->result);
 
-	if(*size != sizeof(caught->id) + sizeof(caught->correlative_id))
+	if(*size != sizeof(caught->id) + sizeof(caught->correlative_id) + sizeof(caught->result))
 		log_error(logger, "Tamanio erroneo");
 
 

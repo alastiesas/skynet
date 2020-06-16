@@ -301,7 +301,7 @@ queue_code receive_cola(uint32_t socket, t_log* logger){
 
 	queue_code cola;
 	int32_t resultado;
-	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == -1){
+	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
 		log_error(logger, "Error al recibir la cola a suscribirse\n");
 		return -1; //failure
 	}
