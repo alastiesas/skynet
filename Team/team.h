@@ -53,7 +53,7 @@ sem_t sem_messages_recieve_list;
 
 
 
-//funciones iniciales
+//entrenadores y objertivos
 t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
 void initialize_trainers();//inicializa todos los entrenadores del conig
 void initialize_global_objectives();
@@ -64,6 +64,8 @@ t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trai
 void* trainer_thread(t_callback* callback_thread);
 void trainer_assign_job(char* pokemon, t_list* positions);
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching);
+t_list* trainer_actual_list(t_trainer* trainer);
+t_list* trainer_actual_list_by_id(uint32_t id);
 //FIN funciones de entrenadores
 
 //objetivos
@@ -77,6 +79,7 @@ void sub_catching(t_list* list, char* pokemon);
 
 //transiciones
 void state_change(uint32_t index, t_list* from,t_list* to);
+void transition_by_id(uint32_t id, t_list* from,t_list* to);
 void transition_new_to_ready(uint32_t index);
 void transition_ready_to_exec(uint32_t index);
 void transition_exec_to_ready();
@@ -412,6 +415,34 @@ void trainer_assign_job(char* key, t_list* positions)
 
 }
 
+uint32_t trainer_get_index(t_trainer* trainer, t_list* list) {
+	return 0;
+}
+
+t_list* trainer_actual_list(t_trainer* trainer) {
+	return trainer_actual_list_by_id(trainer->id);
+}//TODO revisar si se usa o no
+
+t_list* trainer_actual_list_by_id(uint32_t id) {
+
+	t_list* actual_list = NULL;
+	bool condition(void* trainer) {
+		return (((t_trainer*)trainer)->id != id);
+	}
+	if(list_any_satisfy(new_list, &condition))
+		actual_list = new_list;
+	else if(list_any_satisfy(ready_list, &condition))
+		actual_list = ready_list;
+	else if(list_any_satisfy(block_list, &condition))
+		actual_list = block_list;
+	else if(list_any_satisfy(exec_list, &condition))
+		actual_list = exec_list;
+	else if(list_any_satisfy(exit_list, &condition))
+		actual_list = exit_list;
+
+	return actual_list;
+}//TODO revisar si se usa o no
+
 void add_to_poke_map(char* pokemon, t_position* position)
 {
 	//CASO DE QUE NO ESTE EL POKEMON EN EL MAP
@@ -439,6 +470,19 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 	void* element = list_remove(from, index);
 	list_add(to, element);
 }
+
+void transition_by_id(uint32_t id, t_list* from,t_list* to) {
+	bool condition(void* trainer) {
+		return (((t_trainer*)trainer)->id != id);
+	}
+	void* element = list_remove_by_condition(from, &condition);
+
+	if(element != NULL)
+		list_add(to, element);
+	else
+		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\N");
+}
+
 void transition_new_to_ready(uint32_t index)
 {
 	state_change(index,new_list,ready_list);
@@ -732,8 +776,10 @@ void process_message(operation_code op_code, void* message) {
 				if(trainer_success_objective(trainer) == 1){
 					printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 					trainer->action = FINISH;
-//TODO nos falta poder identificarlo dentro de la lista de blocked! (gregar ID y nombre (opcional) al trainer)
+//TODO nos falta poder identificarlo dentro de la lista de blocked! (agregar ID y nombre (opcional) al trainer)
 //TODO DEBE pasar a EXIT
+					transition_by_id(trainer->id, block_list, exit_list);
+					printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
 //TODO como paso a exit tambient enemos verificar los objetivos globales para saber si el team termino
 				} else{
 					printf("ESTE ENTRENADOR NO CUMPLIO TODOS SUS OBJETIVOS\n");
