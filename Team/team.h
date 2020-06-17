@@ -54,7 +54,7 @@ sem_t sem_messages_recieve_list;
 
 
 //funciones iniciales
-t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
+t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
 void initialize_trainers();//inicializa todos los entrenadores del conig
 void initialize_global_objectives();
 //FIN funciones iniciales
@@ -129,24 +129,10 @@ void callback_fifo(t_trainer* trainer){
 
 }
 
-t_trainer* initialize_trainer(char* config_position, char* onfig_objectives, char* config_pokemons)
+t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons)
 {
-	t_trainer* trainer = create_trainer_from_config(config_position, onfig_objectives, config_pokemons);
-	// LO QUE HABLAMOS CON AYUDANTE 2
-	//ESTO ES UNA PRUEBA DE AGREGAR UN POKEMON :)
-	/*
-	uint32_t i = 0;
-	uint32_t j = 0;
-	while(trainer->pokemons[i] != NULL){
-		printf("pokemon del entreadpr es%s\n",trainer->pokemons[i]);
-		i++;
-	}
-	add_pokemon(trainer, "agustin");
-	while(trainer->pokemons[j] != NULL){
-		printf("22 pokemon del entreadpr es%s\n",trainer->pokemons[j]);
-		j++;
-	}
-	*/
+	t_trainer* trainer = create_trainer_from_config(id, config_position, onfig_objectives, config_pokemons);
+
 	t_callback* callback_thread = malloc(sizeof(t_callback));
 	callback_thread->trainer = trainer;
 
@@ -164,7 +150,7 @@ void initialize_trainers()
 	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
 	int i = 0;
 	while(positions_config[i] != NULL){
-		t_trainer* test_entrenador = initialize_trainer(positions_config[i], objectives_config[i], pokemons_config[i]);
+		t_trainer* test_entrenador = initialize_trainer(i+1, positions_config[i], objectives_config[i], pokemons_config[i]);
 		list_add(new_list, test_entrenador);
 		i++;
 	}
@@ -404,7 +390,7 @@ void trainer_assign_job(char* key, t_list* positions)
 				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
 			else{
-				printf("no hay entrenadores en las listas de new ni block \n");
+				printf("no hay entrenadores en lasstas de new ni block \n");
 			}
 
 			if(list_size(positions) == 0){

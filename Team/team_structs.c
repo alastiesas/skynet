@@ -36,9 +36,10 @@ void debug_trainer(t_trainer* trainer) {
 	printf("**FIN DEBUG**\n\n");
 }
 
-t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons) {
+t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, char** pokemons) {
 
 	t_trainer* trainer = malloc(sizeof(t_trainer));
+	trainer->id = id;
 	trainer->action = FREE;
 	trainer->target = malloc(sizeof(t_target));
 	trainer->target->position = NULL;
@@ -55,12 +56,12 @@ t_trainer* create_trainer(t_position* position, char** objectives, char** pokemo
 	return trainer;
 }
 
-t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons) {
+t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons) {
 
 	t_position* position = create_position_from_config(config_position);
 	char** objectives = string_split(config_objectives, "|");
 	char** pokemons = string_split(config_pokemons, "|");
-	return create_trainer(position, objectives, pokemons);
+	return create_trainer(id, position, objectives, pokemons);
 
 }
 
