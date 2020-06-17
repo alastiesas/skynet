@@ -333,7 +333,11 @@ t_message_get* receive_get(uint32_t socket_cliente, uint32_t* size, t_log* logge
 	//allocar memoria para el nobmre
 	get->pokemon_name = malloc(get->size_pokemon_name);
 
-
+	//recibir nombre de get
+	if(recv(socket_cliente, get->pokemon_name, get->size_pokemon_name, MSG_WAITALL) == -1)
+		log_error(logger, "Error al recibir el nombre de get");
+	else
+		log_info(logger, "nombre de appeared recibido: %s", get->pokemon_name);
 
 	if(*size != sizeof(get->id) + sizeof(get->size_pokemon_name) + strlen(get->pokemon_name)+1)
 		log_error(logger, "Tamanio erroneo");
