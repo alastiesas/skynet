@@ -88,7 +88,7 @@ uint32_t dinstance(t_position* current, t_position* destiny) {
 
 bool trainer_full(t_trainer* trainer) {
 	bool response = false;
-	if(string_list_size(trainer->pokemons) ==  string_list_size(trainer->objectives))
+	if(string_list_size(trainer->pokemons) >=  string_list_size(trainer->objectives))
 		response = true;
 	return response;
 }

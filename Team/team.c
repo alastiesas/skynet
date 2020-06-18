@@ -91,24 +91,25 @@ int main(void)
 	exit_list = list_create();
 	poke_map = dictionary_create();
 
-	t_position* test_position_1 = malloc(sizeof(t_position*));
-	test_position_1->x = 4;
-	test_position_1->y = 8;
 
-	t_position* test_position_2 = malloc(sizeof(t_position*));
-	test_position_2->x = 1;
-	test_position_2->y = 4;
-
-	t_position* test_position_3 = malloc(sizeof(t_position*));
-	test_position_3->x = 3;
-	test_position_3->y = 3;
-
-	add_to_poke_map("Charmander",(void*) test_position_1);
-	add_to_poke_map("Pikachu",(void*) test_position_2);
 
 	initialize_trainers();
 	initialize_global_objectives();
 
+	t_position* test_position_1 = malloc(sizeof(t_position*));
+	test_position_1->x = 0;
+	test_position_1->y = 0;
+	add_to_poke_map("Pikachu",(void*) test_position_1);
+
+	t_position* test_position_2 = malloc(sizeof(t_position*));
+	test_position_2->x = 3;
+	test_position_2->y = 8;
+	add_to_poke_map("Charmander",(void*) test_position_2);
+
+	t_position* test_position_3 = malloc(sizeof(t_position*));
+	test_position_3->x = 6;
+	test_position_3->y = 6;
+	add_to_poke_map("Bulbasaur",(void*) test_position_3);
 
 	//pthread_t tid;
 	//pthread_t tid2;
