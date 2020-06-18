@@ -349,6 +349,18 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 }
 
+void trainer_assign_move2(t_trainer* trainer, char* pokemon, t_position* position, bool catching)
+{
+	//TODO algo no está andando, se rompe en el segundo entrenador. . .
+	printf("\nse asignara al entrenado %d a atrapar al pokemon %s, en la posicion (%d, %d)\n", trainer->id, pokemon, position->x, position->y);
+
+	strcpy(&trainer->target->pokemon,&pokemon);
+	trainer->action = MOVE;
+	trainer->target->position = position;
+	trainer->target->catching = catching;
+	transition_from_id_to_ready(trainer->id);
+	debug_trainer(trainer);
+}
 
 
 void trainer_assign_job(char* key, t_list* positions)
@@ -380,15 +392,19 @@ void trainer_assign_job(char* key, t_list* positions)
 
 			//bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position)
 
+
+
 			if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
 				add_catching(objectives_list, pokemon);
 				trainer_assign_move("NEW",pokemon, closest_from_new,position,1);
+				//trainer_assign_move2(trainer_new, pokemon, position, 1);
 				list_remove(positions, (i+1));
 				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
 			else if(trainer_block != NULL && (trainer_new == NULL || first_closer(trainer_block, trainer_new, position))){
 				add_catching(objectives_list, pokemon);
 				trainer_assign_move("BLOCK",pokemon, closest_from_block,position,1);
+				//trainer_assign_move2(trainer_block, pokemon, position, 1);
 				list_remove(positions, (i+1));
 				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
@@ -481,6 +497,25 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 		list_add(to, element);
 	else
 		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\N");
+}
+
+void transition_from_id_to_ready(uint32_t id) {
+	bool condition(void* trainer) {
+		return (((t_trainer*)trainer)->id != id);
+	}
+
+	t_trainer* trainer = list_remove_by_condition(new_list, &condition);
+	if(trainer != NULL) {
+		list_add(ready_list, trainer);
+	} else {
+		trainer = list_remove_by_condition(block_list, &condition);
+		if(trainer != NULL) {
+			list_add(ready_list, trainer);
+		}else {
+			printf("**ERROR**SE INTENTÓ HACER UNA TRANSICIÓN A READY DE UN ENTRENADOR QUE NO SE ENCUENTRA EN NEW NI BLOCK!**ERROR**");
+
+		}
+	}
 }
 
 void transition_new_to_ready(uint32_t index)
