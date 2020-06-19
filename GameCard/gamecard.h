@@ -8,6 +8,8 @@
 #ifndef GAMECARD_H_
 #define GAMECARD_H_
 
+#include <stdio.h>
+#include <stdlib.h>
 #include<commons/config.h>
 #include <conexion.h>
 #include <mensajes.h>
@@ -41,10 +43,10 @@ void new_function(void);
 void catch_function(void);
 void get_function(void);
 
-int32_t subscribe_to_broker(queue_code queue_code);
-void atender_new(operation_code op_code, void* message);
-void atender_catch(operation_code op_code, void* message);
-void atender_get(operation_code op_code, void* message);
+int32_t suscribe_to_broker(queue_code queue_code);
+void serve_new(operation_code op_code, void* message);
+void serve_catch(operation_code op_code, void* message);
+void serve_get(operation_code op_code, void* message);
 
 void send_to_broker(t_package* package);
 
