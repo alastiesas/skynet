@@ -196,6 +196,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 	t_package* paquete;
 	int32_t result;
 	uint32_t not_sent_size;
+	uint32_t id_co;
 
 	log_debug(suscriber->log, "Empieza el envio de mensajes al proceso: %d", suscriber->ID_suscriber);
 
@@ -238,17 +239,17 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 			//obtener el mensaje con ese ID
 			//Buscar el t_pending adentro de la cola, siempre se hace.
-			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &message_data, suscriber->log);
+			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &id_co, &message_data, suscriber->log);
 			//buscar los datos en la cache solo en el caso de (particiones o buddy)
 			//message_data = find_cache_element_given_ID(elemento, mutex_cache, &bytes, suscriber->log);	//TODO armar esta funcion (devuelva void* message_data) con mutex_cache (duplicar el message_data de la cache)
 			if(mensaje != NULL){	//en modo sin memoria, siempre va a encontrar el mensaje
-				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, &message_data, bytes);
+				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, id_co, &message_data, bytes);
 
 				//enviar el mensaje
 				result = send_paquete(suscriber->socket, paquete);
 
 				//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
-				if(result == (-1 || 0)){
+				if((result == -1) || (result == 0)){
 					close_suscriber_thread(suscriber);
 				}
 				else
@@ -266,7 +267,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				//esperar confirmacion del mensaje
 				result = receive_ACK(suscriber->socket, suscriber->log);
 
-				if(result == -1){
+				if((result == -1) || (result == 0)){
 					close_suscriber_thread(suscriber);
 				}
 				else
@@ -301,7 +302,7 @@ queue_code receive_cola(uint32_t socket, t_log* logger){
 
 	queue_code cola;
 	int32_t resultado;
-	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
+	if((resultado = recv_with_retry(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
 		log_error(logger, "Error al recibir la cola a suscribirse\n");
 		return -1; //failure
 	}

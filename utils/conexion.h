@@ -29,9 +29,16 @@ pthread_t thread;
 struct thread_args {
     int32_t socket;
     t_log* logger;
-    void (*function)(operation_code, void*);//agrego una funcion que debera ser definida por cada proceso.
-    //t_colas* colas;
-    //t_suscribers* suscriptores;
+    void (*function)(void*);//agrego una funcion que debera ser definida por cada proceso.
+    void (*failure_function)(void); //que funcion ejecutar para reconectar en caso de que falle la conexion
+    uint32_t retry_time;
+
+};
+
+struct serve_thread_args {
+	operation_code op_code;
+	void* message;
+
 };
 
 
@@ -43,10 +50,10 @@ void listen_messages(void* input);
 void* process_request(operation_code cod_op, int32_t socket, t_log* logger);
 
 int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag);
-int32_t recv_with_retry_int(int32_t socket, void* a_enviar, size_t bytes, int32_t flag, char* que_recibo, t_log* logger);
+int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag);
 
 
-int32_t connect_to_server(char * ip, char * puerto, t_log* logger);
+int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, t_log* logger);
 
 
 #endif /* CONEXION_H_ */

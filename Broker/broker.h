@@ -27,6 +27,7 @@ void* mem;
 typedef struct
 {
 	uint32_t ID_mensaje;
+	uint32_t ID_correlativo; //para new, catch y get siempre en null //el broker nunca modifica este dato
 	t_list* subs_enviados;	//suscriptores a los que ya envie este mensaje
 	t_list* subs_confirmados;
 	void* datos_mensaje;
@@ -175,9 +176,9 @@ void close_suscriber_thread(t_suscriber* suscriber);
 //Recibe el size del stream. Recibe un queue_code.
 queue_code receive_cola(uint32_t socket, t_log* logger);
 
-t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger);
+t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool response, t_log* logger);
 
-void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages);
+void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages, bool response);
 
 
 t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar);
@@ -201,7 +202,7 @@ void specific_termination();
 
 void memory_init();
 
-t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, uint32_t bytes);
+t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes);
 
 void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data);
 int32_t find_free_position();

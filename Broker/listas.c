@@ -1,7 +1,7 @@
 #include "listas.h"
 
 
-t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, void** datos_mensaje, t_log* logsub){
+t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
 	uint32_t size;
 
@@ -16,6 +16,8 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 			*datos_mensaje = malloc(*bytes);
 			size = *bytes;
 			memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
+			if(elemento->ID_correlativo != NULL)
+				*id_co = elemento->ID_correlativo;
 		}
 	pthread_mutex_unlock(&mutex_cola);
 

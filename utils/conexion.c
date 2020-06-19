@@ -6,6 +6,7 @@
  */
 #include "conexion.h"
 #define _GNU_SOURCE		//para pthread_setname_np
+#define RETRY_WAIT 1
 
 /*
 void iniciar_servidor(char* puerto, t_log* logger)
@@ -83,33 +84,41 @@ void listen_messages(void* input)
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;
 	void (*function)(operation_code, void*) = ((struct thread_args*)input)->function;
+	void (*failure_function)(void) = ((struct thread_args*)input)->failure_function;
+	uint32_t retry_time = ((struct thread_args*)input)->retry_time;
 
 
-	pthread_t self = pthread_self();
-	//log_info(logger, "Se creo un thread %d para atender la conexion del %d\n", self, socket);
-
-	char modulo[16];
-	pthread_getname_np(self, modulo, 16);			//preguntar que hace esto XD
+	//pthread_t self = pthread_self();
+	//char modulo[16];
+	//pthread_getname_np(self, modulo, 16);
 
 	int vez = 1;
 	while(1){
 		log_info(logger, "\nesperando recibir cod_op, por vez numero: %d\n", vez);
 		operation_code cod_op;
 				//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
-		int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
+		int recibido = recv_with_retry(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 		printf("recv = %d", recibido);
-		if(recibido == -1)
-			log_error(logger, "Error del recv()");
-		else if(recibido == 0){
-			log_error(logger, "Se recibieron 0 bytes.\n Llegue a bloquearme en el recv() pero luego se cerro la conexion.\n TODO reintentar conexion");
-			exit(EXIT_FAILURE);
+		if(recibido == -1 || recibido == 0){
+			log_error(logger, "El recv() dio: %d", recibido);
+			log_info(logger, "Se va a ejecutar la funcion dada para reintentar conexion, en %d segs", retry_time);
+			sleep(retry_time);
+			failure_function();
 		}
 		else {
-
 			log_info(logger, "se recibio el cod op: %d\n", cod_op);
 			void* message = process_request(cod_op, socket, logger);
-			function(cod_op, message);//se llama a la función otorgada al crearse el thread
+
+		//se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
+		    struct serve_thread_args* argus = malloc(sizeof(struct serve_thread_args));
+		    argus->op_code = cod_op;
+		    argus->message = message;
+
+			pthread_t serve_thread;
+			pthread_create(&serve_thread,NULL, (void*)function, (void *)argus);		//TODO comprobar errores de pthread_create
+			//function(cod_op, message);//se llama a la función otorgada al crearse el thread
 			//ejemplo, en team, esta función identificaria si un catch fue exitoso para agregar el pokemon al inventario del entrenador
+			pthread_detach(serve_thread);
 		}
 		vez++;
 	}
@@ -200,20 +209,19 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 
 
 
-int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
+int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, t_log* logger)
 {
 	int32_t socket_cliente;
-	char modulo[16];
-	int tid = pthread_self();
-	pthread_getname_np(tid, modulo, 16);
+	//char modulo[16];
+	//int tid = pthread_self();
+	//pthread_getname_np(tid, modulo, 16);
 	int conexion = -2;
 
 	while (conexion < 0){
 
 		if (conexion == -1){
-			log_info(logger, "Reintentando en %d segundos\n", TIEMPO_REINTENTO);
-			log_warning(logger, "El tiempo de reintento es independiente de cada proceso por config\n");
-				sleep(TIEMPO_REINTENTO);	//TODO pasar por argumento el tiempo de reintento
+			log_info(logger, "Reintentando en %d segundos\n", retry_time);
+				sleep(retry_time);
 		}
 
 		struct addrinfo hints;
@@ -232,7 +240,7 @@ int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 
 		conexion = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
 		if(conexion == -1)
-			log_warning(logger, "Error de conexion con el %s\n", modulo);
+			log_warning(logger, "Error de conexion con el proceso\n");
 
 		freeaddrinfo(server_info);
 	}
@@ -244,37 +252,62 @@ int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 
 int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag){
 
-	int32_t result;
+	int32_t result = 0;
+	int32_t current_bytes;
+	int i = 1;
 
-	result = send(socket, a_enviar, bytes, flag);	//El send manda los bytes, no tiene forma de saber si el otro proceso se cerro.
-	if(result == -1)
-		printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
+	current_bytes = result;
+	while(current_bytes < bytes){
 
-	int32_t current_bytes = result;
-	while(result < bytes){
-		printf("Se enviaron %d bytes de %d\n", current_bytes, bytes);
-		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag);
-		if(result == -1)
-			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio\n");
+		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag); //El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
+		if(result == (-1)){		// lo mas probable es que el send nunca devuelva 0...
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio: %d\n", result);
+			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
+			return -1;
+		}
 		current_bytes += result;
-	}
+		if(current_bytes < bytes){
+			printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
+			sleep(RETRY_WAIT);
+			i++;
+		}
 
-	return result;
+	}
+	printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+	return current_bytes;
 }
 
-int32_t recv_with_retry_int(int32_t socket, void* a_enviar, size_t bytes, int32_t flag, char* que_recibo, t_log* logger){
 
-	int32_t result;
 
-	if((result = recv(socket, a_enviar, bytes, flag)) == -1)
-		log_error(logger, "Error al recibir el %s", que_recibo);
-	else
-		log_info(logger, "Se recibe %d para %s\n", (int)a_enviar, que_recibo);
+int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag){
 
-	if(result < bytes){
-		log_error(logger, "Se recibieron solo %d bytes de %d. /se desconecto el proceso?");
-	}		//en principio el flag MSG_WAITALL se va a quedar esperando a recibir t0do? no hace falta reintentar el recv
-				//TODO dice el man que si lo interrumpe una signal, va a recibir menos
+	int32_t result = 0;
+	int32_t current_bytes;
+	int i = 1;
+
+	current_bytes = result;
+	while(current_bytes < bytes){ 	//en principio el flag MSG_WAITALL se va a quedar esperando a recibir t0do, no hace falta reintentar el recv
+										//dice el man que si lo interrumpe una signal, va a recibir menos
+										//asi que lo reintentamos igual
+		result = recv(socket, a_recibir + current_bytes, bytes - current_bytes, flag);
+		if((result == -1) || (result == 0)){	// por lo que pude probar, puede que el otro proceso haberme enviado todos los datos, y este no haberlos recibido. En ese caso, este se queda trabado en un recv de 0 infinito. Hay que pedirle al otro proceso que vuelva a enviar?
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv: %d\n", result);		//si da 0 hubo desconexion..
+			printf("Se desconecto el proceso, hay que volver a accept-connect\n");			//https://stackoverflow.com/questions/38021659
+			return -1;
+		}
+		current_bytes += result;
+		if(current_bytes < bytes){
+			printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
+			sleep(RETRY_WAIT);
+			i++;
+		}
+
+	}
+	printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+	return current_bytes;
+
 
 	return result;
 }

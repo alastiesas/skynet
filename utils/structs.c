@@ -26,8 +26,8 @@ t_message_appeared* create_message_appeared(uint32_t correlative_id, char* pokem
 	t_message_appeared* appeared = malloc(sizeof(t_message_appeared));
 	appeared->id = 0; //El Broker se encarga de generar este dato
 	appeared->correlative_id = correlative_id;
-	appeared->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	appeared->pokemon_name = malloc(appeared->size_pokemon_name);
+	appeared->size_pokemon_name = strlen(pokemon_name);
+	appeared->pokemon_name = malloc(appeared->size_pokemon_name + 1);
 	strcpy(appeared->pokemon_name, pokemon_name);
 	appeared->position = position;
 	return appeared;
@@ -40,8 +40,8 @@ t_message_new* create_message_new(char* pokemon_name, t_location* location) {
 
 	t_message_new* new = malloc(sizeof(t_message_new));
 	new->id = 0; //El Broker se encarga de generar este dato
-	new->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	new->pokemon_name = malloc(new->size_pokemon_name);
+	new->size_pokemon_name = strlen(pokemon_name);
+	new->pokemon_name = malloc(new->size_pokemon_name + 1);
 	strcpy(new->pokemon_name, pokemon_name);
 	new->location = location;
 	return new;
@@ -58,8 +58,8 @@ t_message_new* create_message_new_long(char* pokemon_name, uint32_t position_x, 
 t_message_get* create_message_get(char* pokemon_name) {
 	t_message_get* get = malloc(sizeof(t_message_get));
 	get->id = 0; //El Broker se encarga de generar este dato
-	get->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	get->pokemon_name = malloc(get->size_pokemon_name);
+	get->size_pokemon_name = strlen(pokemon_name);
+	get->pokemon_name = malloc(get->size_pokemon_name + 1);
 	strcpy(get->pokemon_name, pokemon_name);
 	return get;
 }
@@ -68,8 +68,8 @@ t_message_localized* create_message_localized(uint32_t correlative_id, char* pok
 	t_message_localized* localized = malloc(sizeof(t_message_localized));
 	localized->id = 0; //El Broker se encarga de generar este dato
 	localized->correlative_id = correlative_id; //El que responde se encarga de generar este dato
-	localized->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	localized->pokemon_name = malloc(localized->size_pokemon_name);
+	localized->size_pokemon_name = strlen(pokemon_name);
+	localized->pokemon_name = malloc(localized->size_pokemon_name + 1);
 	strcpy(localized->pokemon_name, pokemon_name);
 	localized->position_amount = position_amount;
 	localized->positions = malloc(position_amount * sizeof(t_position));	//TODO ya te pasan la estructura t_position, hace  falta hacer malloc de otra?
@@ -81,8 +81,8 @@ t_message_localized* create_message_localized(uint32_t correlative_id, char* pok
 t_message_catch* create_message_catch(char* pokemon_name, t_position* position) {
 	t_message_catch* catch = malloc(sizeof(t_message_catch));
 	catch->id = 0; //El Broker se encarga de generar este dato
-	catch->size_pokemon_name = strlen(pokemon_name) + 1; //ya incluye el +1, se usa asi directo para el stream
-	catch->pokemon_name = malloc(catch->size_pokemon_name);
+	catch->size_pokemon_name = strlen(pokemon_name);
+	catch->pokemon_name = malloc(catch->size_pokemon_name + 1);
 	strcpy(catch->pokemon_name, pokemon_name);
 	catch->position = position;
 	return catch;

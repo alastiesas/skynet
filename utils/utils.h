@@ -39,4 +39,8 @@ t_config* leer_config(void);
 void terminar_programa(int, t_log*, t_config*);
 */
 
+void* string_to_void(char* string, uint32_t* size);
+char* void_to_string(void* buffer, uint32_t size);
+void* generate_void(uint32_t size);
+
 #endif /* UTILS_H_ */

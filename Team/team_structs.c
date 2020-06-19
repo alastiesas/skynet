@@ -7,9 +7,39 @@
 
 #include "team_structs.h"
 
-t_trainer* create_trainer(t_position* position, char** objectives, char** pokemons) {
+
+void debug_trainer(t_trainer* trainer) {
+	printf("\n**DEBUG DEL ENTRENADOR**\n");
+	printf("id: %d\n", trainer->id);
+	printf("action: %d\n", trainer->action);
+	if(trainer->target->position != NULL)
+		printf("target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
+	else
+		printf("sin target\n");
+
+	printf("posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
+	uint32_t i = 0;
+	printf("objetivos: [");
+	while(trainer->objectives[i] != NULL) {
+		printf(" \"%s\" ", trainer->objectives[i]);
+		i++;
+	}
+	printf("]\n");
+
+	i = 0;
+	printf("pokemones: [");
+	while(trainer->pokemons[i] != NULL) {
+		printf(" \"%s\" ", trainer->pokemons[i]);
+		i++;
+	}
+	printf("]\n");
+	printf("**FIN DEBUG**\n\n");
+}
+
+t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, char** pokemons) {
 
 	t_trainer* trainer = malloc(sizeof(t_trainer));
+	trainer->id = id;
 	trainer->action = FREE;
 	trainer->target = malloc(sizeof(t_target));
 	trainer->target->position = NULL;
@@ -22,15 +52,16 @@ t_trainer* create_trainer(t_position* position, char** objectives, char** pokemo
 	trainer->position = position;
 	trainer->objectives = objectives;
 	trainer->pokemons = pokemons;
+	debug_trainer(trainer);
 	return trainer;
 }
 
-t_trainer* create_trainer_from_config(char* config_position, char* config_objectives, char* config_pokemons) {
+t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons) {
 
 	t_position* position = create_position_from_config(config_position);
 	char** objectives = string_split(config_objectives, "|");
 	char** pokemons = string_split(config_pokemons, "|");
-	return create_trainer(position, objectives, pokemons);
+	return create_trainer(id, position, objectives, pokemons);
 
 }
 
@@ -57,7 +88,7 @@ uint32_t dinstance(t_position* current, t_position* destiny) {
 
 bool trainer_full(t_trainer* trainer) {
 	bool response = false;
-	if(string_list_size(trainer->pokemons) ==  string_list_size(trainer->objectives))
+	if(string_list_size(trainer->pokemons) >=  string_list_size(trainer->objectives))
 		response = true;
 	return response;
 }
@@ -100,10 +131,10 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 				distance = distance_aux;
 				//trainer = (t_trainer*) element->data;
 				index = i;
-				printf("->SELECCIONADO %d\n",i);
+				printf("-> SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			}
 			else
-				printf("->NO SELECCIONADO %d\n",i);
+				printf("-> NO SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			element = element->next;
 			i++;
 		}
@@ -116,14 +147,11 @@ void add_pokemon(t_trainer* trainer, char*pokemon)
 {
 	realloc(trainer->pokemons,sizeof(trainer->pokemons)+1);
 	uint32_t i = 0;
-
-
 	while(trainer->pokemons[i] != NULL)
 	{
 		i++;
 	}
-	strcpy(trainer->pokemons[i],&pokemon);
-	//trainer->pokemons[i] = pokemon;
+	strcpy(&trainer->pokemons[i],&pokemon);
 	trainer->pokemons[i+1] = NULL;
 }
 
@@ -162,9 +190,8 @@ bool trainer_success_objective(t_trainer* trainer)
 		i++;
 	}
 	i=0;
-
 	while(trainer->objectives[i] != NULL){
-		t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->pokemons[i]);
+		t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->objectives[i]);
 		if(objective_aux->caught != objective_aux->count)
 			success = 0;//false
 		i++;
