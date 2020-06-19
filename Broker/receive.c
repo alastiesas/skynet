@@ -28,7 +28,7 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 		case OPERATION_NEW:
 			my_semaphores = semaphores_new;
 			count = &total_new_messages;
-			process_receive_message(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores, count);
+			process_receive_message(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores, count, false);
 			log_debug(logger, "Se notifico el mensaje new recibido");
 
 			break;
@@ -36,35 +36,35 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 		case OPERATION_APPEARED:
 			my_semaphores = semaphores_appeared;
 			count = &total_appeared_messages;
-			process_receive_message(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores, count);
+			process_receive_message(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores, count, true);
 
 			break;
 
 		case OPERATION_GET:
 			my_semaphores = semaphores_get;
 			count = &total_get_messages;
-			process_receive_message(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores, count);
+			process_receive_message(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores, count, false);
 
 			break;
 
 		case OPERATION_LOCALIZED:
 			my_semaphores = semaphores_localized;
 			count = &total_localized_messages;
-			process_receive_message(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores, count);
+			process_receive_message(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores, count, true);
 
 			break;
 
 		case OPERATION_CATCH:
 			my_semaphores = semaphores_catch;
 			count = &total_catch_messages;
-			process_receive_message(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores, count);
+			process_receive_message(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores, count, false);
 
 			break;
 
 		case OPERATION_CAUGHT:
 			my_semaphores = semaphores_caught;
 			count = &total_caught_messages;
-			process_receive_message(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores, count);
+			process_receive_message(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores, count, true);
 
 			break;
 
@@ -75,7 +75,7 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 		}
 }
 
-t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log* logger){
+t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool response, t_log* logger){
 
 	t_pending* t_mensaje = malloc(sizeof(t_pending));
 	t_mensaje->subs_confirmados = list_create();
@@ -90,12 +90,23 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 
 	//recibir id de new. (El cual va a ignorar, porque setea el suyo propio luego)
 	if(recv_with_retry(socket_cliente, &(t_mensaje->ID_mensaje), sizeof(t_mensaje->ID_mensaje), MSG_WAITALL) < sizeof(t_mensaje->ID_mensaje))
-		log_error(logger, "Error al recibir el id de new");
+		log_error(logger, "Error al recibir el id del mensaje");
 	else
-		log_info(logger, "id de new recibido: %d (no se usa ese ID)", t_mensaje->ID_mensaje);
+		log_info(logger, "id del mensaje recibido: %d (se va a sobreescribir)", t_mensaje->ID_mensaje);
+
+	uint32_t size_co = 0;
+	//recibir id correlativo, si aplica
+	if(response){
+		if(recv_with_retry(socket_cliente, &(t_mensaje->ID_correlativo), sizeof(t_mensaje->ID_correlativo), MSG_WAITALL) < sizeof(t_mensaje->ID_correlativo))
+			log_error(logger, "Error al recibir el id correlativo del mensaje");
+		else
+			log_info(logger, "id correlativo del mensaje recibido: %d (no se toca)", t_mensaje->ID_correlativo);
+		size_co = sizeof(uint32_t);
+	}
+
 
 	uint32_t size_ID = sizeof(uint32_t);
-	uint32_t size_datos = *size - size_ID;
+	uint32_t size_datos = *size - size_ID - size_co;
 	t_mensaje->datos_mensaje = malloc(size_datos);
 
 	//recibir t0do el resto de datos del mensaje
@@ -109,17 +120,17 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 
 	log_debug(logger, "Se guardo un mensaje de %d bytes (+4 bytes ID)", t_mensaje->bytes);
 
-	if(*size != size_ID + size_datos)
+	if(*size != size_ID + size_co + size_datos)
 		log_error(logger, "Tamanio erroneo");
 
 	return t_mensaje;
 }
 
-void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages){
+void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages, bool response){
 	uint32_t size;
 	t_pending* t_mensaje;
 
-	t_mensaje = broker_receive_mensaje(socket_cliente, &size, logger);
+	t_mensaje = broker_receive_mensaje(socket_cliente, &size, response, logger);
 
 	//Generar ID del mensaje
 	pthread_mutex_lock(&mutex_ID_global);

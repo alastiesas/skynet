@@ -105,29 +105,36 @@ void broker_serves_client(void* input){
 }
 
 
-t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** message, uint32_t bytes){
+t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_package* paquete = malloc(sizeof(t_package));
 	operation_code cod_op;
+	bool response;
 
 	switch(queue_code){
 	case COLA_NEW:
 		cod_op = OPERATION_NEW;
+		response = false;
 		break;
 	case COLA_APPEARED:
 		cod_op = OPERATION_APPEARED;
+		response = true;
 		break;
 	case COLA_GET:
 		cod_op = OPERATION_GET;
+		response = false;
 		break;
 	case COLA_LOCALIZED:
 		cod_op = OPERATION_LOCALIZED;
+		response = true;
 		break;
 	case COLA_CATCH:
 		cod_op = OPERATION_CATCH;
+		response = false;
 		break;
 	case COLA_CAUGHT:
 		cod_op = OPERATION_CAUGHT;
+		response = true;
 		break;
 	}
 
@@ -140,6 +147,12 @@ t_package* broker_serialize(queue_code queue_code, uint32_t id_message, void** m
 	int offset = 0;
 	memcpy(paquete->buffer->stream + offset, &id_message, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
+
+	if(response){
+		memcpy(paquete->buffer->stream + offset, &id_co, sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+	}
+
 	memcpy(paquete->buffer->stream + offset, *message, bytes);
 
 	return paquete;

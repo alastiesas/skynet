@@ -196,6 +196,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 	t_package* paquete;
 	int32_t result;
 	uint32_t not_sent_size;
+	uint32_t id_co;
 
 	log_debug(suscriber->log, "Empieza el envio de mensajes al proceso: %d", suscriber->ID_suscriber);
 
@@ -238,11 +239,11 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 			//obtener el mensaje con ese ID
 			//Buscar el t_pending adentro de la cola, siempre se hace.
-			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &message_data, suscriber->log);
+			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &id_co, &message_data, suscriber->log);
 			//buscar los datos en la cache solo en el caso de (particiones o buddy)
 			//message_data = find_cache_element_given_ID(elemento, mutex_cache, &bytes, suscriber->log);	//TODO armar esta funcion (devuelva void* message_data) con mutex_cache (duplicar el message_data de la cache)
 			if(mensaje != NULL){	//en modo sin memoria, siempre va a encontrar el mensaje
-				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, &message_data, bytes);
+				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, id_co, &message_data, bytes);
 
 				//enviar el mensaje
 				result = send_paquete(suscriber->socket, paquete);
