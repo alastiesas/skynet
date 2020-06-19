@@ -84,13 +84,13 @@ void listen_messages(void* input)
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;
 	void (*function)(operation_code, void*) = ((struct thread_args*)input)->function;
+	void (*failure_function)(void) = ((struct thread_args*)input)->failure_function;
+	uint32_t retry_time = ((struct thread_args*)input)->retry_time;
 
 
-	pthread_t self = pthread_self();
-	//log_info(logger, "Se creo un thread %d para atender la conexion del %d\n", self, socket);
-
-	char modulo[16];
-	pthread_getname_np(self, modulo, 16);			//preguntar que hace esto XD
+	//pthread_t self = pthread_self();
+	//char modulo[16];
+	//pthread_getname_np(self, modulo, 16);
 
 	int vez = 1;
 	while(1){
@@ -99,13 +99,11 @@ void listen_messages(void* input)
 				//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
 		int recibido = recv_with_retry(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 		printf("recv = %d", recibido);
-		if(recibido == -1){
-			log_error(logger, "Error del recv()");
-			exit(EXIT_FAILURE);
-		}
-		else if(recibido == 0){
-			log_error(logger, "Se recibieron 0 bytes.\n Llegue a bloquearme en el recv() pero luego se cerro la conexion.\n TODO reintentar conexion");
-			exit(EXIT_FAILURE);
+		if(recibido == -1 || recibido == 0){
+			log_error(logger, "El recv() dio: %d", recibido);
+			log_info(logger, "Se va a ejecutar la funcion dada para reintentar conexion, en %d segs", retry_time);
+			sleep(retry_time);
+			failure_function();
 		}
 		else {
 
@@ -203,20 +201,19 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 
 
 
-int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
+int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, t_log* logger)
 {
 	int32_t socket_cliente;
-	char modulo[16];
-	int tid = pthread_self();
-	pthread_getname_np(tid, modulo, 16);
+	//char modulo[16];
+	//int tid = pthread_self();
+	//pthread_getname_np(tid, modulo, 16);
 	int conexion = -2;
 
 	while (conexion < 0){
 
 		if (conexion == -1){
-			log_info(logger, "Reintentando en %d segundos\n", TIEMPO_REINTENTO);
-			log_warning(logger, "El tiempo de reintento es independiente de cada proceso por config\n");
-				sleep(TIEMPO_REINTENTO);	//TODO pasar por argumento el tiempo de reintento
+			log_info(logger, "Reintentando en %d segundos\n", retry_time);
+				sleep(retry_time);
 		}
 
 		struct addrinfo hints;
@@ -235,7 +232,7 @@ int32_t connect_to_server(char * ip, char * puerto, t_log* logger)
 
 		conexion = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
 		if(conexion == -1)
-			log_warning(logger, "Error de conexion con el %s\n", modulo);
+			log_warning(logger, "Error de conexion con el proceso\n");
 
 		freeaddrinfo(server_info);
 	}

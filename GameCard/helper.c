@@ -19,6 +19,8 @@ void new_function(void){
 	args->socket = socket_cliente;
 	args->logger = logger;
 	args->function = &serve_new;
+	args->failure_function = &new_function;
+	args->retry_time = TIEMPO_DE_REINTENTO_CONEXION;
 
 	listen_messages(args);
 
@@ -33,6 +35,8 @@ void catch_function(void){
 	args->socket = socket_cliente;
 	args->logger = logger;
 	args->function = &serve_catch;
+	args->failure_function = &catch_function;
+	args->retry_time = TIEMPO_DE_REINTENTO_CONEXION;
 
 	listen_messages(args);
 
@@ -48,6 +52,8 @@ void get_function(void){
 	args->socket = socket_cliente;
 	args->logger = logger;
 	args->function = &serve_get;
+	args->failure_function = &get_function;
+	args->retry_time = TIEMPO_DE_REINTENTO_CONEXION;
 
 	listen_messages(args);
 
@@ -56,7 +62,7 @@ void get_function(void){
 
 int32_t suscribe_to_broker(queue_code queue_code) {
 
-	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, logger);
+	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, logger);
 
 	t_package* suscription_package = serialize_suscripcion(MY_ID, queue_code);
 
@@ -70,7 +76,7 @@ int32_t suscribe_to_broker(queue_code queue_code) {
 
 void send_to_broker(t_package* package){
 
-	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, logger);
+	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, logger);
 	send_paquete(socket, package);
 	//TODO reintentar envio si falla con la variable global TIEMPO_DE_REINTENTO_CONEXION
 
