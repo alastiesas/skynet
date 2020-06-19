@@ -70,6 +70,7 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 
 		default:
 			log_warning(logger, "Error de numero de cod_op, finaliza el thread de conexion", cod_op);
+			close(socket_cliente);
 			pthread_exit(NULL);
 		}
 }
