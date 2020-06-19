@@ -40,7 +40,9 @@ void send_message(char* ip, char* port, t_package* package) {
 	send_ACK(socket, logger);
 }
 
-void process_free(operation_code op_code, void* message){
+void process_free(void* input){
+	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
+	void* message = ((struct serve_thread_args*)input)->message;
 
 	printf("Estoy en la funcion\n");
 
