@@ -85,7 +85,7 @@ void broker_serves_client(void* input){
 
 	operation_code cod_op;
 
-	int recibido = recv(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
+	int recibido = recv_with_retry(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 	if(recibido == -1)
 		log_error(logger, "Error del recv()");
 	if(recibido == 0)

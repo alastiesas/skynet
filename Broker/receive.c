@@ -83,13 +83,13 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
 
-	if(recv(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) < sizeof(uint32_t))
+	if(recv_with_retry(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) < sizeof(uint32_t))
 		log_error(logger, "Error al recibir el tamanio del stream");
 	else
 		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
 
 	//recibir id de new. (El cual va a ignorar, porque setea el suyo propio luego)
-	if(recv(socket_cliente, &(t_mensaje->ID_mensaje), sizeof(t_mensaje->ID_mensaje), MSG_WAITALL) < sizeof(t_mensaje->ID_mensaje))
+	if(recv_with_retry(socket_cliente, &(t_mensaje->ID_mensaje), sizeof(t_mensaje->ID_mensaje), MSG_WAITALL) < sizeof(t_mensaje->ID_mensaje))
 		log_error(logger, "Error al recibir el id de new");
 	else
 		log_info(logger, "id de new recibido: %d (no se usa ese ID)", t_mensaje->ID_mensaje);
@@ -99,7 +99,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, t_log
 	t_mensaje->datos_mensaje = malloc(size_datos);
 
 	//recibir t0do el resto de datos del mensaje
-	int32_t bytes_received = recv(socket_cliente, t_mensaje->datos_mensaje, size_datos, MSG_WAITALL);
+	int32_t bytes_received = recv_with_retry(socket_cliente, t_mensaje->datos_mensaje, size_datos, MSG_WAITALL);
 	if(bytes_received < size_datos)
 		log_error(logger, "Error al recibir los datos del mensaje");
 	else

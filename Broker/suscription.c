@@ -248,7 +248,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				result = send_paquete(suscriber->socket, paquete);
 
 				//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
-				if(result == (-1 || 0)){
+				if((result == -1) || (result == 0)){
 					close_suscriber_thread(suscriber);
 				}
 				else
@@ -266,7 +266,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				//esperar confirmacion del mensaje
 				result = receive_ACK(suscriber->socket, suscriber->log);
 
-				if(result == -1){
+				if((result == -1) || (result == 0)){
 					close_suscriber_thread(suscriber);
 				}
 				else
@@ -301,7 +301,7 @@ queue_code receive_cola(uint32_t socket, t_log* logger){
 
 	queue_code cola;
 	int32_t resultado;
-	if((resultado = recv(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
+	if((resultado = recv_with_retry(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
 		log_error(logger, "Error al recibir la cola a suscribirse\n");
 		return -1; //failure
 	}

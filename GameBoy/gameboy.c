@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 				if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
 					//gameboy BROKER APPEARED_POKEMON [POKEMON] [POSX] [POSY] [ID_CORRELATIVO]
 					t_message_appeared* appeared;
-					appeared = create_message_appeared_long(argv[3], atoi(argv[4]), atoi(argv[5]),atoi(argv[6]));
+					appeared = create_message_appeared_long(atoi(argv[6]), argv[3], atoi(argv[4]), atoi(argv[5]));
 					appeared->correlative_id = atoi(argv[6]);
 					package = serialize_appeared(appeared);
 					destroy_message_appeared(appeared);
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
 			port = config_get_string_value(config, "TEAM_PORT");
 			//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]
 			t_message_appeared* appeared;
-			appeared = create_message_appeared_long(argv[3], atoi(argv[4]), atoi(argv[5]),atoi(argv[6]));
+			appeared = create_message_appeared_long(0, argv[3], atoi(argv[4]), atoi(argv[5]));	//TODO ver id correlativo
 			package = serialize_appeared(appeared);
 			destroy_message_appeared(appeared);
 
@@ -150,7 +150,6 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	//log_warning("pide el tp que sea './gameboy' y no './gameBoy'");
 	puts("ending gameboy");
 	log_destroy(logger);
 	config_destroy(config);
