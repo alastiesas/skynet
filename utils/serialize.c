@@ -40,10 +40,8 @@ return result;
 
 
 t_package* serialize_suscripcion(uint32_t ID_proceso, queue_code cola){
-	printf("NOOOOOO11\n");
 	t_buffer* ptr_buffer = malloc(sizeof(t_buffer));
 	t_package* paquete = malloc(sizeof(t_package));
-	printf("NOOOOOO\n");
 	//meto la cod_op en el paquete
 	paquete->operation_code = OPERATION_SUSCRIPTION;
 	//asigno el buffer que previamente reserve memoria
@@ -52,12 +50,9 @@ t_package* serialize_suscripcion(uint32_t ID_proceso, queue_code cola){
 	paquete->buffer->size = sizeof(uint32_t) + sizeof(queue_code);
 	//Con el size calculado, reservo memoria para el payload
 	paquete->buffer->stream = malloc(paquete->buffer->size);
-	printf("NOOOOOO12131212\n");
 	//con memcpy() lleno el stream
 	memcpy(paquete->buffer->stream, &ID_proceso, sizeof(uint32_t));
-	printf("NOOOOO333\n");
 	memcpy(paquete->buffer->stream + sizeof(uint32_t), &cola, sizeof(queue_code));
-	printf("NOOOOOO444444444\n");
 
 	return paquete;
 }

@@ -254,7 +254,14 @@ void initialize_global_objectives()
 
 bool success_global_objective(t_list* global_objectives)
 {
-	return (bool) list_all_satisfy(global_objectives,&success_objective);
+	bool success = false;
+	 if(list_all_satisfy(global_objectives,&success_objective)) {
+		 if(list_size(block_list) == 0 && list_size(new_list) == 0 && list_size(ready_list) == 0 && list_size(exec_list) == 0){
+			 success = true;
+		 }
+
+	 }
+	return success;
 }
 
 void* trainer_thread(t_callback* callback_thread)
@@ -323,6 +330,7 @@ void* trainer_thread(t_callback* callback_thread)
 
 void long_term_scheduler(){
 	dictionary_iterator(poke_map, &trainer_assign_job);
+	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
 }
 
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching)
@@ -349,6 +357,18 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 }
 
+void trainer_assign_move2(t_trainer* trainer, char* pokemon, t_position* position, bool catching)
+{
+	//TODO algo no está andando, se rompe en el segundo entrenador. . .
+	printf("\nse asignara al entrenado %d a atrapar al pokemon %s, en la posicion (%d, %d)\n", trainer->id, pokemon, position->x, position->y);
+
+	strcpy(&trainer->target->pokemon,&pokemon);
+	trainer->action = MOVE;
+	trainer->target->position = position;
+	trainer->target->catching = catching;
+	transition_from_id_to_ready(trainer->id);
+	debug_trainer(trainer);
+}
 
 
 void trainer_assign_job(char* key, t_list* positions)
@@ -380,15 +400,19 @@ void trainer_assign_job(char* key, t_list* positions)
 
 			//bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position)
 
+
+
 			if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
 				add_catching(objectives_list, pokemon);
 				trainer_assign_move("NEW",pokemon, closest_from_new,position,1);
+				//trainer_assign_move2(trainer_new, pokemon, position, 1);
 				list_remove(positions, (i+1));
 				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
 			else if(trainer_block != NULL && (trainer_new == NULL || first_closer(trainer_block, trainer_new, position))){
 				add_catching(objectives_list, pokemon);
 				trainer_assign_move("BLOCK",pokemon, closest_from_block,position,1);
+				//trainer_assign_move2(trainer_block, pokemon, position, 1);
 				list_remove(positions, (i+1));
 				//aca deberia sacar la posicion de la lista de posiciones del pokemon, solo sacarla NO! borrarla
 			}
@@ -475,12 +499,39 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	bool condition(void* trainer) {
 		return (((t_trainer*)trainer)->id != id);
 	}
-	void* element = list_remove_by_condition(from, &condition);
+	printf("the size of all list are %d %d %d %d %d\n",list_size(block_list),list_size(new_list),list_size(ready_list),list_size(exec_list), list_size(exit_list));
+	void* element = NULL;
+
+	if(list_size(from)>1)
+		element = list_remove_by_condition(from, &condition);
+	else
+		element = list_remove(from, 0);
 
 	if(element != NULL)
 		list_add(to, element);
 	else
-		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\N");
+		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\n");
+	
+	printf("the size of all list are %d %d %d %d %d\n",list_size(block_list),list_size(new_list),list_size(ready_list),list_size(exec_list), list_size(exit_list));
+}
+
+void transition_from_id_to_ready(uint32_t id) {
+	bool condition(void* trainer) {
+		return (((t_trainer*)trainer)->id != id);
+	}
+
+	t_trainer* trainer = list_remove_by_condition(new_list, &condition);
+	if(trainer != NULL) {
+		list_add(ready_list, trainer);
+	} else {
+		trainer = list_remove_by_condition(block_list, &condition);
+		if(trainer != NULL) {
+			list_add(ready_list, trainer);
+		}else {
+			printf("**ERROR**SE INTENTÓ HACER UNA TRANSICIÓN A READY DE UN ENTRENADOR QUE NO SE ENCUENTRA EN NEW NI BLOCK!**ERROR**\n");
+
+		}
+	}
 }
 
 void transition_new_to_ready(uint32_t index)
@@ -697,7 +748,9 @@ void* sender_thread()
 
 		t_package* package = serialize_catch(catch);
 		destroy_message_catch(catch);
+		//TODO ESTO DEBE IR EN OTRO HILO, CREAR NUEVO HILO PARA CADA SEND_MESSAGE
 		int32_t correlative_id = send_message("127.0.0.1", "6001", package);
+
 		printf("salio para el broker\n");
 
 		//printf("limpiando message team \n");
@@ -765,6 +818,7 @@ void process_message(operation_code op_code, void* message) {
 		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
 		if(dictionary_has_key(message_response,str_correlative_id) == 1){
 			t_trainer* trainer = (t_trainer*) dictionary_get(message_response, str_correlative_id);
+			debug_trainer(trainer);
 			if(((t_message_caught*)(message))->result){
 				//ACA ROMPE NOSE POR QUE?? REVISAR ADD_POKEMON QUIZAS
 				add_pokemon(trainer, trainer->target->pokemon);
@@ -773,6 +827,7 @@ void process_message(operation_code op_code, void* message) {
 				//OBJETIVO GLOBAL??
 				// SI SE CUMPLE ENTRENADOR PASA A EXIT
 				// SINO QUEDA EN FREE
+				debug_trainer(trainer);
 				if(trainer_success_objective(trainer) == 1){
 					printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 					trainer->action = FINISH;
@@ -781,6 +836,11 @@ void process_message(operation_code op_code, void* message) {
 					transition_by_id(trainer->id, block_list, exit_list);
 					printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
 //TODO como paso a exit tambient enemos verificar los objetivos globales para saber si el team termino
+					if(success_global_objective(objectives_list)) {
+						printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
+					} else {
+						printf("SEGUI PARTICIPANDO\n");
+					}
 				} else{
 					printf("ESTE ENTRENADOR NO CUMPLIO TODOS SUS OBJETIVOS\n");
 					trainer->action = FREE;

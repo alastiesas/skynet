@@ -10,7 +10,7 @@
 
 void debug_trainer(t_trainer* trainer) {
 	printf("\n**DEBUG DEL ENTRENADOR**\n");
-	printf("tid: %d\n", trainer->tid);
+	printf("id: %d\n", trainer->id);
 	printf("action: %d\n", trainer->action);
 	if(trainer->target->position != NULL)
 		printf("target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
@@ -88,7 +88,7 @@ uint32_t dinstance(t_position* current, t_position* destiny) {
 
 bool trainer_full(t_trainer* trainer) {
 	bool response = false;
-	if(string_list_size(trainer->pokemons) ==  string_list_size(trainer->objectives))
+	if(string_list_size(trainer->pokemons) >=  string_list_size(trainer->objectives))
 		response = true;
 	return response;
 }
@@ -131,10 +131,10 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 				distance = distance_aux;
 				//trainer = (t_trainer*) element->data;
 				index = i;
-				printf("->SELECCIONADO %d\n",i);
+				printf("-> SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			}
 			else
-				printf("->NO SELECCIONADO %d\n",i);
+				printf("-> NO SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			element = element->next;
 			i++;
 		}
