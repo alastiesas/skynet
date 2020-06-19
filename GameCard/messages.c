@@ -6,7 +6,10 @@
  */
 #include "gamecard.h"
 
-void serve_new(operation_code op_code, void* message){
+void serve_new(void* input){
+	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
+	void* message = ((struct serve_thread_args*)input)->message;
+
 	if(op_code != OPERATION_NEW)
 		log_error(logger, "Aca nunca llego");
 
@@ -23,12 +26,15 @@ void serve_new(operation_code op_code, void* message){
 	destroy_message_appeared(message_appeared);
 
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);
+	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
 
 }
 
-void serve_catch(operation_code op_code, void* message){
+void serve_catch(void* input){
+	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
+	void* message = ((struct serve_thread_args*)input)->message;
+
 	if(op_code != OPERATION_CATCH)
 		log_error(logger, "Aca nunca llego");
 
@@ -45,12 +51,15 @@ void serve_catch(operation_code op_code, void* message){
 	destroy_message_caught(message_caught);
 
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);
+	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
 
 }
 
-void serve_get(operation_code op_code, void* message){
+void serve_get(void* input){
+	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
+	void* message = ((struct serve_thread_args*)input)->message;
+
 	if(op_code != OPERATION_GET)
 		log_error(logger, "Aca nunca llego");
 
@@ -75,7 +84,7 @@ void serve_get(operation_code op_code, void* message){
 	destroy_message_localized(message_localized);
 
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);
+	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
 
 }

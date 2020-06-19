@@ -35,6 +35,12 @@ struct thread_args {
 
 };
 
+struct serve_thread_args {
+	operation_code op_code;
+	void* message;
+
+};
+
 
 void iniciar_servidor(char* puerto, t_log* logger);
 

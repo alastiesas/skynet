@@ -106,11 +106,19 @@ void listen_messages(void* input)
 			failure_function();
 		}
 		else {
-
 			log_info(logger, "se recibio el cod op: %d\n", cod_op);
 			void* message = process_request(cod_op, socket, logger);
-			function(cod_op, message);//se llama a la función otorgada al crearse el thread
+
+		//se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
+		    struct serve_thread_args* argus = malloc(sizeof(struct serve_thread_args));
+		    argus->op_code = cod_op;
+		    argus->message = message;
+
+			pthread_t serve_thread;
+			pthread_create(&serve_thread,NULL, (void*)function, (void *)argus);		//TODO comprobar errores de pthread_create
+			//function(cod_op, message);//se llama a la función otorgada al crearse el thread
 			//ejemplo, en team, esta función identificaria si un catch fue exitoso para agregar el pokemon al inventario del entrenador
+			pthread_detach(serve_thread);
 		}
 		vez++;
 	}
