@@ -6,7 +6,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 
 	ip = config_get_string_value(config, "BROKER_IP");
 	port = config_get_string_value(config, "BROKER_PORT");
-	int32_t socket = connect_to_server(ip, port, 1, logger); //TODO el gameboy no tiene tiempo de reintento?
+	int32_t socket = connect_to_server(ip, port, 4, logger); //TODO el gameboy no tiene tiempo de reintento?
 
 	char* id = config_get_string_value(config, "ID");
 	t_package* suscription_package = serialize_suscripcion(atoi(id), queue_code);
@@ -33,14 +33,16 @@ void subscribe_timed(queue_code queue_code, int time) {
 
 void send_message(char* ip, char* port, t_package* package) {
 
-	int32_t socket = connect_to_server(ip, port, 1, logger); //TODO el gameboy no tiene tiempo de reintento?
+	int32_t socket = connect_to_server(ip, port, 4, logger); //TODO el gameboy no tiene tiempo de reintento?
 	send_paquete(socket, package);
 
 	receive_ID(socket, logger);
 	send_ACK(socket, logger);
 }
 
-void process_free(operation_code op_code, void* message){
+void process_free(void* input){
+	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
+	void* message = ((struct serve_thread_args*)input)->message;
 
 	printf("Estoy en la funcion\n");
 

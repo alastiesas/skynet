@@ -44,9 +44,9 @@ void catch_function(void);
 void get_function(void);
 
 int32_t suscribe_to_broker(queue_code queue_code);
-void serve_new(operation_code op_code, void* message);
-void serve_catch(operation_code op_code, void* message);
-void serve_get(operation_code op_code, void* message);
+void serve_new(void* input);
+void serve_catch(void* input);
+void serve_get(void* input);
 
 void send_to_broker(t_package* package);
 

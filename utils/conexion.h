@@ -29,9 +29,15 @@ pthread_t thread;
 struct thread_args {
     int32_t socket;
     t_log* logger;
-    void (*function)(operation_code, void*);//agrego una funcion que debera ser definida por cada proceso.
+    void (*function)(void*);//agrego una funcion que debera ser definida por cada proceso.
     void (*failure_function)(void); //que funcion ejecutar para reconectar en caso de que falle la conexion
     uint32_t retry_time;
+
+};
+
+struct serve_thread_args {
+	operation_code op_code;
+	void* message;
 
 };
 

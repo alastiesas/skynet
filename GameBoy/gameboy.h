@@ -17,7 +17,7 @@ t_package* package_caught_pokemon();
 t_package* package_get_pokemon();
 t_package* package_new_pokemon();
 
-void process_free(operation_code op_code, void* message);
+void process_free(void* input);
 void exit_failure();
 
 #endif /* GAMEBOY_H_ */

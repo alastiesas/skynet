@@ -1,12 +1,12 @@
 #include "broker.h"
 
-void create_dynamic_partition(uint32_t size, bool available) {
+void create_dynamic_partition(uint32_t size) {
 
 	t_partition* partition = malloc(sizeof(t_partition));
 	t_partition* available_partition = find_available_dynamic_partition(size);
 	// define uint32_t delimiting_position = available_partition->initial_position + size;
 
-	partition->available = available;
+	partition->available = false;
 	// define partition->final_position = delimiting_position;
 	partition->initial_position = available_partition->initial_position;
 	partition->size = size;
@@ -15,6 +15,21 @@ void create_dynamic_partition(uint32_t size, bool available) {
 
 	list_add(partitions, partition);
 	free(partition);
+}
+
+void create_fixed_partition(uint32_t size) {
+
+}
+
+void create_partition(uint32_t size) {
+
+	if (strcmp(memory_algorithm, "BS") == 0) {
+
+		create_fixed_partition(size);
+	} else if (strcmp(memory_algorithm, "PARTICIONES") == 0) {
+
+		create_dynamic_partition(size);
+	}
 }
 
 void delete_dynamic_partition() {
@@ -139,7 +154,7 @@ uint32_t get_partition_number_to_delete() {
 void memory_allocation() {
 
 	mem = malloc(memory_size);
-	create_dynamic_partition(memory_size, true);
+//	create_dynamic_partition(memory_size);
 }
 
 void memory_compaction() {

@@ -214,7 +214,9 @@ uint32_t get_partition_number_to_delete();
 
 void dump_cache(void);
 
-void create_dynamic_partition(uint32_t size, bool available);
+void create_dynamic_partition(uint32_t size);
+void create_fixed_partition(uint32_t size);
+void create_partition(uint32_t size);
 void delete_dynamic_partition();
 t_partition* find_available_dynamic_partition(uint32_t size);
 uint32_t get_available_partition_number(uint32_t size);
