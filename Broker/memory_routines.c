@@ -78,6 +78,34 @@ void free_partition(){
 
 	partition_to_free->available = true;
 
+	uint32_t index_ant = index_partition - 1;
+	uint32_t index_prox = index_partition + 1;
+
+	if (index_prox < list_size(partitions)) {
+		t_partition* partition_prox = list_get(partitions, index_prox);
+		if (partition_prox->available == true) {
+
+			//TODO unifico a derecha
+			partition_to_free->final_position = partition_prox->final_position;
+			partition_to_free->size += partition_prox->size;
+			list_remove(partitions, index_prox);
+
+		}
+	}
+
+	if (index_ant >= 0) {
+		t_partition* partition_ant = list_get(partitions, index_ant);
+		if (partition_ant->available == true) {
+
+			//TODO unifico a izquierda
+			partition_to_free->initial_position = partition_ant->initial_position;
+			partition_to_free->size += partition_ant->size;
+			list_remove(partitions, index_ant);
+
+		}
+	}
+
+
 }
 
 uint32_t get_available_partition_number(uint32_t size) {
