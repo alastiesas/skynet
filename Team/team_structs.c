@@ -151,7 +151,7 @@ void add_pokemon(t_trainer* trainer, char*pokemon)
 	{
 		i++;
 	}
-	strcpy(&trainer->pokemons[i],&pokemon);
+	memcpy(trainer->pokemons[i],pokemon, strlen(pokemon)+1);
 	trainer->pokemons[i+1] = NULL;
 }
 

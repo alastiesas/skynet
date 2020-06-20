@@ -23,9 +23,10 @@ typedef enum {
 typedef enum {
 	FREE= 0,
 	MOVE = 1,
-	CATCHING = 2,
-	TRADE = 3,
-	FINISH = 4,
+	CATCH = 2,
+	CATCHING = 3,
+	TRADE = 4,
+	FINISH = 5,
 } t_action;
 
 typedef struct {
@@ -108,6 +109,7 @@ bool trainer_full(t_trainer* trainer);
 bool trainer_free_space(t_trainer* trainer);
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* destiny);
+bool trainer_success_objective(t_trainer* trainer);
 //FIN consultas
 
 #endif /* TEAM_STRUCTS_H_ */

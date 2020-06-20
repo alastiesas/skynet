@@ -23,6 +23,7 @@ t_log* log;
 uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
 t_list* objectives_list;
 t_algorithm algorithm = FIFO;
+uint32_t retry_time = 15; // TIENE QUE LEVANTAR DATO DEL CONFIG
 
 
 //de aca para abajo, revisar condiciones de carrera
@@ -107,6 +108,10 @@ void move_left(t_trainer* trainer);
 void move(t_trainer* trainer);
 //FIN movimientos
 
+//catch
+void catch(t_trainer* trainer);
+//FIN catch
+
 
 //comunicación
 void* sender_thread();
@@ -154,7 +159,10 @@ void initialize_trainers()
 	int i = 0;
 	while(positions_config[i] != NULL){
 		t_trainer* test_entrenador = initialize_trainer(i+1, positions_config[i], objectives_config[i], pokemons_config[i]);
-		list_add(new_list, test_entrenador);
+		if(trainer_success_objective(test_entrenador))
+			list_add(exit_list, test_entrenador);
+		else
+			list_add(new_list, test_entrenador);
 		i++;
 	}
 	//liberar memoria (todos los char**)
@@ -217,11 +225,10 @@ void sub_catching(t_list* list, char* pokemon)
 
 bool pokemon_is_needed(char* pokemon)
 {
-	printf("LN 301 the pokemonn is %s\n", pokemon);
-	t_objective* test = (t_objective*) list_get(objectives_list,0);
-	printf("LN 301 the pokemon OBJECTIVE is %s\n", test->pokemon);
+	printf("Consultando si %s esta en la lista de objetivos\n", pokemon);
+	//t_objective* test = (t_objective*) list_get(objectives_list,0);
+	//printf("LN 301 the pokemon OBJECTIVE is %s\n", test->pokemon);
 	t_objective* objective = find_key(objectives_list, pokemon);
-	printf("holaaaaaaaaaa\n");
 
 	if(objective == NULL)
 		printf("no necesitamos un %s\n", pokemon);
@@ -286,18 +293,16 @@ void* trainer_thread(t_callback* callback_thread)
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y)
 					move(trainer);
 				else if(trainer->target->catching)
-					trainer->action = CATCHING;
+					trainer->action = CATCH;
 				else
 					trainer->action = TRADE;
 				printf("(%d,%d)\n", trainer->position->x,trainer->position->y);
 				break;
+			case CATCH:
+				catch(trainer);
+				break;
 			case CATCHING:
 				printf("Estoy atrapando pokemon, comando CATCHING\n");
-				//llamada el broker
-				//block
-				//vuelve block
-				//si es positivo, modifca agrega inventario y objetivo global, o si pasa exit
-				//si no, no?, pasa a free de nuevo
 				break;
 			case TRADE:
 				printf("Estoy tradeando pokemon, comando TRADE\n");
@@ -338,7 +343,11 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	printf("\nse asignara al entrenado X a atrapar al pokemon %s, en la posicion (%d, %d)\n", pokemon, position->x, position->y);
 	if(strcmp(type,"NEW") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(new_list, index);
-		strcpy(&trainer->target->pokemon,&pokemon);
+		printf("THIS IS TRAINER %d", trainer->id);
+		printf("ACA ASIGNAMOS EL TARGET, %s reemplaza a %s \n", pokemon, trainer->target->pokemon);
+		trainer->target->pokemon = malloc(strlen(pokemon)+1);
+		memcpy(trainer->target->pokemon, pokemon, strlen(pokemon)+1);
+		printf("ACA ASIGNAMOS EL TARGET, POKEMON ON TARGET  %s \n", trainer->target->pokemon);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -348,7 +357,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 	}
 	else if(strcmp(type,"BLOCK") == 0){
 		t_trainer* trainer = (t_trainer*) list_get(block_list, index);
-		strcpy(&trainer->target->pokemon,&pokemon);
+		memcpy(trainer->target->pokemon,pokemon, strlen(pokemon)+1);
 		//trainer->target->pokemon = pokemon;
 		trainer->action = MOVE;
 		trainer->target->position = position;
@@ -362,7 +371,7 @@ void trainer_assign_move2(t_trainer* trainer, char* pokemon, t_position* positio
 	//TODO algo no está andando, se rompe en el segundo entrenador. . .
 	printf("\nse asignara al entrenado %d a atrapar al pokemon %s, en la posicion (%d, %d)\n", trainer->id, pokemon, position->x, position->y);
 
-	strcpy(&trainer->target->pokemon,&pokemon);
+	memcpy(trainer->target->pokemon,pokemon, strlen(pokemon)+1);
 	trainer->action = MOVE;
 	trainer->target->position = position;
 	trainer->target->catching = catching;
@@ -371,10 +380,10 @@ void trainer_assign_move2(t_trainer* trainer, char* pokemon, t_position* positio
 }
 
 
-void trainer_assign_job(char* key, t_list* positions)
+void trainer_assign_job(char* pokemon, t_list* positions)
 {
-	char* pokemon = malloc((strlen(key)+1)*sizeof(char));
-	strcpy(pokemon, key);//sin esto rompe
+	//char* pokemon = malloc((strlen(key)+1)*sizeof(char));
+	//memcpy(pokemon, key, strlen(key)+1);//sin esto rompe
 
 	t_link_element* element = positions->head;
 	t_position* position;
@@ -385,7 +394,7 @@ void trainer_assign_job(char* key, t_list* positions)
 			// se remplaza la position por lo que devuelva del diccionario
 			t_trainer* trainer_new = NULL;
 			t_trainer* trainer_block = NULL;
-			printf("\n---Buscar entrenador más cercano a (%d, %d) en la cola NEW---\n", position->x, position->y);
+			printf("\n---Buscar entrenador más cercano a %s (%d, %d) en la cola NEW---\n", pokemon, position->x, position->y);
 			int32_t closest_from_new = closest_free_trainer(new_list, position);
 
 			printf("\n---Buscar entrenador más cercano a (%d. %d) en la cola BLOCKED---\n", position->x, position->y);
@@ -545,8 +554,9 @@ void transition_ready_to_exec(uint32_t index)
 	state_change(index,ready_list,exec_list);
 	context_changes++;
 	t_trainer* trainer = list_get(exec_list,0);
-	printf("ACA HACEMOS EL POST DE HILO TRAINER\n");
+	printf("ACA HAREMOS EL POST DE HILO TRAINER\n");
 	sem_post(&trainer->sem_thread);
+	printf("SE HIZPO EL POST DE HILO TRAINER\n");
 }
 
 void transition_exec_to_ready()
@@ -583,10 +593,16 @@ void transition_block_to_exit(uint32_t index)
 void fifo_algorithm()
 {
 	printf("estoy en fifo\n");
-	if(list_size(exec_list) > 0)
+	if(list_size(exec_list) > 0){
+		printf("aca llego\n");
 		transition_exec_to_block();
-	if(list_size(ready_list) > 0)
+	}
+
+	if(list_size(ready_list) > 0){
+		printf("aca llego2\n");
 		transition_ready_to_exec(0);
+	}
+
 }
 
 void rr_algorithm()
@@ -611,18 +627,17 @@ void short_term_scheduler()
 		t_trainer* trainer_exec = (t_trainer*) list_get(exec_list,0);
 
 			//ACA CONSULTAMOS SI SALE POR I/0
-			printf("the trainer exec has %s\n",trainer_exec->target->pokemon);
-			printf("the trainer exec has %d\n",trainer_exec->target->position->x);
-			printf("the trainer exec has %d\n",trainer_exec->target->position->y);
-			printf("the trainer exec has %d\n",trainer_exec->target->catching);
+			printf("corriendo short term, trainer en ejecucion actual:\n");
+			debug_trainer(trainer_exec);
 			if(trainer_exec->target->catching){
 
-
-
 				t_message_team* message = malloc(sizeof(t_message_team));
-
 				message->trainer = trainer_exec;
-				strcpy(&(message->pokemon), &(trainer_exec->target->pokemon));
+				message->pokemon = malloc(strlen(trainer_exec->target->pokemon)+1);
+				printf("the size of the fucks %d %d \n",sizeof(message->pokemon),sizeof(trainer_exec->target->pokemon));
+
+				memcpy(message->pokemon, trainer_exec->target->pokemon, strlen(trainer_exec->target->pokemon)+1);
+				message->pokemon = trainer_exec->target->pokemon;
 				message->position = malloc(sizeof(t_position));
 				message->position->x = trainer_exec->target->position->x;
 				message->position->y = trainer_exec->target->position->y;
@@ -631,15 +646,17 @@ void short_term_scheduler()
 				sem_post(&sem_messages_list);
 
 				sem_post(&sem_messages);
-
 				transition_exec_to_block();
 			}
 	}
 
+	debug_colas();
 
 	switch(algorithm){
 			case FIFO:
+				printf("estoy en fifo (short term)1\n");
 				fifo_algorithm();
+				printf("estoy en fifo (short term)2\n");
 				break;
 			case RR:
 				rr_algorithm();
@@ -851,9 +868,11 @@ void process_message(operation_code op_code, void* message) {
 			}
 			sub_catching(objectives_list, trainer->target->pokemon);
 			trainer->target->catching = 0;
-			trainer->target->position = NULL;
+			//free(trainer->target->position);
+			//trainer->target->position = NULL;
 			trainer->target->distance = NULL;
-			trainer->target->pokemon = NULL;
+			//free(trainer->target->pokemon);
+			//trainer->target->pokemon = NULL;
 		}
 		else
 			printf("SE IGNORA EL MENSAJE PERRO\n");
@@ -870,7 +889,7 @@ void subscribe(queue_code queue_code) {
 	printf("COD OPERATION%d\n", queue_code);
 	char* ip = config_get_string_value(config, "IP_BROKER");
 	char* port = config_get_string_value(config, "PUERTO_BROKER");
-	int32_t socket = connect_to_server(ip, port, log);
+	int32_t socket = connect_to_server(ip, port,retry_time,log);
 	uint32_t id = config_get_int_value(config, "ID");
 
 	t_package* package = serialize_suscripcion(id, queue_code);
@@ -897,7 +916,7 @@ void subscribe(queue_code queue_code) {
 
 int32_t send_message(char* ip, char* port, t_package* package) {
 
-	int32_t socket = connect_to_server(ip, port, log);
+	int32_t socket = connect_to_server(ip, port,retry_time, log);
 	send_paquete(socket, package);
 
 	int32_t correlative_id = receive_ID(socket, log);
@@ -909,5 +928,17 @@ void destroy_message_team(t_message_team* message){
 	free(message->pokemon);
 	free(message->position);
 	free(message);
+}
+
+void catch(t_trainer* trainer){
+	sleep(time_delay);
+	trainer->action = CATCHING;
+	trainer->burst++;
+	cpu_cycles++;
+	printf(" -> Catch: %s\n", trainer->target->pokemon);
+}
+
+void debug_colas() {
+	printf("the size of all list are new: %d ready: %d block: %d exec: %d exit: %d\n",list_size(new_list),list_size(ready_list),list_size(block_list),list_size(exec_list), list_size(exit_list));
 }
 #endif /* TEAM_H_ */
