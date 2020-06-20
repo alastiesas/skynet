@@ -141,6 +141,9 @@ t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t
 	paquete->operation_code = cod_op;
 	paquete->buffer = buffer;
 	paquete->buffer->size = sizeof(uint32_t) + bytes;
+	if(response){
+		paquete->buffer->size += sizeof(uint32_t);
+	}
 	log_debug(logger, "El buffer para el suscriptor es de tamanio: %d", paquete->buffer->size);
 	paquete->buffer->stream = malloc(paquete->buffer->size);
 	//con memcpy() lleno el stream
