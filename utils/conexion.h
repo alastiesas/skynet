@@ -30,8 +30,6 @@ struct thread_args {
     int32_t socket;
     t_log* logger;
     void (*function)(void*);//agrego una funcion que debera ser definida por cada proceso.
-    void (*failure_function)(void); //que funcion ejecutar para reconectar en caso de que falle la conexion
-    uint32_t retry_time;
 
 };
 
@@ -46,7 +44,7 @@ void iniciar_servidor(char* puerto, t_log* logger);
 
 void esperar_cliente(int32_t socket_servidor, t_log* logger);
 
-void listen_messages(void* input);
+int32_t listen_messages(void* input);
 void* process_request(operation_code cod_op, int32_t socket, t_log* logger);
 
 int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag);

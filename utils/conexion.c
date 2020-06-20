@@ -79,13 +79,11 @@ void esperar_cliente(int32_t socket_servidor, t_log* logger)
 
 
 
-void listen_messages(void* input)
+int32_t listen_messages(void* input)
 {
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;
 	void (*function)(operation_code, void*) = ((struct thread_args*)input)->function;
-	void (*failure_function)(void) = ((struct thread_args*)input)->failure_function;
-	uint32_t retry_time = ((struct thread_args*)input)->retry_time;
 
 
 	//pthread_t self = pthread_self();
@@ -101,9 +99,9 @@ void listen_messages(void* input)
 		printf("recv = %d", recibido);
 		if(recibido == -1 || recibido == 0){
 			log_error(logger, "El recv() dio: %d", recibido);
-			log_info(logger, "Se va a ejecutar la funcion dada para reintentar conexion, en %d segs", retry_time);
-			sleep(retry_time);
-			failure_function();
+			log_info(logger, "Se vuelve a la funcion anterior a reconectar");
+			close(socket);
+			return -2;
 		}
 		else {
 			log_info(logger, "se recibio el cod op: %d\n", cod_op);

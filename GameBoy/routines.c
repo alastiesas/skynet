@@ -6,6 +6,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 
 	ip = config_get_string_value(config, "BROKER_IP");
 	port = config_get_string_value(config, "BROKER_PORT");
+
 	int32_t socket = connect_to_server(ip, port, 4, logger); //TODO el gameboy no tiene tiempo de reintento?
 
 	char* id = config_get_string_value(config, "ID");
@@ -20,14 +21,19 @@ void subscribe_timed(queue_code queue_code, int time) {
 	args->socket = socket;
 	args->logger = logger;
 	args->function = &process_free;
-	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) listen_messages, args); /*pending2*/
 
+	//se crea un thread para recibir muchos mensajes
+	pthread_t thread;
+	pthread_create(&thread, NULL, (void*) listen_messages, args);
+
+	//quedo vivo hasta que termine el tiempo de suscripcion
 	sleep(time);
 
+	log_info(logger, "El gameboy no reconecta");
 	printf("TODO: enviar mensaje de fin de suscripcion para liberar memoria del broker\n");
 
 	printf("TODO: ver como se deben mostrar los mensajes recibidos\n");
+
 }
 
 
