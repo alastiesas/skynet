@@ -108,7 +108,7 @@ int32_t listen_messages(void* input)
 			void* message = process_request(cod_op, socket, logger);
 
 		//se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
-		    struct serve_thread_args* argus = malloc(sizeof(struct serve_thread_args));
+		    serve_thread_args* argus = malloc(sizeof(serve_thread_args));
 		    argus->op_code = cod_op;
 		    argus->message = message;
 

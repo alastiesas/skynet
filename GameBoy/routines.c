@@ -47,8 +47,8 @@ void send_message(char* ip, char* port, t_package* package) {
 }
 
 void process_free(void* input){
-	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
-	void* message = ((struct serve_thread_args*)input)->message;
+	operation_code op_code = ((serve_thread_args*)input)->op_code;
+	void* message = ((serve_thread_args*)input)->message;
 
 	printf("Estoy en la funcion\n");
 

@@ -33,11 +33,11 @@ struct thread_args {
 
 };
 
-struct serve_thread_args {
+typedef struct {
 	operation_code op_code;
 	void* message;
 
-};
+}serve_thread_args;
 
 
 void iniciar_servidor(char* puerto, t_log* logger);

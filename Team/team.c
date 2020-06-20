@@ -33,54 +33,13 @@ int main(void)
 	puerto = config_get_string_value(config, "PUERTO");
 
 
-	subscribe(6);
+	subscribe(OPERATION_APPEARED);
+	subscribe(OPERATION_LOCALIZED);
+	subscribe(OPERATION_CAUGHT);
 	sleep(5);
 
-
-
-	pthread_t tid;
-	pthread_create(&tid, NULL, sender_thread, NULL);
-
-	//pthread_join(tid, NULL);
-
-	//pthread_join(tid, NULL);
-
-	//printf(test ? "true" : "false");
-
-
-	//char** test_list = config_get_array_value(config,"POSICIONES_ENTRENADORESE");
-	char** test_postions = config_get_array_value(config,"POSICIONES_ENTRENADORES");
-	char** test_split_position = string_split(test_postions[0], "|");
-
-	printf("debug del test POSICION %d\n", atoi(test_split_position[0]));
-	printf("debug del test POSICION 1 %d\n", atoi(test_split_position[1]));
-
-
-	char** test_pokemons = config_get_array_value(config,"POKEMON_ENTRENADORES");
-	char** test_split_pokemon = string_split(test_pokemons[0], "|");
-
-	printf("debug del test POKEMON %s\n", test_split_pokemon[0]);
-	printf("debug del test POKEMON 1 %s\n", test_split_pokemon[1]);
-
-	//OBJETIVOS_ENTRENADORES
-
-	char** test_objetivos = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
-	char** test_split_objetivo = string_split(test_objetivos[0], "|");
-
-	printf("debug del test OBJETIVO %s\n", test_split_objetivo[0]);
-	printf("debug del test OBJETIVO 1 %s\n", test_split_objetivo[1]);
-
-	int j = string_list_size(test_split_objetivo);
-
-
-
-	printf("el valor de la J es %d\n", j);
-
-	int count = size_array(test_objetivos[0]);
-	printf("el count termina con %d\n", count);
-
-
-
+	pthread_t sender_tid;
+	pthread_create(&sender_tid, NULL, sender_thread, NULL);
 
 	messages_list = list_create();
 	message_response = dictionary_create();
@@ -96,6 +55,7 @@ int main(void)
 	initialize_trainers();
 	initialize_global_objectives();
 
+/*
 	t_position* test_position_1 = malloc(sizeof(t_position));
 	test_position_1->x = 0;
 	test_position_1->y = 0;
@@ -110,20 +70,19 @@ int main(void)
 	test_position_3->x = 6;
 	test_position_3->y = 6;
 	add_to_poke_map("Bulbasaur",(void*) test_position_3);
-
-	//pthread_t tid;
-	//pthread_t tid2;
-
-	long_term_scheduler();
-	sleep(4);
+	long_term_scheduler();*/
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
-	pthread_t exec_tid;
+	pthread_t long_tid;
 
-	pthread_create(&exec_tid, NULL, exec_thread, NULL);
+	pthread_create(&long_tid, NULL, long_thread, NULL);
+
+	pthread_t short_tid;
+
+	pthread_create(&short_tid, NULL, short_thread, NULL);
 
 
-	pthread_join(exec_tid, NULL);
+	pthread_join(short_tid, NULL);
 
 	//HASTA ACA DEJAMOS COMENTADO
 

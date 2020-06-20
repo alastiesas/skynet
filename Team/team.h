@@ -45,7 +45,10 @@ t_list* messages_list;
 t_dictionary* message_response;
 
 //semaforos
-sem_t sem_exec;
+sem_t sem_scheduler;
+sem_t sem_short;
+sem_t sem_long;
+
 sem_t sem_messages_list;
 sem_t sem_messages;
 sem_t sem_messages_recieve_list;
@@ -92,7 +95,7 @@ void transition_block_to_exit(uint32_t index);
 
 //planificacion
 void long_term_scheduler();
-void* exec_thread();
+void* short_thread();
 void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
@@ -114,8 +117,9 @@ void catch(t_trainer* trainer);
 
 
 //comunicación
+void message_list_add_catch(t_trainer* trainer);
 void* sender_thread();
-void process_message(operation_code op_code, void* message);
+void process_message(serve_thread_args* args);
 void subscribe(queue_code queue_code);
 //FIN comunicación
 
@@ -123,13 +127,14 @@ void subscribe(queue_code queue_code);
 
 void callback_fifo(t_trainer* trainer){
 	if(trainer->action == CATCHING){
-			//llama funcion para enviar mensaje, recibe entrenador por parametro y hace post a hilo de sender
-			//sem_post(&sem_sender)
-			sem_post(&sem_exec);
-			//signal a semaforo de exec
-		}
-	else if(trainer->action == FREE){
-		sem_post(&sem_exec);
+		//llama funcion para enviar mensaje, recibe entrenador por parametro y hace post a hilo de sender
+		//sem_post(&sem_sender)
+		printf("---->sem_post(&sem_short);CATCHING(<----\n");
+		sem_post(&sem_short);
+		//signal a semaforo de exec
+	} else if(trainer->action == FREE){
+		printf("---->sem_post(&sem_short);FREE(<----\n");
+		sem_post(&sem_short);
 		//signal a semaforo de exec
 	}
 	else
@@ -333,9 +338,94 @@ void* trainer_thread(t_callback* callback_thread)
 //large_term_scheduler
 //void 		  dictionary_iterator(t_dictionary *, void(*closure)(char*,void*));
 
+
+
+void long_thread() {
+	sem_init(&sem_long, 0, 0);
+	sem_init(&sem_scheduler, 0, 1);
+	while(1){
+		sem_wait(&sem_long);
+		sem_wait(&sem_scheduler);
+		long_term_scheduler();
+		sem_post(&sem_scheduler);
+		sem_post(&sem_short);
+	}
+
+}
+
+void* short_thread()
+{
+	sem_init(&sem_short, 0, 0);
+	while(1){
+		sem_wait(&sem_short);
+		sem_wait(&sem_scheduler);
+		short_term_scheduler();
+		sem_post(&sem_scheduler);
+	}
+	printf("cantidad de CPU %d\n", cpu_cycles);
+}
+
 void long_term_scheduler(){
+	printf("BEFORE dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	dictionary_iterator(poke_map, &trainer_assign_job);
+	printf("AFTER dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
+}
+
+void short_term_scheduler()
+{
+	if(list_size(ready_list)>0){
+		switch(algorithm){
+			case FIFO:
+				printf("estoy en fifo (short term)1\n");
+				fifo_algorithm();
+				printf("estoy en fifo (short term)2\n");
+				break;
+			case RR:
+				rr_algorithm();
+				break;
+			case SJFS:
+				sjfs_algorithm();
+				break;
+			case SJFC:
+				sjfc_algorithm();
+				break;
+			default:
+				printf("Estoy en nada\n");
+				break;
+		}
+	}
+	// lo unico que hace es mueve de ready to exec
+}
+
+void fifo_algorithm()
+{
+	printf("estoy en fifo\n");
+	if(list_size(exec_list) > 0){
+		printf("aca llego\n");
+		transition_exec_to_block();
+	}
+
+	if(list_size(ready_list) > 0){
+		printf("aca llego2\n");
+		transition_ready_to_exec(0);
+	}
+
+}
+
+void rr_algorithm()
+{
+	printf("Estoy en RR\n");
+}
+
+void sjfs_algorithm()
+{
+	printf("Estoy en SJFS\n");
+}
+
+void sjfc_algorithm()
+{
+	printf("Estoy en SJFC\n");
 }
 
 void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* position, bool catching)
@@ -554,9 +644,8 @@ void transition_ready_to_exec(uint32_t index)
 	state_change(index,ready_list,exec_list);
 	context_changes++;
 	t_trainer* trainer = list_get(exec_list,0);
-	printf("ACA HAREMOS EL POST DE HILO TRAINER\n");
+	printf("ACA HAREMOS EL POST DE HILO DEL TRAINER %d TARGET: %s\n", trainer->id, trainer->target->pokemon);
 	sem_post(&trainer->sem_thread);
-	printf("SE HIZPO EL POST DE HILO TRAINER\n");
 }
 
 void transition_exec_to_ready()
@@ -590,89 +679,7 @@ void transition_block_to_exit(uint32_t index)
 }
 //FIN transiciones
 
-void fifo_algorithm()
-{
-	printf("estoy en fifo\n");
-	if(list_size(exec_list) > 0){
-		printf("aca llego\n");
-		transition_exec_to_block();
-	}
 
-	if(list_size(ready_list) > 0){
-		printf("aca llego2\n");
-		transition_ready_to_exec(0);
-	}
-
-}
-
-void rr_algorithm()
-{
-	printf("Estoy en RR\n");
-}
-
-void sjfs_algorithm()
-{
-	printf("Estoy en SJFS\n");
-}
-
-void sjfc_algorithm()
-{
-	printf("Estoy en SJFC\n");
-}
-
-void short_term_scheduler()
-{
-
-	if(list_size(exec_list)>0){
-		t_trainer* trainer_exec = (t_trainer*) list_get(exec_list,0);
-
-			//ACA CONSULTAMOS SI SALE POR I/0
-			printf("corriendo short term, trainer en ejecucion actual:\n");
-			debug_trainer(trainer_exec);
-			if(trainer_exec->target->catching){
-
-				t_message_team* message = malloc(sizeof(t_message_team));
-				message->trainer = trainer_exec;
-				message->pokemon = malloc(strlen(trainer_exec->target->pokemon)+1);
-				printf("the size of the fucks %d %d \n",sizeof(message->pokemon),sizeof(trainer_exec->target->pokemon));
-
-				memcpy(message->pokemon, trainer_exec->target->pokemon, strlen(trainer_exec->target->pokemon)+1);
-				message->pokemon = trainer_exec->target->pokemon;
-				message->position = malloc(sizeof(t_position));
-				message->position->x = trainer_exec->target->position->x;
-				message->position->y = trainer_exec->target->position->y;
-				sem_wait(&sem_messages_list);
-				list_add(messages_list,message);
-				sem_post(&sem_messages_list);
-
-				sem_post(&sem_messages);
-				transition_exec_to_block();
-			}
-	}
-
-	debug_colas();
-
-	switch(algorithm){
-			case FIFO:
-				printf("estoy en fifo (short term)1\n");
-				fifo_algorithm();
-				printf("estoy en fifo (short term)2\n");
-				break;
-			case RR:
-				rr_algorithm();
-				break;
-			case SJFS:
-				sjfs_algorithm();
-				break;
-			case SJFC:
-				sjfc_algorithm();
-				break;
-			default:
-				printf("Estoy en nada\n");
-				break;
-		}
-	// lo unico que hace es mueve de ready to exec
-}
 
 void move_up(t_trainer* trainer)
 {
@@ -723,32 +730,6 @@ void move(t_trainer* trainer)
 }
 
 
-void* exec_thread()
-{
-	sem_init(&sem_exec, 0, 1);
-	while(1){
-			//sem_wait(&sem_exec); Este seria el unico semaforo, despues cambiar
-			if(list_size(ready_list)>0 || list_size(exec_list)>0){
-				sem_wait(&sem_exec);
-				short_term_scheduler();
-			}
-			else{
-				//printf("aca pasa al planificador de largo plazo\n");
-				//post al planificador de largo plazo
-			}
-
-
-			//printf("la lista de block queda %d\n",list_size(block_list));
-			//printf("la lista de new queda %d\n",list_size(new_list));
-			//printf("cantidad de CPU %d\n", cpu_cycles);
-			//if a funcion que consula objetivos globales
-			//BREAK PARA CORTAR WHILE CUANDO TERMINAN OBJETIVOS
-		}
-
-		printf("cantidad de CPU %d\n", cpu_cycles);
-}
-
-
 void* sender_thread()
 {
 
@@ -756,7 +737,9 @@ void* sender_thread()
 	sem_init(&sem_messages, 0, 0);
 	sem_init(&sem_messages_recieve_list, 0, 1);
 	while(1){
+		printf("me clave en sem messages\n");
 		sem_wait(&sem_messages);
+		printf("me clave en sem messages list\n");
 		sem_wait(&sem_messages_list);
 		t_message_team* message = list_remove(messages_list, 0);
 		sem_post(&sem_messages_list);
@@ -808,19 +791,46 @@ subscribe --------------->>>>>> servidor que esta escuchando (BROKER)
 
 */
 
-void process_message(operation_code op_code, void* message) {
+void process_message(serve_thread_args* args) {
+	operation_code op_code = args->op_code;
+	void* message = args->message;
 	switch(op_code) {
 	case OPERATION_NEW:
 		printf("SE RECIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_APPEARED:
-		printf("SE RECIBIO UN  APPEARED, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  APPEARED [");
+		printf("ID: %d, ", ((t_message_appeared*)(message))->id);
+		printf("CORRELATIVE_ID: %d, ", ((t_message_appeared*)(message))->correlative_id);
+		printf("SIZE: %d, ", ((t_message_appeared*)(message))->size_pokemon_name);
+		printf("POKEMON: %s, ", ((t_message_appeared*)(message))->pokemon_name);;
+		printf("POSITION: (%d, %d) ", ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
+		printf("]\n");
+
+		add_to_poke_map(((t_message_appeared*)(message))->pokemon_name,((t_message_appeared*)(message))->position);
+		//long_term_scheduler();
+		sem_post(&sem_long);
+
+		debug_colas();
 	break;
 	case OPERATION_GET:
 		printf("SE RECIBIO UN  GET, PERO NO SE QUE HACER <----------------------------");
 	break;
 	case OPERATION_LOCALIZED:
-		printf("SE RECIBIO UN  LOCALIZED, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  LOCALIZED[");
+		printf("ID: %d, ", ((t_message_localized*)(message))->id);
+		printf("CORRELATIVE_ID: %d, ", ((t_message_localized*)(message))->correlative_id);
+		printf("SIZE: %d, ", ((t_message_localized*)(message))->size_pokemon_name);
+		printf("POKEMON: %s, ", ((t_message_localized*)(message))->pokemon_name);;
+		printf("POSITION_AMOUNT: %d, ", ((t_message_localized*)(message))->position_amount);
+		printf("POSITIONS: [");
+		t_position* test = ((t_message_localized*)(message))->positions;
+		for(int i = 0; i<((t_message_localized*)(message))->position_amount; i++){
+			printf(" (%d, %d) ",(test+i)->x, (test+i)->y);
+
+		}
+		printf("]\n");
+		//TODO ¿gamecard contesta a los get?
 	break;
 	case OPERATION_CATCH:
 		printf("SE RECIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------");
@@ -838,7 +848,9 @@ void process_message(operation_code op_code, void* message) {
 			debug_trainer(trainer);
 			if(((t_message_caught*)(message))->result){
 				//ACA ROMPE NOSE POR QUE?? REVISAR ADD_POKEMON QUIZAS
+				printf("ROMPE ANTES DE ADD_POKEMON\n");
 				add_pokemon(trainer, trainer->target->pokemon);
+				printf("ROMPE ANTES DE ADD_CAUGHT\n");
 				add_caught(objectives_list, trainer->target->pokemon);
 				//OBJETVIO DEL ENTRANDOR ?
 				//OBJETIVO GLOBAL??
@@ -879,9 +891,10 @@ void process_message(operation_code op_code, void* message) {
 
 	break;
 	default:
-		printf("CODIGO DE OPERACION ERRONEO");
+		printf("CODIGO DE OPERACION ERRONEO\n");
 	break;
 	}
+	//TODO limpiar punteros de mensajes y argumentos.
 }
 
 
@@ -920,6 +933,7 @@ int32_t send_message(char* ip, char* port, t_package* package) {
 	send_paquete(socket, package);
 
 	int32_t correlative_id = receive_ID(socket, log);
+	printf("ENVIAMOS MENSAJE AL BROKER ID %d\n",correlative_id);
 	send_ACK(socket, log);
 	return correlative_id;
 }
@@ -931,11 +945,34 @@ void destroy_message_team(t_message_team* message){
 }
 
 void catch(t_trainer* trainer){
+	pthread_t tid;
 	sleep(time_delay);
+	printf("acallego y dspues rompio\n"); //TODO ACA ROMPE
+	pthread_create(tid, NULL, &message_list_add_catch, trainer);
 	trainer->action = CATCHING;
 	trainer->burst++;
 	cpu_cycles++;
 	printf(" -> Catch: %s\n", trainer->target->pokemon);
+}
+
+void message_list_add_catch(t_trainer* trainer) {
+	printf("acallego y dspues rompio\n");
+	t_message_team* message = malloc(sizeof(t_message_team));
+	message->trainer = trainer;
+	message->pokemon = malloc(strlen(trainer->target->pokemon)+1);
+	printf("the size of the fucks %d %d \n",sizeof(message->pokemon),sizeof(trainer->target->pokemon));
+
+	memcpy(message->pokemon, trainer->target->pokemon, strlen(trainer->target->pokemon)+1);
+	message->pokemon = trainer->target->pokemon;
+	message->position = malloc(sizeof(t_position));
+	message->position->x = trainer->target->position->x;
+	message->position->y = trainer->target->position->y;
+	sem_wait(&sem_messages_list);
+	list_add(messages_list,message);
+	sem_post(&sem_messages_list);
+
+	sem_post(&sem_messages);
+	//TODO LIBERAR MEMORIA
 }
 
 void debug_colas() {
