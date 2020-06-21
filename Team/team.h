@@ -225,6 +225,7 @@ void add_catching(t_list* list, char* pokemon)
 void sub_catching(t_list* list, char* pokemon)
 {
 	t_objective* objective = find_key(list, pokemon);
+	printf("ENTRO EN EL SUB CATCHING\n");
 	if(objective != NULL){
 		if(objective->catching>0)
 			objective->catching--;
@@ -361,6 +362,7 @@ void long_thread() {
 	while(1){
 		sem_wait(&sem_long);
 		sem_wait(&sem_scheduler);
+		printf("esta aca??\n");
 		long_term_scheduler();
 		sem_post(&sem_scheduler);
 		sem_post(&sem_short);
@@ -374,6 +376,8 @@ void* short_thread()
 	while(1){
 		sem_wait(&sem_short);
 		sem_wait(&sem_scheduler);
+		//printf("esta wacho aca??\n");
+		debug_message_list();
 		short_term_scheduler();
 		sem_post(&sem_scheduler);
 	}
@@ -904,10 +908,11 @@ void process_message(serve_thread_args* args) {
 			trainer->target->distance = NULL;
 			//free(trainer->target->pokemon);
 			//trainer->target->pokemon = NULL;
+			sem_post(&sem_long);
 		}
 		else
 			printf("SE IGNORA EL MENSAJE PERRO\n");
-
+		debug_message_list();
 	break;
 	default:
 		printf("CODIGO DE OPERACION ERRONEO\n");
