@@ -218,7 +218,11 @@ void create_dynamic_partition(uint32_t size);
 void create_fixed_partition(uint32_t size);
 void create_partition(uint32_t size);
 void delete_dynamic_partition();
+void delete_fixed_partition();
+void delete_partition();
 t_partition* find_available_dynamic_partition(uint32_t size);
 uint32_t get_available_partition_number(uint32_t size);
+void memory_compaction();
+void merge_partitions(uint32_t initial_partition_number, uint32_t final_partition_number);
 
 #endif /* BROKER_H_ */

@@ -1,28 +1,17 @@
 #include "broker.h"
 
-void create_partition(uint32_t size) {
-
-	if (strcmp(memory_algorithm, "BS") == 0) {
-
-		create_fixed_partition(size);
-	} else if (strcmp(memory_algorithm, "PARTICIONES") == 0) {
-
-		create_dynamic_partition(size);
-	}
-}
-
 void create_dynamic_partition(uint32_t size) {
 
 	t_partition* partition = malloc(sizeof(t_partition));
 	t_partition* available_partition = find_available_dynamic_partition(size);
-	// define uint32_t delimiting_position = available_partition->initial_position + size;
+	// define uint32_t delimiting_position = available_partition->initial_position + (int) size;
 
 	partition->available = false;
-	// define partition->final_position = delimiting_position;
-	partition->initial_position = available_partition->initial_position;
 	partition->size = size;
-	// define available_partition->initial_position = delimiting_position;
+	partition->initial_position = available_partition->initial_position;
+	// define partition->final_position = delimiting_position;
 	available_partition->size = available_partition->size - size;
+	// define available_partition->initial_position = delimiting_position;
 
 	list_add(partitions, partition);
 	free(partition);
@@ -32,8 +21,15 @@ void create_fixed_partition(uint32_t size) {
 
 }
 
-void delete_partition() {
+void create_partition(uint32_t size) {
 
+	if (strcmp(memory_algorithm, "BS") == 0) {
+
+		create_fixed_partition(size);
+	} else if (strcmp(memory_algorithm, "PARTICIONES") == 0) {
+
+		create_dynamic_partition(size);
+	}
 }
 
 void delete_dynamic_partition() {
@@ -65,6 +61,10 @@ void delete_dynamic_partition() {
 }
 
 void delete_fixed_partition() {
+
+}
+
+void delete_partition() {
 
 }
 
@@ -184,4 +184,32 @@ void memory_allocation() {
 
 void memory_compaction() {
 
+	uint32_t available_size = 0;
+	uint32_t unavailable_size = 0;
+
+	for (int i = 0; i < list_size(partitions); i++) {
+
+		t_partition* partition = list_get(partitions, i);
+		if (partition->available) {
+
+			available_size += partition->size;
+			list_remove(partitions, i); // change
+		} else {
+
+			// define partition->initial_position = unavailable_size;
+			unavailable_size += partition->size;
+			// define partition->final_position = unavailable_size;
+		}
+	}
+
+	/* it's possible to refactor the following code */
+	t_partition* available_partition = malloc(sizeof(t_partition));
+
+	available_partition->available = true;
+	available_partition->size = available_size;
+	// define available_partition->initial_position = unavailable_size;
+	// define available_partition->final_position = memory_size;
+
+	list_add(partitions, available_partition);
+	free(available_partition);
 }
