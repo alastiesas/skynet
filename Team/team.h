@@ -123,6 +123,10 @@ void process_message(serve_thread_args* args);
 void subscribe(queue_code queue_code);
 //FIN comunicación
 
+//debugs
+void debug_colas();
+void debug_message_list();
+//FIN debugs
 
 
 void callback_fifo(t_trainer* trainer){
@@ -201,7 +205,8 @@ void add_caught(t_list* list, char* pokemon)
 	t_objective* objective = find_key(list, pokemon);
 	if(objective != NULL){
 		objective->caught++;
-		objective->catching--;
+		if(objective->catching>0)
+			objective->catching--;
 	}
 	else
 		printf("Lo rompiste todo, maldito idiota\n");
@@ -221,7 +226,8 @@ void sub_catching(t_list* list, char* pokemon)
 {
 	t_objective* objective = find_key(list, pokemon);
 	if(objective != NULL){
-		objective->catching--;
+		if(objective->catching>0)
+			objective->catching--;
 	}
 	else
 		printf("Lo rompiste todo, maldito idiota\n");
@@ -240,6 +246,12 @@ bool pokemon_is_needed(char* pokemon)
 		printf("no necesitamos un %s\n", pokemon);
 	else
 		needed = objective->count > (objective->caught + objective->catching);
+
+	//DEBUG DE PRUEBA
+	printf("objective count ->> %d\n",objective->count);
+	printf("objective caught ->> %d\n",objective->caught);
+	printf("objective catching ->> %d\n",objective->catching);
+	printf("result is %d\n",needed);
 	//return (objective->count > (objective->caught + objective->catching));
 	return needed;
 }
@@ -503,11 +515,7 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			if(closest_from_block >= 0){
 				trainer_block = list_get(block_list,closest_from_block);
 			}
-
 			//bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position)
-
-
-
 			if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
 				add_catching(objectives_list, pokemon);
 				trainer_assign_move("NEW",pokemon, closest_from_new,position,1);
@@ -746,6 +754,7 @@ void* sender_thread()
 	while(1){
 		printf("me clave en sem messages\n");
 		debug_colas();
+		debug_message_list();
 		sem_wait(&sem_messages);
 		printf("me clave en sem messages list\n");
 		sem_wait(&sem_messages_list);
@@ -989,5 +998,13 @@ void message_list_add_catch(t_trainer* trainer) {
 
 void debug_colas() {
 	printf("the size of all list are new: %d ready: %d block: %d exec: %d exit: %d\n",list_size(new_list),list_size(ready_list),list_size(block_list),list_size(exec_list), list_size(exit_list));
+}
+void debug_message_list() {
+	void printf_function(char*key,void*n){
+		printf("ID : %s \n",key);
+		//agregar a que entrenador pertenece
+	};
+	printf("The IDs on message list response are these: \n");
+	dictionary_iterator(message_response, &printf_function);
 }
 #endif /* TEAM_H_ */
