@@ -233,12 +233,15 @@ bool pokemon_is_needed(char* pokemon)
 	printf("Consultando si %s esta en la lista de objetivos\n", pokemon);
 	//t_objective* test = (t_objective*) list_get(objectives_list,0);
 	//printf("LN 301 the pokemon OBJECTIVE is %s\n", test->pokemon);
+	bool needed = 0;
 	t_objective* objective = find_key(objectives_list, pokemon);
 
 	if(objective == NULL)
 		printf("no necesitamos un %s\n", pokemon);
+	else
+		needed = objective->count > (objective->caught + objective->catching);
 	//return (objective->count > (objective->caught + objective->catching));
-	return objective->count > (objective->caught + objective->catching);
+	return needed;
 }
 
 t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* trainer)
@@ -366,41 +369,41 @@ void* short_thread()
 }
 
 void long_term_scheduler(){
-	printf("BEFORE dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
+	//printf("BEFORE dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	dictionary_iterator(poke_map, &trainer_assign_job);
-	printf("AFTER dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
+	//printf("AFTER dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
 }
 
 void short_term_scheduler()
 {
-	if(list_size(ready_list)>0){
-		switch(algorithm){
-			case FIFO:
-				printf("estoy en fifo (short term)1\n");
-				fifo_algorithm();
-				printf("estoy en fifo (short term)2\n");
-				break;
-			case RR:
-				rr_algorithm();
-				break;
-			case SJFS:
-				sjfs_algorithm();
-				break;
-			case SJFC:
-				sjfc_algorithm();
-				break;
-			default:
-				printf("Estoy en nada\n");
-				break;
-		}
+
+	switch(algorithm){
+		case FIFO:
+			//printf("estoy en fifo (short term)1\n");
+			fifo_algorithm();
+			//printf("estoy en fifo (short term)2\n");
+			break;
+		case RR:
+			rr_algorithm();
+			break;
+		case SJFS:
+			sjfs_algorithm();
+			break;
+		case SJFC:
+			sjfc_algorithm();
+			break;
+		default:
+			printf("Estoy en nada\n");
+			break;
 	}
+
 	// lo unico que hace es mueve de ready to exec
 }
 
 void fifo_algorithm()
 {
-	printf("estoy en fifo\n");
+	//printf("estoy en fifo\n");
 	if(list_size(exec_list) > 0){
 		printf("aca llego\n");
 		transition_exec_to_block();
@@ -409,6 +412,10 @@ void fifo_algorithm()
 	if(list_size(ready_list) > 0){
 		printf("aca llego2\n");
 		transition_ready_to_exec(0);
+	}
+	else{
+		//toma el mando el long
+		sem_post(&sem_long);
 	}
 
 }
@@ -738,6 +745,7 @@ void* sender_thread()
 	sem_init(&sem_messages_recieve_list, 0, 1);
 	while(1){
 		printf("me clave en sem messages\n");
+		debug_colas();
 		sem_wait(&sem_messages);
 		printf("me clave en sem messages list\n");
 		sem_wait(&sem_messages_list);
@@ -806,11 +814,12 @@ void process_message(serve_thread_args* args) {
 		printf("POKEMON: %s, ", ((t_message_appeared*)(message))->pokemon_name);;
 		printf("POSITION: (%d, %d) ", ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
 		printf("]\n");
-
-		add_to_poke_map(((t_message_appeared*)(message))->pokemon_name,((t_message_appeared*)(message))->position);
-		//long_term_scheduler();
-		sem_post(&sem_long);
-
+		//SOLO SE AGREGA SI ES REQUERIDO EN OBJETIVOS GLOBALES
+		if(pokemon_is_needed(((t_message_appeared*)(message))->pokemon_name)){
+			add_to_poke_map(((t_message_appeared*)(message))->pokemon_name,((t_message_appeared*)(message))->position);
+			//long_term_scheduler();
+			sem_post(&sem_long);
+		}
 		debug_colas();
 	break;
 	case OPERATION_GET:
@@ -844,7 +853,7 @@ void process_message(serve_thread_args* args) {
 		char str_correlative_id[6];
 		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
 		if(dictionary_has_key(message_response,str_correlative_id) == 1){
-			t_trainer* trainer = (t_trainer*) dictionary_get(message_response, str_correlative_id);
+			t_trainer* trainer = (t_trainer*) dictionary_remove(message_response, str_correlative_id);
 			debug_trainer(trainer);
 			if(((t_message_caught*)(message))->result){
 				//ACA ROMPE NOSE POR QUE?? REVISAR ADD_POKEMON QUIZAS
@@ -864,6 +873,7 @@ void process_message(serve_thread_args* args) {
 //TODO DEBE pasar a EXIT
 					transition_by_id(trainer->id, block_list, exit_list);
 					printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
+					//EL MENSAJE DEBE ELIMINARSE, HACER FREE O ALGO,
 //TODO como paso a exit tambient enemos verificar los objetivos globales para saber si el team termino
 					if(success_global_objective(objectives_list)) {
 						printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
@@ -948,7 +958,8 @@ void catch(t_trainer* trainer){
 	pthread_t tid;
 	sleep(time_delay);
 	printf("acallego y dspues rompio\n"); //TODO ACA ROMPE
-	pthread_create(tid, NULL, &message_list_add_catch, trainer);
+	pthread_create(&tid, NULL, &message_list_add_catch, trainer);
+	printf("aca NO llega\n");
 	trainer->action = CATCHING;
 	trainer->burst++;
 	cpu_cycles++;
@@ -956,8 +967,9 @@ void catch(t_trainer* trainer){
 }
 
 void message_list_add_catch(t_trainer* trainer) {
-	printf("acallego y dspues rompio\n");
+	printf(" message_list_add_catch acallego y dspues rompio\n");
 	t_message_team* message = malloc(sizeof(t_message_team));
+	printf(" message_list_add_catch NOO acallego y dspues rompio\n");
 	message->trainer = trainer;
 	message->pokemon = malloc(strlen(trainer->target->pokemon)+1);
 	printf("the size of the fucks %d %d \n",sizeof(message->pokemon),sizeof(trainer->target->pokemon));

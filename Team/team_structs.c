@@ -126,6 +126,7 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 			printf("distance minima: %d\n" ,distance);
 			printf("el actions es (0=libre): %d\n", ((t_trainer*)element->data)->action);
 			printf("teiene espacio en inventario: %d\n" ,trainer_free_space(((t_trainer*)element->data)));
+			debug_trainer(((t_trainer*)element->data));
 
 			if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && (distance_aux < distance || distance < 0)){
 				distance = distance_aux;
