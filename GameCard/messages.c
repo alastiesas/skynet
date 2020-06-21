@@ -7,8 +7,8 @@
 #include "gamecard.h"
 
 void serve_new(void* input){
-	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
-	void* message = ((struct serve_thread_args*)input)->message;
+	operation_code op_code = ((serve_thread_args*)input)->op_code;
+	void* message = ((serve_thread_args*)input)->message;
 
 	if(op_code != OPERATION_NEW)
 		log_error(logger, "Aca nunca llego");
@@ -32,8 +32,8 @@ void serve_new(void* input){
 }
 
 void serve_catch(void* input){
-	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
-	void* message = ((struct serve_thread_args*)input)->message;
+	operation_code op_code = ((serve_thread_args*)input)->op_code;
+	void* message = ((serve_thread_args*)input)->message;
 
 	if(op_code != OPERATION_CATCH)
 		log_error(logger, "Aca nunca llego");
@@ -57,8 +57,8 @@ void serve_catch(void* input){
 }
 
 void serve_get(void* input){
-	operation_code op_code = ((struct serve_thread_args*)input)->op_code;
-	void* message = ((struct serve_thread_args*)input)->message;
+	operation_code op_code = ((serve_thread_args*)input)->op_code;
+	void* message = ((serve_thread_args*)input)->message;
 
 	if(op_code != OPERATION_GET)
 		log_error(logger, "Aca nunca llego");

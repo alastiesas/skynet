@@ -39,6 +39,7 @@ pthread_t get_thread;
 
 
 void gameboy_function(void);
+void message_function(void (*function)(void*), queue_code queue_code);
 void new_function(void);
 void catch_function(void);
 void get_function(void);

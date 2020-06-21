@@ -10,14 +10,13 @@ void gameboy_function(void){
 	//TODO crear servidor para atender mensajes de gameboy
 }
 
-void new_function(void){
-
+void message_function(void (*function)(void*), queue_code queue_code){
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->logger = logger;
-	args->function = &serve_new;
+	args->function = function;
 
 	while(1){
-		int32_t socket_cliente = suscribe_to_broker(COLA_NEW);
+		int32_t socket_cliente = suscribe_to_broker(queue_code);
 
 		args->socket = socket_cliente;
 
@@ -29,48 +28,21 @@ void new_function(void){
 		else
 			log_warning(logger, "Aca nunca llego");
 	}
+}
+
+void new_function(void){
+
+	message_function(&serve_new, COLA_NEW);
 }
 
 void catch_function(void){
 
-	struct thread_args* args = malloc(sizeof(struct thread_args));
-	args->logger = logger;
-	args->function = &serve_catch;
-
-	while(1){
-		int32_t socket_cliente = suscribe_to_broker(COLA_CATCH);
-
-		args->socket = socket_cliente;
-
-		int32_t result = listen_messages(args);
-		if(result == -2){
-			log_info(logger, "Se vuelve a conectar en %d segundos", TIEMPO_DE_REINTENTO_CONEXION);
-			sleep(TIEMPO_DE_REINTENTO_CONEXION);
-		}
-		else
-			log_warning(logger, "Aca nunca llego");
-	}
+	message_function(&serve_catch, COLA_CATCH);
 }
 
 void get_function(void){
 
-	struct thread_args* args = malloc(sizeof(struct thread_args));
-	args->logger = logger;
-	args->function = &serve_get;
-
-	while(1){
-		int32_t socket_cliente = suscribe_to_broker(COLA_GET);
-
-		args->socket = socket_cliente;
-
-		int32_t result = listen_messages(args);
-		if(result == -2){
-			log_info(logger, "Se vuelve a conectar en %d segundos", TIEMPO_DE_REINTENTO_CONEXION);
-			sleep(TIEMPO_DE_REINTENTO_CONEXION);
-		}
-		else
-			log_warning(logger, "Aca nunca llego");
-	}
+	message_function(&serve_get, COLA_GET);
 }
 
 int32_t suscribe_to_broker(queue_code queue_code) {
