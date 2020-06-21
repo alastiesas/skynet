@@ -189,6 +189,8 @@ void generic_initialization();
 
 void specific_initialization();
 
+void initialize_queues();
+
 void config_init();
 void semaphores_init();
 
