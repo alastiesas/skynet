@@ -27,7 +27,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
 
 	//quedo vivo hasta que termine el tiempo de suscripcion
-	sleep(time);
+	sleep(time);	//TODO si se cierra la conexion, se queda en el sleep sin hacer nada, hay que reconectar?
 
 	log_info(logger, "El gameboy no reconecta");
 	printf("TODO: enviar mensaje de fin de suscripcion para liberar memoria del broker\n");

@@ -4,17 +4,23 @@ void initialization() {
 
 	generic_initialization();
 	specific_initialization();
+	initialize_queues();
+	config_init();
+	semaphores_init();
 }
 
 void generic_initialization() {
 
-	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_TRACE); //pending clean
-	config = config_create("broker.config"); //pending clean
+	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_TRACE);
+	if((config = config_create("broker.config")) == NULL)
+		log_error(logger, "ERROR DE CONFIG");
 	IP = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PUERTO_BROKER");
 }
 
 void initialize_queues() {
+	queues = malloc(sizeof(t_queues));
+
 	queues->APPEARED_POKEMON = list_create();
 	suscribers->APPEARED = list_create();
 	queues->CATCH_POKEMON = list_create();
@@ -39,26 +45,59 @@ void initialize_queues() {
 void specific_initialization() {
 
 	ID_GLOBAL = 1;
-
-	memory_size = atoi(config_get_string_value(config, "TAMANO_MEMORIA"));
-	min_partition_size = config_get_string_value(config, "TAMANO_MINIMO_PARTICION");
-
-	memory_algorithm = config_get_string_value(config, "ALGORITMO_MEMORIA");
-
-	free_partition_algorithm = config_get_string_value(config, "ALGORITMO_PARTICION_LIBRE");
-	compaction_frequency = atoi(config_get_string_value(config, "FRECUENCIA_COMPACTACION"));
-
-	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
+	pthread_mutex_init(&mutex_ID_global, NULL);
+	pthread_mutex_init(&(mutex_cache), NULL);
 
 	count = 0;
 
-
 	//memory_init();
 
-
-
-	queues = malloc(sizeof(t_queues));
 	suscribers = malloc(sizeof(t_suscribers));
+
+
+	total_new_messages = 0;
+	total_appeared_messages = 0;
+	total_catch_messages = 0;
+	total_caught_messages = 0;
+	total_get_messages = 0;
+	total_localized_messages = 0;
+
+
+}
+
+void config_init(){
+	memory_size = atoi(config_get_string_value(config, "TAMANO_MEMORIA"));
+	log_info(logger, "Tamano memoria: %d", memory_size);
+	//TODO comprobar que sea 2^n para buddy
+
+	min_partition_size = atoi(config_get_string_value(config, "TAMANO_MINIMO_PARTICION"));
+	log_info(logger, "Tamano minimo particion: %d", min_partition_size);
+	compaction_frequency = atoi(config_get_string_value(config, "FRECUENCIA_COMPACTACION"));
+	log_info(logger, "Frecuencia compactacion: %d", compaction_frequency);
+
+	memory_algorithm = config_get_string_value(config, "ALGORITMO_MEMORIA");
+	if(strcmp(memory_algorithm, "PARTICIONES") != 0 && strcmp(memory_algorithm, "BS") != 0 && strcmp(memory_algorithm, "DEFAULT") != 0){
+		log_error(logger, "error ALGORITMO_MEMORIA");
+		exit(-1);
+	}
+	log_info(logger, "Algoritmo memoria: %s", memory_algorithm);
+
+	free_partition_algorithm = config_get_string_value(config, "ALGORITMO_PARTICION_LIBRE");
+	if(strcmp(free_partition_algorithm, "FF") != 0 && strcmp(free_partition_algorithm, "BF") != 0){
+		log_error(logger, "error ALGORITMO_PARTICION_LIBRE");
+		exit(-1);
+	}
+	log_info(logger, "Algoritmo particion libre: %s", free_partition_algorithm);
+
+	replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
+	if(strcmp(replacement_algorithm, "FIFO") != 0 && strcmp(replacement_algorithm, "LRU") != 0){
+		log_error(logger, "error ALGORITMO_REEMPLAZO");
+		exit(-1);
+	}
+	log_info(logger, "Algoritmo reemplazo: %s", replacement_algorithm);
+
+}
+void semaphores_init(){
 	semaphores_new = malloc(sizeof(t_semaforos));
 	semaphores_appeared = malloc(sizeof(t_semaforos));
 	semaphores_get = malloc(sizeof(t_semaforos));
@@ -66,9 +105,6 @@ void specific_initialization() {
 	semaphores_catch = malloc(sizeof(t_semaforos));
 	semaphores_caught = malloc(sizeof(t_semaforos));
 
-	initialize_queues();
-
-	pthread_mutex_init(&mutex_ID_global, NULL);
 
 	pthread_mutex_init(&(semaphores_new->mutex_cola), NULL);
 	pthread_mutex_init(&(semaphores_appeared->mutex_cola), NULL);
@@ -84,29 +120,18 @@ void specific_initialization() {
 	pthread_mutex_init(&(semaphores_catch->mutex_subs), NULL);
 	pthread_mutex_init(&(semaphores_caught->mutex_subs), NULL);
 
-	//sem_init(&(semaphores_new->nuevo_mensaje), 0, 0);
-
 	pthread_cond_init(&(semaphores_new->broadcast), NULL);
 	pthread_cond_init(&(semaphores_appeared->broadcast), NULL);
 	pthread_cond_init(&(semaphores_get->broadcast), NULL);
 	pthread_cond_init(&(semaphores_localized->broadcast), NULL);
 	pthread_cond_init(&(semaphores_catch->broadcast), NULL);
 	pthread_cond_init(&(semaphores_caught->broadcast), NULL);
-
-	total_new_messages = 0;
-	total_appeared_messages = 0;
-	total_catch_messages = 0;
-	total_caught_messages = 0;
-	total_get_messages = 0;
-	total_localized_messages = 0;
-
-	pthread_mutex_init(&(mutex_cache), NULL);
 }
 
 void behavior() {
 
 	pthread_create(&listening_thread, NULL, (void*) listening, NULL);
-	pthread_join(listening_thread, NULL);	//esa linea pending_clean en while(1) estaba consumiendo t0do el cpu hace meses jaja
+	pthread_join(listening_thread, NULL);
 }
 
 void listening() {

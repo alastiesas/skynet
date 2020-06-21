@@ -15,7 +15,7 @@
 char* IP;
 char* PORT;
 uint32_t memory_size;
-char* min_partition_size;
+uint32_t min_partition_size;
 char* memory_algorithm;
 char* replacement_algorithm;
 char* free_partition_algorithm; //rename
@@ -34,7 +34,6 @@ typedef struct
 	uint32_t bytes;
 
 } t_pending;
-
 
 typedef struct
 {
@@ -98,13 +97,13 @@ typedef struct
 
 	pthread_mutex_t mutex_cola;
 	pthread_mutex_t mutex_subs;
-	sem_t nuevo_mensaje;	//solo para probar lo use
 
 	pthread_cond_t broadcast;
 
 } t_semaforos;
 
 typedef struct {
+	uint32_t ID_message;
 	bool available;
 	void* final_position;
 	void* initial_position;
@@ -117,7 +116,7 @@ t_list* partitions;
 pthread_mutex_t mutex_cache;
 
 uint32_t ID_GLOBAL;
-uint32_t size_subs_new;			//para mantener la cantidad de suscriptores tambien hay que usar semaforos?
+uint32_t size_subs_new;			//TODO para mantener la cantidad de suscriptores tambien hay que usar semaforos?
 uint32_t size_subs_appeared;
 uint32_t size_subs_get;
 uint32_t size_subs_localized;
@@ -161,7 +160,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 
 void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas);
 
-//TODO
+
 void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t* total_queue_messages);
 
 //mutex funciona sin pasarlo como puntero??
@@ -190,6 +189,9 @@ void generic_initialization();
 
 void specific_initialization();
 
+void config_init();
+void semaphores_init();
+
 void behavior();
 
 void listening();
@@ -205,6 +207,7 @@ void memory_init();
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes);
 
 void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data);
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data);
 int32_t find_free_position();
 void free_some_space();
 
