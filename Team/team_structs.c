@@ -146,14 +146,20 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 
 void add_pokemon(t_trainer* trainer, char*pokemon)
 {
-	printf("ROMPE EN REALLOC\n");
-	realloc(trainer->pokemons,sizeof(trainer->pokemons)+1);
 	uint32_t i = 0;
 	printf("ROMPE EN EL WHILE\n");
 	while(trainer->pokemons[i] != NULL)
 	{
 		i++;
 	}
+	uint32_t new_size = i+1;
+	printf("ROMPE EN REALLOC\n");
+	printf("the size old is: %d\n", i);
+	printf("the size new is: %d\n", new_size);
+	//array, array_size * sizeof(*array)
+	// EL POBLEMA ESTA EN ESE REALLOC
+	trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(*(trainer->pokemons)));
+
 
 	printf("ROMPE EN EL MEMCPY\n");
 	trainer->pokemons[i] = malloc(strlen(pokemon)+1);

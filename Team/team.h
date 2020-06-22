@@ -75,7 +75,9 @@ t_list* trainer_actual_list_by_id(uint32_t id);
 //objetivos
 void add_caught(t_list* list, char* pokemon);
 bool success_global_objective(t_list* global_objectives);
-bool pokemon_is_needed(char* pokemon);
+bool pokemon_is_needed(char* pokemon,char* channel);
+bool pokemon_is_needed_on_pokemap(char* pokemon);
+bool pokemon_is_needed_on_trainer(char* pokemon);
 //Pasar a diccionario ?
 void add_catching(t_list* list, char* pokemon);
 void sub_catching(t_list* list, char* pokemon);
@@ -235,7 +237,7 @@ void sub_catching(t_list* list, char* pokemon)
 }
 
 
-bool pokemon_is_needed(char* pokemon)
+bool pokemon_is_needed(char* pokemon,char* channel)
 {
 	printf("Consultando si %s esta en la lista de objetivos\n", pokemon);
 	//t_objective* test = (t_objective*) list_get(objectives_list,0);
@@ -245,8 +247,12 @@ bool pokemon_is_needed(char* pokemon)
 
 	if(objective == NULL)
 		printf("no necesitamos un %s\n", pokemon);
-	else
-		needed = objective->count > (objective->caught + objective->catching);
+	else{
+		if(strcmp(channel,"trainer") == 0)
+			needed = objective->count > (objective->caught + objective->catching);
+		else
+			needed = 1;
+	}
 
 	//DEBUG DE PRUEBA
 	printf("objective count ->> %d\n",objective->count);
@@ -255,6 +261,15 @@ bool pokemon_is_needed(char* pokemon)
 	printf("result is %d\n",needed);
 	//return (objective->count > (objective->caught + objective->catching));
 	return needed;
+}
+bool pokemon_is_needed_on_trainer(char* pokemon)
+{
+	return pokemon_is_needed(pokemon,"trainer");
+}
+
+bool pokemon_is_needed_on_pokemap(char* pokemon)
+{
+	return pokemon_is_needed(pokemon,"pokemap");
 }
 
 t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* trainer)
@@ -362,7 +377,7 @@ void long_thread() {
 	while(1){
 		sem_wait(&sem_long);
 		sem_wait(&sem_scheduler);
-		printf("esta aca??\n");
+		//printf("esta aca??\n");
 		long_term_scheduler();
 		sem_post(&sem_scheduler);
 		sem_post(&sem_short);
@@ -377,7 +392,7 @@ void* short_thread()
 		sem_wait(&sem_short);
 		sem_wait(&sem_scheduler);
 		//printf("esta wacho aca??\n");
-		debug_message_list();
+		//debug_message_list();
 		short_term_scheduler();
 		sem_post(&sem_scheduler);
 	}
@@ -501,7 +516,7 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 	t_link_element* element = positions->head;
 	t_position* position;
 	int32_t i = -1;
-	if(pokemon_is_needed(pokemon)){
+	if(pokemon_is_needed_on_trainer(pokemon)){
 		while(element != NULL) {
 			position = (t_position*) element->data;
 			// se remplaza la position por lo que devuelva del diccionario
@@ -828,7 +843,7 @@ void process_message(serve_thread_args* args) {
 		printf("POSITION: (%d, %d) ", ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
 		printf("]\n");
 		//SOLO SE AGREGA SI ES REQUERIDO EN OBJETIVOS GLOBALES
-		if(pokemon_is_needed(((t_message_appeared*)(message))->pokemon_name)){
+		if(pokemon_is_needed_on_pokemap(((t_message_appeared*)(message))->pokemon_name)){
 			add_to_poke_map(((t_message_appeared*)(message))->pokemon_name,((t_message_appeared*)(message))->position);
 			//long_term_scheduler();
 			sem_post(&sem_long);
