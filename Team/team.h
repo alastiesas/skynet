@@ -400,8 +400,21 @@ void* short_thread()
 }
 
 void long_term_scheduler(){
+
+	//PRUEBAAAAA
+	if(success_global_objective(objectives_list)) {
+		printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
+		printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
+		sleep(999);
+	}else {
+		printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
+		printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
+		sleep(10);
+	}
+
 	//printf("BEFORE dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	dictionary_iterator(poke_map, &trainer_assign_job);
+
 	//printf("AFTER dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
 }

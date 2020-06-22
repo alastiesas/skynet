@@ -51,7 +51,12 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	sem_init(&trainer->sem_thread, 0, 0);
 	trainer->position = position;
 	trainer->objectives = objectives;
-	trainer->pokemons = pokemons;
+	uint32_t inventory_size = string_list_size(objectives);
+	trainer->pokemons = calloc(inventory_size+1, sizeof(char*));
+	for(int i = 0; i < inventory_size;i++) {
+		trainer->pokemons[i] = pokemons[i];
+	}//PRUEBA CALLOC A VER SI ANDA
+	//trainer->pokemons = pokemons;
 	debug_trainer(trainer);
 	return trainer;
 }
@@ -152,21 +157,15 @@ void add_pokemon(t_trainer* trainer, char*pokemon)
 	{
 		i++;
 	}
-	uint32_t new_size = i+1;
-	printf("ROMPE EN REALLOC\n");
+	//printf("ROMPE EN REALLOC\n");
 	printf("the size old is: %d\n", i);
-	printf("the size new is: %d\n", new_size);
 	//array, array_size * sizeof(*array)
 	// EL POBLEMA ESTA EN ESE REALLOC
-	trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(*(trainer->pokemons)));
-
+	//trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(char*));//PRUEBA CALLOC
 
 	printf("ROMPE EN EL MEMCPY\n");
 	trainer->pokemons[i] = malloc(strlen(pokemon)+1);
-	memcpy(trainer->pokemons[i],pokemon, strlen(pokemon)+1);
-
-	printf("ROMPE EL NULL\n");
-	trainer->pokemons[i+1] = NULL;
+	memcpy(trainer->pokemons[i], pokemon, strlen(pokemon)+1);
 }
 
 bool trainer_success_objective(t_trainer* trainer)
