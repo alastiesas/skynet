@@ -142,6 +142,66 @@ uint32_t get_available_partition_number(uint32_t size) {
 	return partition_number;
 }
 
+uint32_t get_available_partition_number_buddy(uint32_t size) {
+
+	t_partition* partition;
+	uint32_t partition_number = -1;
+
+	uint32_t partition_size = get_buddy_partition_size(size);
+
+	bool partition_finded = false;
+
+	if (strcmp(free_partition_algorithm, "BF") == 0) {
+
+		for (int i = 0; !partition_finded && i < list_size(partitions); i++) {
+
+			partition = list_get(partitions, i);
+			if (partition->available == true && partition->size == partition_size) {
+
+				partition_finded = true;
+				partition_number = i;
+			}
+		}
+
+		if (!partition_finded) {
+			// TODO particionar?
+		}
+	} else if (strcmp(free_partition_algorithm, "FF") == 0) {
+
+		for (int i = 0; partition_number == -1 && i < list_size(partitions);
+				i++) {
+
+			partition = list_get(partitions, i);
+			if (partition->available == true && partition->size >= size) {
+
+				if (partition->size == partition_size) {
+					partition_number = i;
+				}else {
+					//TODO particionar?
+				}
+
+			}
+		}
+	}
+
+	return partition_number;
+}
+
+uint32_t get_buddy_partition_size(uint32_t size){
+
+	uint32_t potencia = 1;
+
+	uint32_t partition_size = pow(2, potencia);
+
+	while(partition_size < size){
+		potencia++;
+		partition_size = pow(2, potencia);
+	}
+
+	return partition_size;
+
+}
+
 uint32_t get_partition_number_to_delete() {
 
 	t_partition* partition;

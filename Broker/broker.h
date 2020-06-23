@@ -11,6 +11,7 @@
 #include<commons/collections/queue.h>
 #include <conexion.h>
 #include <mensajes.h>
+#include <math.h>
 
 char* IP;
 char* PORT;
@@ -227,6 +228,8 @@ void delete_fixed_partition();
 void delete_partition();
 t_partition* find_available_dynamic_partition(uint32_t size);
 uint32_t get_available_partition_number(uint32_t size);
+uint32_t get_available_partition_number_buddy(uint32_t size);
+uint32_t get_buddy_partition_size(uint32_t size);
 void memory_compaction();
 void merge_partitions(uint32_t initial_partition_number, uint32_t final_partition_number);
 
