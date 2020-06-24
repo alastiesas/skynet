@@ -68,9 +68,9 @@ void delete_partition() {
 
 }
 
-uint32_t find_available_dynamic_partition(uint32_t size) {
+int32_t __find_available_dynamic_partition(uint32_t size) {
 
-	uint32_t available_partition_number;
+	int32_t available_partition_number;
 
 	do {
 
@@ -99,6 +99,46 @@ uint32_t find_available_dynamic_partition(uint32_t size) {
 	return available_partition_number;
 }
 
+
+int32_t find_available_dynamic_partition(uint32_t size){
+	int32_t available_partition_number = -1;
+	uint32_t current_compation_value = compaction_frequency;
+
+	if(compaction_frequency == -1){	//no se compacta nunca
+		while(available_partition_number != -1){
+
+			available_partition_number = get_available_partition_number(size);
+			if(available_partition_number != -1)
+				return available_partition_number;
+			delete_dynamic_partition();
+
+		}
+	}
+
+	while(available_partition_number != -1){
+
+		while(current_compation_value > 1){ //cantidad de veces (frecuencia - 1) (hasta n-1)
+			available_partition_number = get_available_partition_number(size);
+			if(available_partition_number != -1)
+				return available_partition_number;
+			delete_dynamic_partition();
+			current_compation_value--;
+		}
+
+		available_partition_number = get_available_partition_number(size);
+		if(available_partition_number == -1){
+			memory_compaction();
+			current_compation_value = compaction_frequency;
+			available_partition_number = get_available_partition_number(size);
+			if(available_partition_number == -1)
+				delete_dynamic_partition();
+		}
+
+	}
+
+	return available_partition_number;
+}
+
 void merge_partitions(uint32_t initial_partition_number, uint32_t final_partition_number) {
 
 	t_partition* initial_partition = list_get(partitions, initial_partition_number);
@@ -109,10 +149,10 @@ void merge_partitions(uint32_t initial_partition_number, uint32_t final_partitio
 	list_remove(partitions, final_partition_number); //TOD change para que libere memoria
 }
 
-uint32_t get_available_partition_number(uint32_t size) {
+int32_t get_available_partition_number(uint32_t size) {
 
 	t_partition* partition;
-	uint32_t partition_number = -1;
+	int32_t partition_number = -1;
 
 	if (strcmp(free_partition_algorithm, "BF") == 0) {
 
@@ -232,6 +272,9 @@ uint32_t get_partition_number_to_delete() {
 			}
 		}
 	}
+
+	if(list_size(partitions) == 1)//TODO
+		log_error(logger, "VA A EXPLOTAR TODO SI SE BORRA LA ULTIMA PARTICION");
 
 	return partition_number;
 }

@@ -20,7 +20,7 @@ uint32_t min_partition_size;
 char* memory_algorithm;
 char* replacement_algorithm;
 char* free_partition_algorithm; //rename
-uint32_t compaction_frequency;
+int32_t compaction_frequency;
 uint32_t count; //rename
 
 void* mem;
@@ -227,8 +227,9 @@ void create_partition(uint32_t size);
 void delete_dynamic_partition();
 void delete_fixed_partition();
 void delete_partition();
-uint32_t find_available_dynamic_partition(uint32_t size);
-uint32_t get_available_partition_number(uint32_t size);
+int32_t __find_available_dynamic_partition(uint32_t size);
+int32_t find_available_dynamic_partition(uint32_t size);
+int32_t get_available_partition_number(uint32_t size);
 uint32_t get_available_partition_number_buddy(uint32_t size);
 uint32_t get_buddy_partition_size(uint32_t size);
 void memory_compaction();

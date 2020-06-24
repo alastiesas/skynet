@@ -85,8 +85,8 @@ void config_init(){
 		log_info(logger, "Tamano minimo particion: %d", min_partition_size);
 		compaction_frequency = atoi(config_get_string_value(config, "FRECUENCIA_COMPACTACION"));
 		log_info(logger, "Frecuencia compactacion: %d", compaction_frequency);
-
-
+			if(compaction_frequency == 0)
+				compaction_frequency = 1;
 
 		free_partition_algorithm = config_get_string_value(config, "ALGORITMO_PARTICION_LIBRE");
 		if(strcmp(free_partition_algorithm, "FF") != 0 && strcmp(free_partition_algorithm, "BF") != 0){
