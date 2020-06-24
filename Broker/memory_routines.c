@@ -115,7 +115,7 @@ int32_t find_available_dynamic_partition(uint32_t size){
 		}
 	}
 
-	while(available_partition_number != -1){
+	while(available_partition_number == -1){
 
 		while(current_compation_value > 1){ //cantidad de veces (frecuencia - 1) (hasta n-1)
 			available_partition_number = get_available_partition_number(size);

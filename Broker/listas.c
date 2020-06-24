@@ -114,6 +114,7 @@ void dump_cache(void){
 			string_append(&dump, size);
 			free(size);
 			string_append(&dump, "b");
+
 		}
 		else{
 			string_append(&dump, ".\t[X]");
@@ -122,20 +123,29 @@ void dump_cache(void){
 			string_append(&dump, size);
 			free(size);
 			string_append(&dump, "b");
-			string_append(&dump, "\tLRU: ");
-			char* lru = string_itoa(partition->lru);
-			string_append(&dump, lru);
-			free(lru);
-
-			string_append(&dump, "\tCola: ");
-			char* cola = queue_to_string(partition->queue_code);
-			string_append(&dump, cola);
-			//free(cola);	//no hace malloc
+			if(partition->size < min_partition_size){
+				string_append(&dump, " (");
+				char* min_size = string_itoa(min_partition_size);
+				string_append(&dump, min_size);
+				free(min_size);
+				string_append(&dump, "b)");
+			}
+			if(strcmp(replacement_algorithm, "LRU") == 0){
+				string_append(&dump, "\tLRU: ");
+				char* lru = string_itoa(partition->lru);
+				string_append(&dump, lru);
+				free(lru);
+			}
 
 			string_append(&dump, "\tID: ");
 			char* ID = string_itoa(partition->ID_message);
 			string_append(&dump, ID);
 			free(ID);
+
+			string_append(&dump, "\tCola: ");
+			char* cola = queue_to_string(partition->queue_code);
+			string_append(&dump, cola);
+			//free(cola);	//no hace malloc
 
 		}
 	}
@@ -154,17 +164,17 @@ void dump_cache(void){
 char* queue_to_string(queue_code queue_code){
 	switch(queue_code){
 	case COLA_NEW:
-		return "NEW_POKEMON";
+		return "NEW_PK";
 	case COLA_APPEARED:
-		return "APPEARED_POKEMON";
+		return "APPEARED_PK";
 	case COLA_GET:
-		return "GET_POKEMON";
+		return "GET_PK";
 	case COLA_LOCALIZED:
-		return "LOCALIZED_POKEMON";
+		return "LOCALIZED_PK";
 	case COLA_CATCH:
-		return "CATCH_POKEMON";
+		return "CATCH_PK";
 	case COLA_CAUGHT:
-		return "CAUGHT_POKEMON";
+		return "CAUGHT_PK";
 	default:
 		return "No existe";
 
