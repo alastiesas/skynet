@@ -164,40 +164,38 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 }
 
 void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data){
-/*
-	uint32_t free_partition_index = find_free_partition_index(size_message);
 
-	if(free_partition_index != -1){
+	t_partition* new_partition = malloc(sizeof(t_partition));
+	new_partition->ID_message = message_id;
+	new_partition->available = false;
+	new_partition->size = size_message;
+	//TODO agregar lru si corresponde
 
-		t_partition* new_partition = malloc(sizeof(*new_partition));
+	pthread_mutex_lock(&(mutex_cache));
+	//buscar la posicion para la particion nueva (eliminar mensajes si corresponde)
+	uint32_t free_partition_index = find_available_dynamic_partition(size_message);
+	if(free_partition_index != NULL){
 
-		//Creo la nueva particion nueva
-		new_partition->free = false;
-		new_partition->size = size_message;
-		new_partition->end_pos = new_partition->start_pos + size_message;
-
-
-		t_partition *free_partition = (t_partition*)list_get(partitions, free_partition_index);
-
-		new_partition->start_pos = free_partition->start_pos;
-
-
-		//Muevo la particion libre
-		free_partition->start_pos = free_partition->start_pos + size_message;
-		free_partition->size = free_partition->size - size_message;
-
-		//grabo el mensaje en la posicion
-		memmove(new_partition->start_pos, message_data, size_message);
-		free(message_data);	//nadie va a volver a usar los datos en cola en modo con memoria
-
+		//actualizar la posicion de la particion nueva, y agregar a la lista
+		t_partition* free_partition = (t_partition*)list_get(partitions, free_partition_index);
+		new_partition->initial_position = free_partition->initial_position;
+		new_partition->final_position = new_partition->initial_position + new_partition->size;
+		free_partition->initial_position = new_partition->final_position;
+		free_partition->size = free_partition->size - new_partition->size;
+		//TODO actualizar lru's antes de agregar a la lista
 		list_add_in_index(partitions, free_partition_index, new_partition);
 
+		//guardar el message_data en la particion
+		memmove(new_partition->initial_position, message_data, size_message);
 
 	}
+	else{
+		log_error(logger, "No hay particion disponible");
+		free(new_partition);
+	}
+	pthread_mutex_unlock(&(mutex_cache));
 
-	else
-		free_some_space();
-	*/
+		free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 }
 
 void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data){

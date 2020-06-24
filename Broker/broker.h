@@ -226,7 +226,7 @@ void create_partition(uint32_t size);
 void delete_dynamic_partition();
 void delete_fixed_partition();
 void delete_partition();
-t_partition* find_available_dynamic_partition(uint32_t size);
+uint32_t find_available_dynamic_partition(uint32_t size);
 uint32_t get_available_partition_number(uint32_t size);
 uint32_t get_available_partition_number_buddy(uint32_t size);
 uint32_t get_buddy_partition_size(uint32_t size);

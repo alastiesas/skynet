@@ -68,7 +68,7 @@ void delete_partition() {
 
 }
 
-t_partition* find_available_dynamic_partition(uint32_t size) {
+uint32_t find_available_dynamic_partition(uint32_t size) {
 
 	uint32_t available_partition_number;
 
@@ -96,7 +96,7 @@ t_partition* find_available_dynamic_partition(uint32_t size) {
 		}
 	} while (available_partition_number == -1);
 
-	return list_get(partitions, available_partition_number);
+	return available_partition_number;
 }
 
 void merge_partitions(uint32_t initial_partition_number, uint32_t final_partition_number) {
