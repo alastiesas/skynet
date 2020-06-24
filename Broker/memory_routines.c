@@ -248,19 +248,19 @@ uint32_t get_partition_number_to_delete() {
 	uint32_t partition_number;
 
 	if (strcmp(replacement_algorithm, "FIFO") == 0) {
+		uint32_t min_id = 999999999;
 
 		for (int i = 0; i < list_size(partitions); i++) {
 
 			partition = list_get(partitions, i);
-			if (partition->available == false) {
+			if (partition->available == false && partition->ID_message < min_id) {
 
 				partition_number = i;
-				break;
+				min_id = partition->ID_message;
 			}
 		}
 	} else if (strcmp(replacement_algorithm, "LRU") == 0) {
-
-		uint32_t max_lru = -1;
+		int32_t max_lru = -1;
 
 		for (int i = 0; i < list_size(partitions); i++) {
 
