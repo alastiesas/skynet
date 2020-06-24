@@ -53,8 +53,10 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	trainer->objectives = objectives;
 	uint32_t inventory_size = string_list_size(objectives);
 	trainer->pokemons = calloc(inventory_size+1, sizeof(char*));
-	for(int i = 0; i < inventory_size;i++) {
+	uint32_t i = 0;
+	while(pokemons[i] != NULL) {
 		trainer->pokemons[i] = pokemons[i];
+		i++;
 	}//PRUEBA CALLOC A VER SI ANDA
 	//trainer->pokemons = pokemons;
 	debug_trainer(trainer);
@@ -213,3 +215,18 @@ bool trainer_success_objective(t_trainer* trainer)
 	//ACA HAY QUE LIMPIAR EL DICCIONARIO TODO
 	return success;
 }
+
+bool trainer_locked(t_trainer* trainer) {
+	bool locked = false;
+	//FREE
+	if(trainer->action == FREE){
+		if(trainer_full(trainer)) {
+			if(!trainer_success_objective(trainer)) {
+				locked = true;
+			}
+		}
+	}
+
+	return locked;
+}
+

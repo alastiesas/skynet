@@ -11,7 +11,7 @@
 #include"includes.h"
 #include"utilities.h"
 #include"team_structs.h"
-
+#define DEADLOCK_PRIORITY 5
 //---GLOBALS---
 
 //logs: pueden desactivarse para no mostrarse en consola
@@ -39,6 +39,9 @@ t_list* exit_list;
 //planificacion
 uint32_t context_changes = 0;
 uint32_t cpu_cycles = 0;
+uint32_t deadlock_priority;
+uint32_t deadlocks = 0;
+uint32_t solved_deadlocks = 0;
 
 //comunicacion
 t_list* messages_list;
@@ -97,6 +100,7 @@ void transition_block_to_exit(uint32_t index);
 
 //planificacion
 void long_term_scheduler();
+void deadlock_detector();
 void* short_thread();
 void fifo_algorithm();
 void rr_algorithm();
@@ -255,10 +259,12 @@ bool pokemon_is_needed(char* pokemon,char* channel)
 	}
 
 	//DEBUG DE PRUEBA
+	/*
 	printf("objective count ->> %d\n",objective->count);
 	printf("objective caught ->> %d\n",objective->caught);
 	printf("objective catching ->> %d\n",objective->catching);
 	printf("result is %d\n",needed);
+	*/
 	//return (objective->count > (objective->caught + objective->catching));
 	return needed;
 }
@@ -409,14 +415,41 @@ void long_term_scheduler(){
 	}else {
 		printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
 		printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
-		sleep(10);
+		sleep(2);
 	}
 
 	//printf("BEFORE dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
+
+	//revisar size ready
+	uint32_t size_ready = list_size(ready_list);
+
 	dictionary_iterator(poke_map, &trainer_assign_job);
+
+	//aumento el size del ready? SINO CORRO DEAD LOCK
+
+
+	if(size_ready == list_size(ready_list)) {
+		deadlock_priority++;
+	}
+	//PONERLE DEFINE
+	if((list_size(ready_list) == 0 && list_size(exec_list) == 0) || deadlock_priority == DEADLOCK_PRIORITY) {
+		deadlock_detector();//DETECTOR DE DEADLOCKS
+	}
+	//RAZONES PARA CORRER DETECTOR DE DL
+	//loop SHORT LONG -> EXEC = 0 READY = 0
 
 	//printf("AFTER dictionary_iterator(poke_map, &trainer_assign_job);\n");//TODO BORRAR ESTE LOG
 	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
+}
+
+void deadlock_detector() {
+
+	uint32_t locked = list_count_satisfying(block_list, &trainer_locked);
+	if(locked >1) {
+		deadlocks ++;
+	}
+	//si se encuentra deadlock deadlocks ++
+	//si se soluciona deadlock solved ++
 }
 
 void short_term_scheduler()
@@ -845,7 +878,7 @@ void process_message(serve_thread_args* args) {
 	void* message = args->message;
 	switch(op_code) {
 	case OPERATION_NEW:
-		printf("SE RECIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------\n");
 	break;
 	case OPERATION_APPEARED:
 		printf("SE RECIBIO UN  APPEARED [");
@@ -864,7 +897,7 @@ void process_message(serve_thread_args* args) {
 		debug_colas();
 	break;
 	case OPERATION_GET:
-		printf("SE RECIBIO UN  GET, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  GET, PERO NO SE QUE HACER <----------------------------\n");
 	break;
 	case OPERATION_LOCALIZED:
 		printf("SE RECIBIO UN  LOCALIZED[");
@@ -883,7 +916,7 @@ void process_message(serve_thread_args* args) {
 		//TODO ¿gamecard contesta a los get?
 	break;
 	case OPERATION_CATCH:
-		printf("SE RECIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------");
+		printf("SE RECIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------\n");
 	break;
 	case OPERATION_CAUGHT:
 		printf("SE RECIBIO UN  CAUGHT [");
@@ -952,9 +985,9 @@ void process_message(serve_thread_args* args) {
 
 void subscribe(queue_code queue_code) {
 	printf("COD OPERATION%d\n", queue_code);
-	char* ip = config_get_string_value(config, "IP_BROKER");
-	char* port = config_get_string_value(config, "PUERTO_BROKER");
-	int32_t socket = connect_to_server(ip, port,retry_time,log);
+	char* ip_broker = config_get_string_value(config, "IP_BROKER");
+	char* port_broker = config_get_string_value(config, "PUERTO_BROKER");
+	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time,log);
 	uint32_t id = config_get_int_value(config, "ID");
 
 	t_package* package = serialize_suscripcion(id, queue_code);

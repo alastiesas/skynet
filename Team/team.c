@@ -22,15 +22,10 @@ void *myThreadFun(void *vargp)
 
 int main(void)
 {
-	char* ip;
-	char* puerto;
-
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
 	log_info(log, "STARTING TEAM PROGRAM, GOOD LUCK");
 
 	config = config_create("team.config");
-	ip = config_get_string_value(config, "IP");
-	puerto = config_get_string_value(config, "PUERTO");
 
 
 	subscribe(OPERATION_APPEARED);

@@ -110,6 +110,7 @@ bool trainer_free_space(t_trainer* trainer);
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
 int32_t closest_free_trainer(t_list* entrenadores, t_position* destiny);
 bool trainer_success_objective(t_trainer* trainer);
+bool trainer_locked(t_trainer* trainer);
 //FIN consultas
 
 #endif /* TEAM_STRUCTS_H_ */
