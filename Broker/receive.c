@@ -173,15 +173,27 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 
 	pthread_mutex_lock(&(mutex_cache));
 	//buscar la posicion para la particion nueva (eliminar mensajes si corresponde)
-	uint32_t free_partition_index = find_available_dynamic_partition(size_message);
+	uint32_t free_partition_index;
+	if(size_message < min_partition_size)
+		free_partition_index = find_available_dynamic_partition(min_partition_size);
+	else
+		free_partition_index = find_available_dynamic_partition(size_message);
 	if(free_partition_index != NULL){
 
 		//actualizar la posicion de la particion nueva, y agregar a la lista
 		t_partition* free_partition = (t_partition*)list_get(partitions, free_partition_index);
 		new_partition->initial_position = free_partition->initial_position;
-		new_partition->final_position = new_partition->initial_position + new_partition->size;
+
+		if(size_message < min_partition_size){
+			new_partition->final_position = new_partition->initial_position + min_partition_size;
+			free_partition->size = free_partition->size - min_partition_size;
+		}else{
+			new_partition->final_position = new_partition->initial_position + new_partition->size;
+			free_partition->size = free_partition->size - new_partition->size;
+		}
+
 		free_partition->initial_position = new_partition->final_position;
-		free_partition->size = free_partition->size - new_partition->size;
+
 		//TODO actualizar lru's antes de agregar a la lista
 		list_add_in_index(partitions, free_partition_index, new_partition);
 
