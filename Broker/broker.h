@@ -105,6 +105,7 @@ typedef struct
 
 typedef struct {
 	uint32_t ID_message;
+	queue_code queue_code;
 	bool available;
 	void* final_position;
 	void* initial_position;
@@ -178,7 +179,7 @@ queue_code receive_cola(uint32_t socket, t_log* logger);
 
 t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool response, t_log* logger);
 
-void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages, bool response);
+void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue_NEW, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages, bool response, queue_code queue_code);
 
 
 t_list* obtener_ids_pendientes(t_list* colaEnviados, t_list* colaAEnviar);
@@ -210,8 +211,8 @@ void create_first_partition(void* memory_initial_position, uint32_t memory_size)
 
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes);
 
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data);
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data);
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code);
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code);
 int32_t find_free_position();
 void free_some_space();
 

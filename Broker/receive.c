@@ -12,7 +12,7 @@ void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_
     pthread_mutex_lock(&(mutex));
     /* do something that might make condition true */
     	list_add(cola, t_mensaje);
-    	list_add(colaIds, t_mensaje->ID_mensaje);
+    	list_add(colaIds, (void*)(t_mensaje->ID_mensaje));
     	(*total_queue_messages)++;		//solo se suma, no se resta al eliminar mensajes.
     	pthread_cond_broadcast(&(semaforos->broadcast));
     pthread_mutex_unlock(&(mutex));
@@ -28,7 +28,7 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 		case OPERATION_NEW:
 			my_semaphores = semaphores_new;
 			count = &total_new_messages;
-			process_receive_message(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores, count, false);
+			process_receive_message(socket_cliente, logger, colas->NEW_POKEMON, colas->NEW_POKEMON_IDS, my_semaphores, count, false, COLA_NEW);
 			log_debug(logger, "Se notifico el mensaje new recibido");
 
 			break;
@@ -36,35 +36,35 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 		case OPERATION_APPEARED:
 			my_semaphores = semaphores_appeared;
 			count = &total_appeared_messages;
-			process_receive_message(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores, count, true);
+			process_receive_message(socket_cliente, logger, colas->APPEARED_POKEMON, colas->APPEARED_POKEMON_IDS, my_semaphores, count, true, COLA_APPEARED);
 
 			break;
 
 		case OPERATION_GET:
 			my_semaphores = semaphores_get;
 			count = &total_get_messages;
-			process_receive_message(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores, count, false);
+			process_receive_message(socket_cliente, logger, colas->GET_POKEMON, colas->GET_POKEMON_IDS, my_semaphores, count, false, COLA_GET);
 
 			break;
 
 		case OPERATION_LOCALIZED:
 			my_semaphores = semaphores_localized;
 			count = &total_localized_messages;
-			process_receive_message(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores, count, true);
+			process_receive_message(socket_cliente, logger, colas->LOCALIZED_POKEMON, colas->LOCALIZED_POKEMON_IDS, my_semaphores, count, true, COLA_LOCALIZED);
 
 			break;
 
 		case OPERATION_CATCH:
 			my_semaphores = semaphores_catch;
 			count = &total_catch_messages;
-			process_receive_message(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores, count, false);
+			process_receive_message(socket_cliente, logger, colas->CATCH_POKEMON, colas->CATCH_POKEMON_IDS, my_semaphores, count, false, COLA_CATCH);
 
 			break;
 
 		case OPERATION_CAUGHT:
 			my_semaphores = semaphores_caught;
 			count = &total_caught_messages;
-			process_receive_message(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores, count, true);
+			process_receive_message(socket_cliente, logger, colas->CAUGHT_POKEMON, colas->CAUGHT_POKEMON_IDS, my_semaphores, count, true, COLA_CAUGHT);
 
 			break;
 
@@ -126,7 +126,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 	return t_mensaje;
 }
 
-void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages, bool response){
+void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queue, t_list* queueIds, t_semaforos* semaforos, uint32_t* total_queue_messages, bool response, queue_code queue_code){
 	uint32_t size;
 	t_pending* t_mensaje;
 
@@ -150,9 +150,9 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//En el caso de trabajar con memoria, agregar el mensaje a memoria
 
 	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
-		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje);
+		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
 	else if(strcmp(memory_algorithm, "BS") == 0)
-		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje);
+		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
 
 //------------------------------------------------------------------------------------------------------
 
@@ -163,12 +163,13 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 
 }
 
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data){
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
 
 	t_partition* new_partition = malloc(sizeof(t_partition));
 	new_partition->ID_message = message_id;
 	new_partition->available = false;
 	new_partition->size = size_message;
+	new_partition->queue_code = queue_code;
 	//TODO agregar lru si corresponde
 
 	pthread_mutex_lock(&(mutex_cache));
@@ -210,7 +211,7 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 		free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 }
 
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data){
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
 
 	//Primero crear la t_partition nueva, no se necesita mutex hasta tocar la lista de particiones
 	//t0do el resto necesita el mismo mutex

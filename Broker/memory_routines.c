@@ -282,6 +282,7 @@ uint32_t get_partition_number_to_delete() {
 void memory_init() {
 
 	mem = malloc(memory_size);
+	partitions = list_create();
 	//create_dynamic_partition(memory_size);
 	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
 		create_first_partition(mem, memory_size);

@@ -43,7 +43,7 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 			*datos_mensaje = malloc(*bytes);
 			size = *bytes;
 			memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
-			if(elemento->ID_correlativo != NULL)
+			if(elemento->ID_correlativo != NULL)	//TODO como se pone elemento no inicializado?
 				*id_co = elemento->ID_correlativo;
 		}
 	pthread_mutex_unlock(&mutex_cola);
@@ -83,13 +83,13 @@ void dump_cache(void){
 	char* dump = string_new();
 	string_append(&dump, "\n-----------------------------------------------------------------------------------------------------------------------------\n");
 	string_append(&dump, "Dump: ");
-	char* time = temporal_get_string_time();
+	char* time = temporal_get_string_time();		//TODO esta la hora pero falta la fecha
 	string_append(&dump, time);
 	free(time);
 
 	uint32_t list_amount;
 	uint32_t i;
-	//mutex_particiones TODO
+
 	list_amount = list_size(partitions);
 	for(i=1; i<(list_amount + 1); i++){
 		t_partition* partition = list_get(partitions, (i-1));
@@ -126,11 +126,20 @@ void dump_cache(void){
 			char* lru = string_itoa(partition->lru);
 			string_append(&dump, lru);
 			free(lru);
-			//TODO agregar COLA
-			//TODO agregar ID
+
+			string_append(&dump, "\tCola: ");
+			char* cola = queue_to_string(partition->queue_code);
+			string_append(&dump, cola);
+			//free(cola);	//no hace malloc
+
+			string_append(&dump, "\tID: ");
+			char* ID = string_itoa(partition->ID_message);
+			string_append(&dump, ID);
+			free(ID);
+
 		}
 	}
-	//mutex_particiones TODO
+
 
 	string_append(&dump, "\n-----------------------------------------------------------------------------------------------------------------------------\n");
 
@@ -139,9 +148,31 @@ void dump_cache(void){
 	txt_close_file(file_dump);
 
 	free(dump);
+	printf("dump.txt creado\n");
 }
 
-//------------------------------------- Funciones de prueba
+char* queue_to_string(queue_code queue_code){
+	switch(queue_code){
+	case COLA_NEW:
+		return "NEW_POKEMON";
+	case COLA_APPEARED:
+		return "APPEARED_POKEMON";
+	case COLA_GET:
+		return "GET_POKEMON";
+	case COLA_LOCALIZED:
+		return "LOCALIZED_POKEMON";
+	case COLA_CATCH:
+		return "CATCH_POKEMON";
+	case COLA_CAUGHT:
+		return "CAUGHT_POKEMON";
+	default:
+		return "No existe";
+
+	}
+}
+
+
+//------------------------------------------------------------------------- Funciones de prueba
 
 void imprimir_lista(t_list* lista, char* nombre){
 	int tamanio = list_size(lista);

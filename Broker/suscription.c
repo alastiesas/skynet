@@ -31,10 +31,12 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	uint32_t ID_proceso;
 	ID_proceso = receive_ID_proceso(socket_cliente, logger);
 
-
 	//recibir la cola a suscribirse
 	queue_code cola;
 	cola = receive_cola(socket_cliente, logger);
+
+	if(size != sizeof(ID_proceso) + sizeof(cola))
+		log_error(logger, "Tamanio erroneo");
 
 	t_suscriber* suscriber;
 	char* queue_name;
