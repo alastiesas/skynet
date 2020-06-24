@@ -244,7 +244,7 @@ t_package* serialize_caught(t_message_caught* message) {
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_package* package = malloc(sizeof(t_package));
 
-	uint32_t buffer_size = sizeof(uint32_t)*2 + sizeof(bool);
+	uint32_t buffer_size = sizeof(uint32_t)*2 + sizeof(uint32_t);
 
 	package->operation_code = OPERATION_CAUGHT;
 	package->buffer = buffer;
@@ -263,7 +263,7 @@ t_package* serialize_caught(t_message_caught* message) {
 	memcpy(serialized + offset, &message->correlative_id, size);
 	offset += size;
 	//result
-	size = sizeof(bool);
+	size = sizeof(uint32_t);
 	memcpy(serialized + offset, &message->result, size);
 	offset += size;
 

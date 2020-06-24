@@ -11,6 +11,7 @@
 #include <string.h>	//para memcpy
 #include<sys/socket.h>
 #include<netdb.h>
+#include "conexion.h"
 
 
 #include "structs.h"

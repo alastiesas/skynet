@@ -91,7 +91,7 @@ t_message_catch* create_message_catch_long(char* pokemon, uint32_t position_x, u
 	return create_message_catch(pokemon, create_position(position_x, position_y));
 }
 
-t_message_caught* create_message_caught(uint32_t correlative_id, bool result) {
+t_message_caught* create_message_caught(uint32_t correlative_id, uint32_t result) {
 	t_message_caught* caught = malloc(sizeof(t_message_caught));
 	caught->id = 0; //El Broker se encarga de generar este dat
 	caught->correlative_id = correlative_id; //El que responde se encarga de generar este dato

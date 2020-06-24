@@ -118,7 +118,7 @@ typedef struct {
 typedef struct {
 	uint32_t id;
 	uint32_t correlative_id;
-	bool result;
+	uint32_t result;	//0(false) o 1(true)
 } t_message_caught;
 
 t_position* create_position(uint32_t position_x, uint32_t position_y);
@@ -128,7 +128,7 @@ t_message_appeared* create_message_appeared(uint32_t correlative_id, char* pokem
 t_message_appeared* create_message_appeared_long(uint32_t correlative_id, char* pokemon_name, uint32_t position_x, uint32_t position_y);
 t_message_catch* create_message_catch(char* pokemon_name, t_position* position);
 t_message_catch* create_message_catch_long(char* pokemon, uint32_t posx, uint32_t posy);
-t_message_caught* create_message_caught(uint32_t correlative_id, bool result);
+t_message_caught* create_message_caught(uint32_t correlative_id, uint32_t result);
 t_message_get* create_message_get(char* pokemon_name);
 t_message_localized* create_message_localized(uint32_t correlative_id, char* pokemon_name, uint32_t position_amount, t_position* positions);
 t_message_new* create_message_new(char* pokemon_name, t_location* location);

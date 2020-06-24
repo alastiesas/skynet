@@ -43,7 +43,7 @@ void serve_catch(void* input){
 	//TODO verificar en el filesystem si el pokemon esta disponible para atrapar
 
 	//Generar mensaje CAUGHT												//TODO remover harcodeo true
-	t_message_caught* message_caught = create_message_caught(message_catch->id, true);
+	t_message_caught* message_caught = create_message_caught(message_catch->id, 1);
 	log_info(logger, "Se genero el mensaje caught");
 	destroy_message_catch(message_catch);
 

@@ -8,6 +8,68 @@
 #define _GNU_SOURCE		//para pthread_setname_np
 #define RETRY_WAIT 1
 
+int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag){
+
+	int32_t result = 0;
+	int32_t current_bytes;
+	int i = 1;
+
+	current_bytes = result;
+	while(current_bytes < bytes){
+
+		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag); //El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
+		if(result == (-1)){		// lo mas probable es que el send nunca devuelva 0...
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio: %d\n", result);
+			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
+			return -1;
+		}
+		current_bytes += result;
+		if(current_bytes < bytes){
+			printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
+			sleep(RETRY_WAIT);
+			i++;
+		}
+
+	}
+	printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+	return current_bytes;
+}
+
+
+
+int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag){
+
+	int32_t result = 0;
+	int32_t current_bytes;
+	int i = 1;
+
+	current_bytes = result;
+	while(current_bytes < bytes){ 	//en principio el flag MSG_WAITALL se va a quedar esperando a recibir t0do, no hace falta reintentar el recv
+										//dice el man que si lo interrumpe una signal, va a recibir menos
+										//asi que lo reintentamos igual
+		result = recv(socket, a_recibir + current_bytes, bytes - current_bytes, flag);
+		if((result == -1) || (result == 0)){	// por lo que pude probar, puede que el otro proceso haberme enviado todos los datos, y este no haberlos recibido. En ese caso, este se queda trabado en un recv de 0 infinito. Hay que pedirle al otro proceso que vuelva a enviar?
+			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv: %d\n", result);		//si da 0 hubo desconexion..
+			printf("Se desconecto el proceso, hay que volver a accept-connect\n");			//https://stackoverflow.com/questions/38021659
+			return -1;
+		}
+		current_bytes += result;
+		if(current_bytes < bytes){
+			printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
+			sleep(RETRY_WAIT);
+			i++;
+		}
+
+	}
+	printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+	return current_bytes;
+
+
+	return result;
+}
+
 /*
 void iniciar_servidor(char* puerto, t_log* logger)
 {
@@ -83,7 +145,7 @@ int32_t listen_messages(void* input)
 {
 	int32_t socket = ((struct thread_args*)input)->socket;
 	t_log*	logger = ((struct thread_args*)input)->logger;
-	void (*function)(operation_code, void*) = ((struct thread_args*)input)->function;
+	void (*function)(void*) = ((struct thread_args*)input)->function;
 
 
 	//pthread_t self = pthread_self();
@@ -248,64 +310,4 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, t_log* 
 	return socket_cliente;
 }
 
-int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t flag){
 
-	int32_t result = 0;
-	int32_t current_bytes;
-	int i = 1;
-
-	current_bytes = result;
-	while(current_bytes < bytes){
-
-		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag); //El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
-		if(result == (-1)){		// lo mas probable es que el send nunca devuelva 0...
-			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio: %d\n", result);
-			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
-			return -1;
-		}
-		current_bytes += result;
-		if(current_bytes < bytes){
-			printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
-			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
-			sleep(RETRY_WAIT);
-			i++;
-		}
-
-	}
-	printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
-	return current_bytes;
-}
-
-
-
-int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t flag){
-
-	int32_t result = 0;
-	int32_t current_bytes;
-	int i = 1;
-
-	current_bytes = result;
-	while(current_bytes < bytes){ 	//en principio el flag MSG_WAITALL se va a quedar esperando a recibir t0do, no hace falta reintentar el recv
-										//dice el man que si lo interrumpe una signal, va a recibir menos
-										//asi que lo reintentamos igual
-		result = recv(socket, a_recibir + current_bytes, bytes - current_bytes, flag);
-		if((result == -1) || (result == 0)){	// por lo que pude probar, puede que el otro proceso haberme enviado todos los datos, y este no haberlos recibido. En ese caso, este se queda trabado en un recv de 0 infinito. Hay que pedirle al otro proceso que vuelva a enviar?
-			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv: %d\n", result);		//si da 0 hubo desconexion..
-			printf("Se desconecto el proceso, hay que volver a accept-connect\n");			//https://stackoverflow.com/questions/38021659
-			return -1;
-		}
-		current_bytes += result;
-		if(current_bytes < bytes){
-			printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
-			printf("Reintentando en %d segundos, por vez %d\n", RETRY_WAIT, i);
-			sleep(RETRY_WAIT);
-			i++;
-		}
-
-	}
-	printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
-	return current_bytes;
-
-
-	return result;
-}
