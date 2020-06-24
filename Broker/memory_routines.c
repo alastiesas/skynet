@@ -106,7 +106,7 @@ void merge_partitions(uint32_t initial_partition_number, uint32_t final_partitio
 
 	initial_partition->final_position = final_partition->final_position;
 	initial_partition->size += final_partition->size;
-	list_remove(partitions, final_partition_number); // change
+	list_remove(partitions, final_partition_number); //TOD change para que libere memoria
 }
 
 uint32_t get_available_partition_number(uint32_t size) {
@@ -236,10 +236,23 @@ uint32_t get_partition_number_to_delete() {
 	return partition_number;
 }
 
-void memory_allocation() {
+void memory_init() {
 
 	mem = malloc(memory_size);
-	create_dynamic_partition(memory_size);
+	//create_dynamic_partition(memory_size);
+	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
+		create_first_partition(mem, memory_size);
+}
+
+void create_first_partition(void* memory_initial_position, memory_size){
+	t_partition* free_big_partition = malloc(sizeof(t_partition));
+	free_big_partition->available = true;
+	free_big_partition->initial_position = memory_initial_position;
+	free_big_partition->final_position = free_big_partition->initial_position + memory_size;
+	free_big_partition->size = memory_size;
+	free_big_partition->lru = 0;
+
+	list_add(partitions, free_big_partition);
 }
 
 void memory_compaction() {

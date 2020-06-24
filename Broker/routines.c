@@ -50,7 +50,7 @@ void specific_initialization() {
 
 	count = 0;
 
-	//memory_init();
+	memory_init();
 
 	suscribers = malloc(sizeof(t_suscribers));
 
