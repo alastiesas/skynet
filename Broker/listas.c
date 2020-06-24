@@ -1,5 +1,32 @@
 #include "listas.h"
 
+void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* logger){
+	//TODO armar esta funcion (devuelva void* message_data) con mutex_cache (duplicar el message_data de la cache)
+	void* message_data;
+	t_partition* partition;
+
+	if(strcmp(memory_algorithm, "PARTICIONES") == 0){
+		bool _soy_ID_buscado(void* p){
+			return ((t_partition*) p)->ID_message == (uint32_t) ID_encontrar;
+		}
+		pthread_mutex_lock(&mutex_cache);
+		partition = list_find(partitions, _soy_ID_buscado);
+		if(partition != NULL){
+			message_data = malloc(*bytes);
+			memcpy(message_data, partition->initial_position, *bytes);
+		}
+		pthread_mutex_unlock(&mutex_cache);
+
+		if(partition == NULL)
+			log_warning(logger, "El mensaje ya no se encuentra en la cache");
+
+	}
+	else if(strcmp(memory_algorithm, "BS") == 0){
+
+	}
+
+	return message_data;
+}
 
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;

@@ -206,6 +206,7 @@ void termination();
 void specific_termination();
 
 void memory_init();
+void create_first_partition(void* memory_initial_position, uint32_t memory_size);
 
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes);
 

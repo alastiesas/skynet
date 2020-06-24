@@ -26,6 +26,7 @@ void imprimir_lista(t_list* lista, char* nombre);
 //TODO falta probar
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub);
 t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_mutex_t mutex_subs);
+void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* logger);
 
 
 #endif /* LISTAS_H_ */

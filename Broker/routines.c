@@ -7,6 +7,7 @@ void initialization() {
 	initialize_queues();
 	config_init();
 	semaphores_init();
+	memory_init();
 }
 
 void generic_initialization() {
@@ -50,7 +51,6 @@ void specific_initialization() {
 
 	count = 0;
 
-	memory_init();
 
 	suscribers = malloc(sizeof(t_suscribers));
 

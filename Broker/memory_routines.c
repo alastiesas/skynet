@@ -244,7 +244,7 @@ void memory_init() {
 		create_first_partition(mem, memory_size);
 }
 
-void create_first_partition(void* memory_initial_position, memory_size){
+void create_first_partition(void* memory_initial_position, uint32_t memory_size){
 	t_partition* free_big_partition = malloc(sizeof(t_partition));
 	free_big_partition->available = true;
 	free_big_partition->initial_position = memory_initial_position;
