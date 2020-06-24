@@ -102,7 +102,7 @@ int32_t __find_available_dynamic_partition(uint32_t size) {
 
 int32_t find_available_dynamic_partition(uint32_t size){
 	int32_t available_partition_number = -1;
-	uint32_t current_compation_value = compaction_frequency;
+	uint32_t current_compation_value = compaction_frequency;	//TODO queda ver si la frecuencia de compactacion es global en vez de resetearse para cada mensaje
 
 	if(compaction_frequency == -1){	//no se compacta nunca
 		while(available_partition_number != -1){

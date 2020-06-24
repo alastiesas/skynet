@@ -178,7 +178,7 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 		free_partition_index = find_available_dynamic_partition(min_partition_size);
 	else
 		free_partition_index = find_available_dynamic_partition(size_message);
-	if(free_partition_index != NULL){
+	if(free_partition_index != -1){
 
 		//actualizar la posicion de la particion nueva, y agregar a la lista
 		t_partition* free_partition = (t_partition*)list_get(partitions, free_partition_index);
