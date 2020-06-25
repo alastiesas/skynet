@@ -219,7 +219,7 @@ void free_some_space();
 
 bool is_free_partition(void *partition);
 void free_partition();
-uint32_t get_partition_number_to_delete();
+uint32_t get_partition_number_to_delete(uint32_t* message_id);
 
 void dump_cache(void);
 

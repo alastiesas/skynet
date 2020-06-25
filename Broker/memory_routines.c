@@ -34,12 +34,12 @@ void create_partition(uint32_t size) {
 }
 
 void delete_dynamic_partition(t_list** deleted_messages) {
-
-	uint32_t victim_partition_number = get_partition_number_to_delete();
+	uint32_t message_id;
+	uint32_t victim_partition_number = get_partition_number_to_delete(&message_id);
 	uint32_t previous_partition_number = victim_partition_number - 1;
 	uint32_t next_partition_number = victim_partition_number + 1;
 	t_partition* victim_partition = list_get(partitions, victim_partition_number);
-	list_add(*deleted_messages, (void*)victim_partition_number);
+	list_add(*deleted_messages, (void*)message_id);
 
 	victim_partition->available = true;
 
@@ -244,7 +244,7 @@ uint32_t get_buddy_partition_size(uint32_t size){
 
 }
 
-uint32_t get_partition_number_to_delete() {
+uint32_t get_partition_number_to_delete(uint32_t* message_id) {
 
 	t_partition* partition;
 	uint32_t partition_number;
@@ -259,6 +259,7 @@ uint32_t get_partition_number_to_delete() {
 
 				partition_number = i;
 				min_id = partition->ID_message;
+				*message_id = partition->ID_message;
 			}
 		}
 	} else if (strcmp(replacement_algorithm, "LRU") == 0) {
@@ -271,11 +272,12 @@ uint32_t get_partition_number_to_delete() {
 
 				partition_number = i;
 				max_lru = partition->lru;
+				*message_id = partition->ID_message;
 			}
 		}
 	}
 
-	if(list_size(partitions) == 1)//TODO
+	if(list_size(partitions) == 1)//TODO (1 quiere decir la unica particion vacia)
 		log_error(logger, "VA A EXPLOTAR TODO SI SE BORRA LA ULTIMA PARTICION");
 
 	return partition_number;
