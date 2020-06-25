@@ -10,16 +10,16 @@
 
 void debug_trainer(t_trainer* trainer) {
 	printf("\n**DEBUG DEL ENTRENADOR**\n");
-	printf("id: %d\n", trainer->id);
-	printf("action: %d\n", trainer->action);
+	printf("trainer->id: %d\n", trainer->id);
+	printf("trainer->action: %d\n", trainer->action);
 	if(trainer->target->position != NULL)
-		printf("target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
+		printf("trainer->target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
 	else
 		printf("sin target\n");
 
-	printf("posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
+	printf("trainer->posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
 	uint32_t i = 0;
-	printf("objetivos: [");
+	printf("trainer->objetivos: [");
 	while(trainer->objectives[i] != NULL) {
 		printf(" \"%s\" ", trainer->objectives[i]);
 		i++;
@@ -27,7 +27,7 @@ void debug_trainer(t_trainer* trainer) {
 	printf("]\n");
 
 	i = 0;
-	printf("pokemones: [");
+	printf("trainer->pokemones: [");
 	while(trainer->pokemons[i] != NULL) {
 		printf(" \"%s\" ", trainer->pokemons[i]);
 		i++;
@@ -154,20 +154,17 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 void add_pokemon(t_trainer* trainer, char*pokemon)
 {
 	uint32_t i = 0;
-	printf("ROMPE EN EL WHILE\n");
 	while(trainer->pokemons[i] != NULL)
 	{
 		i++;
 	}
 	//printf("ROMPE EN REALLOC\n");
-	printf("the size old is: %d\n", i);
 	//array, array_size * sizeof(*array)
 	// EL POBLEMA ESTA EN ESE REALLOC
 	//trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(char*));//PRUEBA CALLOC
-
-	printf("ROMPE EN EL MEMCPY\n");
-	trainer->pokemons[i] = malloc(strlen(pokemon)+1);
-	memcpy(trainer->pokemons[i], pokemon, strlen(pokemon)+1);
+	//trainer->pokemons[i] = malloc(strlen(pokemon)+1);
+	//memcpy(trainer->pokemons[i], pokemon, strlen(pokemon)+1);
+	trainer->pokemons[i] = create_copy_string(pokemon);
 }
 
 bool trainer_success_objective(t_trainer* trainer)
@@ -226,7 +223,68 @@ bool trainer_locked(t_trainer* trainer) {
 			}
 		}
 	}
-
+	debug_trainer(trainer);
+	printf("\tel entrenador esta bloqueado? = %d", locked);
 	return locked;
 }
+
+//*
+t_list* trainer_held_pokemons(t_trainer* trainer) {
+	int i = 0;
+	bool condition(void* pokemon) {
+		return (strcmp(trainer->objectives[i], pokemon) == 0);
+	}
+
+	t_list* held_pokemons = list_create();
+
+	while(trainer->pokemons[i] != NULL) {
+		//char* pokemon = malloc(strlen(trainer->pokemons[i]+1));
+
+		list_add(held_pokemons, create_copy_string(trainer->pokemons[i]));
+		i++;
+	}
+
+	i = 0;
+
+	while(trainer->objectives[i] != NULL) {
+		list_remove_by_condition(held_pokemons, &condition);
+		i++;
+	}//resta los objetivos de la lista
+
+
+}
+
+t_list* trainer_waiting_pokemons(t_trainer* trainer) {
+	int i = 0;
+	bool condition(void* pokemon) {
+		return (strcmp(trainer->pokemons[i], pokemon) == 0);
+	}
+
+	t_list* held_pokemons = list_create();
+
+	while(trainer->objectives[i] != NULL) {
+		//char* pokemon = malloc(strlen(trainer->pokemons[i]+1));
+
+		list_add(held_pokemons, create_copy_string(trainer->pokemons[i]));
+		i++;
+	}
+
+	i = 0;
+
+	while(trainer->pokemons[i] != NULL) {
+		list_remove_by_condition(held_pokemons, &condition);
+		i++;
+	}//resta los objetivos de la lista
+
+
+
+}//*/
+
+
+
+
+
+
+
+
 

@@ -100,6 +100,8 @@ void transition_block_to_exit(uint32_t index);
 
 //planificacion
 void long_term_scheduler();
+bool possible_deadlock();
+void deadlock_handler();
 void deadlock_detector();
 void* short_thread();
 void fifo_algorithm();
@@ -432,8 +434,19 @@ void long_term_scheduler(){
 		deadlock_priority++;
 	}
 	//PONERLE DEFINE
+	debug_colas();
 	if((list_size(ready_list) == 0 && list_size(exec_list) == 0) || deadlock_priority == DEADLOCK_PRIORITY) {
-		deadlock_detector();//DETECTOR DE DEADLOCKS
+		if(possible_deadlock()) {
+			printf("ALERTA HAY DEADLOCK ALERTAAAAAAAAAAAAAAAAAAAA\n");
+			deadlock_handler();
+			sleep(5);
+		}else {
+			printf("NO HAY DEADLOCK ---------------------------\n");
+			sleep(5);
+		}
+	} else {
+		printf("NO HAY RAZON PARA EVALUAR DEADLOCKS\N");
+		sleep(5);
 	}
 	//RAZONES PARA CORRER DETECTOR DE DL
 	//loop SHORT LONG -> EXEC = 0 READY = 0
@@ -442,14 +455,93 @@ void long_term_scheduler(){
 	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
 }
 
-void deadlock_detector() {
+bool possible_deadlock(){
+	int32_t locked = list_count_satisfying(block_list, &trainer_locked);
+	printf("\t\tlocked trainers: %d\n", locked);
+	bool deadlock = locked > 1;
+	return deadlock;
+}
 
-	uint32_t locked = list_count_satisfying(block_list, &trainer_locked);
-	if(locked >1) {
-		deadlocks ++;
+
+void deadlock_handler(){
+	t_dictionary* waiting_table = dictionary_create();
+	t_dictionary* held_table = dictionary_create();
+
+	deadlock_detector(waiting_table,held_table);
+	//fixeamos parejas perfectas
+
+	void debug_table(char* key, t_list* table) {
+		void debug_list(t_trainer* trainer) {
+			printf(" [%d] ", trainer->id);
+		}
+
+		printf("%s: ", key);
+		list_iterate(table, &debug_list);
+		printf("\n");
 	}
-	//si se encuentra deadlock deadlocks ++
-	//si se soluciona deadlock solved ++
+	printf("TABLA DE WAITING:\n");
+	dictionary_iterator(waiting_table, &debug_table);
+	printf("TABLA DE HELD:\n");
+	dictionary_iterator(held_table, &debug_table);
+
+	dictionary_clean_and_destroy_elements(waiting_table, &list_destroy);
+	dictionary_clean_and_destroy_elements(held_table, &list_destroy);
+
+	deadlock_detector(waiting_table,held_table);
+	//fixeamos parejas
+
+}
+
+void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
+	//tomo los entrenadores que esten interbloqueados
+	t_list* locked_trainers = list_filter(block_list, &trainer_locked);
+	printf("ENTRENADORES BLOQUEADOS: %d\n", list_size(locked_trainers));
+	list_iterate(locked_trainers, &debug_trainer);
+
+
+	void add_to_tables(t_trainer* trainer) {
+		//uint32_t* id = malloc(sizeof(uint32_t));
+		//*id = trainer->id;
+		t_list* waiting_pokemons = trainer_waiting_pokemons(trainer);
+		t_list* held_pokemons = trainer_held_pokemons(trainer);
+		void add_to_waiting(char* pokemon) {
+			if(dictionary_has_key(waiting_table, pokemon)){
+				t_list* trainers  = dictionary_get(waiting_table, pokemon);
+				list_add(trainers ,trainer);
+			} else {
+				t_list* trainers = list_create();
+				list_add(trainers ,trainer);
+				dictionary_put(waiting_table,pokemon, trainers);
+			}
+
+		}
+		void add_to_held(char* pokemon) {
+			if(dictionary_has_key(held_table, pokemon)){
+				t_list* trainers  = dictionary_get(held_table, pokemon);
+				list_add(trainers ,trainer);
+			} else {
+				t_list* trainers = list_create();
+				list_add(trainers ,trainer);
+				dictionary_put(held_table, pokemon, trainers);
+			}
+
+		}
+		list_iterate(waiting_pokemons, &add_to_waiting);
+		list_iterate(held_pokemons, &add_to_held);
+
+	}
+
+	list_iterate(locked_trainers, &add_to_tables);
+
+	//buscar posibles intercambios parejas > indivuales
+
+
+
+
+
+
+
+
 }
 
 void short_term_scheduler()
@@ -1046,10 +1138,11 @@ void message_list_add_catch(t_trainer* trainer) {
 	t_message_team* message = malloc(sizeof(t_message_team));
 	printf(" message_list_add_catch NOO acallego y dspues rompio\n");
 	message->trainer = trainer;
-	message->pokemon = malloc(strlen(trainer->target->pokemon)+1);
+	//message->pokemon = malloc(strlen(trainer->target->pokemon)+1);
 	printf("the size of the fucks %d %d \n",sizeof(message->pokemon),sizeof(trainer->target->pokemon));
 
-	memcpy(message->pokemon, trainer->target->pokemon, strlen(trainer->target->pokemon)+1);
+	//memcpy(message->pokemon, trainer->target->pokemon, strlen(trainer->target->pokemon)+1);
+	message->pokemon = create_copy_string(trainer->target->pokemon);
 	message->pokemon = trainer->target->pokemon;
 	message->position = malloc(sizeof(t_position));
 	message->position->x = trainer->target->position->x;
