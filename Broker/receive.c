@@ -103,6 +103,8 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 			log_info(logger, "id correlativo del mensaje recibido: %d (no se toca)", t_mensaje->ID_correlativo);
 		size_co = sizeof(uint32_t);
 	}
+	else	//si el mensaje no tiene correlativo, lo pongo en 0
+		t_mensaje->ID_correlativo = 0;
 
 
 	uint32_t size_ID = sizeof(uint32_t);

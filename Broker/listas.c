@@ -30,7 +30,6 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
-	uint32_t size;
 
 	bool _soy_ID_buscado(void* p){
 		return ((t_pending*) p)->ID_mensaje == (uint32_t) ID_encontrar;
@@ -40,10 +39,11 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		elemento = list_find(cola, _soy_ID_buscado);
 		if(elemento != NULL){
 			*bytes = elemento->bytes;
-			*datos_mensaje = malloc(*bytes);
-			size = *bytes;
-			memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
-			if(elemento->ID_correlativo != NULL)	//TODO como se pone elemento no inicializado?
+			if(elemento->datos_mensaje != NULL){//solo me traigo los datos del mensaje si existen en la cola en vez de memoria
+				*datos_mensaje = malloc(*bytes);
+				memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
+			}
+			if(elemento->ID_correlativo != 0)
 				*id_co = elemento->ID_correlativo;
 		}
 	pthread_mutex_unlock(&mutex_cola);
@@ -54,7 +54,7 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		log_trace(logsub, "Adentro de la struct hay %d bytes", elemento->bytes);
 	}
 	else
-		log_debug(logsub, "No existe mas el mensaje en la memoria\n");
+		log_debug(logsub, "No existe mas el mensaje en la cola\n");
 
 	return elemento;
 }
