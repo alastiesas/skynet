@@ -1,6 +1,5 @@
 #include "gamecard.h"
 
-
 int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 
@@ -8,10 +7,11 @@ int main(void) {
 	if((config = config_create("gamecard.config")) == NULL)
 		log_error(logger, "ERROR DE CONFIG");
 
+	// initiliaze_file_system();
+
 	TIEMPO_DE_REINTENTO_CONEXION = atoi(config_get_string_value(config, "TIEMPO_DE_REINTENTO_CONEXION"));
 	TIEMPO_DE_REINTENTO_OPERACION = atoi(config_get_string_value(config, "TIEMPO_DE_REINTENTO_OPERACION"));
 	TIEMPO_RETARDO_OPERACION = atoi(config_get_string_value(config, "TIEMPO_RETARDO_OPERACION"));
-	PUNTO_MONTAJE_TALLGRASS = config_get_string_value(config, "PUNTO_MONTAJE_TALLGRASS");
 	IP_BROKER = config_get_string_value(config, "IP_BROKER");
 	PUERTO_BROKER = config_get_string_value(config, "PUERTO_BROKER");
 	IP_GAMECARD = config_get_string_value(config, "IP_GAMECARD");
@@ -34,5 +34,3 @@ int main(void) {
 
 	return EXIT_SUCCESS;
 }
-
-
