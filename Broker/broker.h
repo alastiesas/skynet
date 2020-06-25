@@ -211,8 +211,9 @@ void create_first_partition(void* memory_initial_position, uint32_t memory_size)
 
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes);
 
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code);
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code);
+void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, pthread_mutex_t mutex_cola);
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola);
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola);
 int32_t find_free_position();
 void free_some_space();
 
@@ -225,11 +226,11 @@ void dump_cache(void);
 void create_dynamic_partition(uint32_t size);
 void create_fixed_partition(uint32_t size);
 void create_partition(uint32_t size);
-void delete_dynamic_partition();
+void delete_dynamic_partition(t_list** deleted_messages);
 void delete_fixed_partition();
 void delete_partition();
-int32_t __find_available_dynamic_partition(uint32_t size);
-int32_t find_available_dynamic_partition(uint32_t size);
+int32_t __find_available_dynamic_partition(uint32_t size, t_list** deleted_messages);
+int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_messages);
 int32_t get_available_partition_number(uint32_t size);
 uint32_t get_available_partition_number_buddy(uint32_t size);
 uint32_t get_buddy_partition_size(uint32_t size);

@@ -12,6 +12,7 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 		pthread_mutex_lock(&mutex_cache);
 		partition = list_find(partitions, _soy_ID_buscado);
 		if(partition != NULL){
+			*bytes = partition->size;
 			message_data = malloc(*bytes);
 			memcpy(message_data, partition->initial_position, *bytes);
 		}
@@ -26,6 +27,13 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 	}
 
 	return message_data;
+}
+
+t_pending* remove_element_given_ID_short(uint32_t ID_encontrar, t_list* cola){
+	bool _soy_ID_buscado(void* p){
+		return ((t_pending*) p)->ID_mensaje == ID_encontrar;
+	}
+	return list_remove_by_condition(cola, _soy_ID_buscado);
 }
 
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
