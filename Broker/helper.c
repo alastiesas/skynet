@@ -22,6 +22,14 @@ void iniciar_servidor_broker()
         	log_error(logger, "Error de socket()");
         	continue;
         }
+        int reuse = 1;
+        if (setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+            perror("setsockopt(SO_REUSEADDR) failed");
+
+		#ifdef SO_REUSEPORT
+        if (setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse)) < 0)
+            perror("setsockopt(SO_REUSEPORT) failed");
+    	#endif
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
             close(socket_servidor);

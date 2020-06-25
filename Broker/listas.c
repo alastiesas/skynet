@@ -47,10 +47,8 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		elemento = list_find(cola, _soy_ID_buscado);
 		if(elemento != NULL){
 			*bytes = elemento->bytes;
-			if(elemento->datos_mensaje != NULL){//solo me traigo los datos del mensaje si existen en la cola en vez de memoria
-				*datos_mensaje = malloc(*bytes);
-				memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
-			}
+			*datos_mensaje = malloc(*bytes);
+			memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
 			if(elemento->ID_correlativo != 0)
 				*id_co = elemento->ID_correlativo;
 		}

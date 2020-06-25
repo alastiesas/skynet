@@ -240,11 +240,11 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 			log_debug(suscriber->log, "Se va a enviar el mensaje de ID: %d", (int)elemento);
 
 			//obtener el mensaje con ese ID
+			//Buscar el t_pending adentro de la cola, siempre se hace.
+			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &id_co, &message_data, suscriber->log);
 			//buscar los datos en la cache solo en el caso de (particiones o buddy)
 			if(strcmp(memory_algorithm, "PARTICIONES") == 0 || strcmp(memory_algorithm, "BS") == 0)
 				message_data = find_cache_element_given_ID(elemento, &bytes, suscriber->log);
-			//Buscar el t_pending adentro de la cola, siempre se hace.
-			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &id_co, &message_data, suscriber->log);
 
 			if(mensaje != NULL && message_data != NULL){	//en modo sin memoria, siempre va a encontrar el mensaje
 				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, id_co, &message_data, bytes);
