@@ -73,4 +73,11 @@ t_objective* find_key(t_list* list, char* key)
 	return objective;
 }
 
+char* create_copy_string(char* from) {
+	char* to = malloc(strlen(from)+1);
+	memcpy(to, from, strlen(from)+1);
+	return to;
+
+}
+
 
