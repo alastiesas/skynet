@@ -15,6 +15,7 @@ void generic_initialization() {
 	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_TRACE);
 	if((config = config_create("broker.config")) == NULL)
 		log_error(logger, "ERROR DE CONFIG");
+	obligatorio = log_create(config_get_string_value(config, "LOG_FILE"), "broker", false, LOG_LEVEL_TRACE);
 	IP = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PUERTO_BROKER");
 }

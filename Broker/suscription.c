@@ -180,7 +180,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	//responder al proceso que ya esta suscrito
 	send_ACK(socket_cliente, logger);
 
-
+	log_info(obligatorio, "Se suscribe un proceso %d a la cola: %s", suscriber->ID_suscriber, queue_to_string(suscriber->suscribed_queue));
 
 	send_received_message(suscriber, my_semaphores, my_queue, my_queueIDs, count);	//loop infinito
 

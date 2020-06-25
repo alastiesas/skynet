@@ -125,6 +125,7 @@ uint32_t size_subs_localized;
 uint32_t size_subs_catch;
 uint32_t size_subs_caught;
 
+t_log* obligatorio;
 t_log* logger;
 t_config* config;
 

@@ -163,6 +163,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//Agregar mensaje a cola correspondiente
 	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos, total_queue_messages);
 
+	log_info(obligatorio, "Se agrega un mensaje a la cola %s", queue_to_string(queue_code));
 }
 
 void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola){
@@ -204,6 +205,7 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 		//guardar el message_data en la particion
 		memmove(new_partition->initial_position, message_data, size_message);
 
+		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", new_partition->initial_position - mem, new_partition->final_position - mem);
 	}
 	else{
 		log_error(logger, "No hay particion disponible");

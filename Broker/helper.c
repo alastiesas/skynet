@@ -61,8 +61,10 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t
 	int32_t socket_cliente;
 	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
 		log_error(logger, "Error al aceptar cliente");
-	else
+	else{
 		log_info(logger, "Conexion aceptada");
+		log_info(obligatorio, "Nueva conexion de un proceso");
+	}
 
 
     struct broker_thread_args* args = malloc(sizeof(struct broker_thread_args));
