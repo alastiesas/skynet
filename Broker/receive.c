@@ -103,6 +103,8 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 			log_info(logger, "id correlativo del mensaje recibido: %d (no se toca)", t_mensaje->ID_correlativo);
 		size_co = sizeof(uint32_t);
 	}
+	else	//si el mensaje no tiene correlativo, lo pongo en 0
+		t_mensaje->ID_correlativo = 0;
 
 
 	uint32_t size_ID = sizeof(uint32_t);
@@ -150,9 +152,9 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//En el caso de trabajar con memoria, agregar el mensaje a memoria
 
 	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
-		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
+		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, semaforos->mutex_cola);
 	else if(strcmp(memory_algorithm, "BS") == 0)
-		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
+		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, semaforos->mutex_cola);
 
 //------------------------------------------------------------------------------------------------------
 
@@ -163,7 +165,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 
 }
 
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola){
 
 	t_partition* new_partition = malloc(sizeof(t_partition));
 	new_partition->ID_message = message_id;
@@ -171,14 +173,15 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 	new_partition->size = size_message;
 	new_partition->queue_code = queue_code;
 	//TODO agregar lru si corresponde
+	t_list* deleted_messages = list_create();
 
 	pthread_mutex_lock(&(mutex_cache));
 	//buscar la posicion para la particion nueva (eliminar mensajes si corresponde)
 	uint32_t free_partition_index;
 	if(size_message < min_partition_size)
-		free_partition_index = find_available_dynamic_partition(min_partition_size);
+		free_partition_index = find_available_dynamic_partition(min_partition_size, &deleted_messages);
 	else
-		free_partition_index = find_available_dynamic_partition(size_message);
+		free_partition_index = find_available_dynamic_partition(size_message, &deleted_messages);
 	if(free_partition_index != -1){
 
 		//actualizar la posicion de la particion nueva, y agregar a la lista
@@ -208,10 +211,32 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 	}
 	pthread_mutex_unlock(&(mutex_cache));
 
-		free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
+	//eliminar de la cola los mensajes que se eliminaron de la memoria
+	//TODO ver si conviene meter este mutex adentro del mutex anterior para que no haya inconsistencias
+	delete_messages_from_queue(deleted_messages, queue, mutex_cola);
+
+	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 }
 
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
+void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, pthread_mutex_t mutex_cola){
+	uint32_t id_elemento;
+	t_pending* t_mensaje;
+
+	pthread_mutex_lock(&(mutex_cola));
+		while(!list_is_empty(deleted_messages)){
+			id_elemento = (uint32_t)list_remove(deleted_messages, 0);
+			t_mensaje = remove_element_given_ID_short(id_elemento, queue);
+			free(t_mensaje->subs_enviados);
+			free(t_mensaje->subs_confirmados);
+			if(t_mensaje->datos_mensaje != NULL)
+				free(t_mensaje->datos_mensaje);
+			free(t_mensaje);
+		}
+	pthread_mutex_unlock(&(mutex_cola));
+	list_destroy(deleted_messages);
+}
+
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola){
 
 	//Primero crear la t_partition nueva, no se necesita mutex hasta tocar la lista de particiones
 	//t0do el resto necesita el mismo mutex

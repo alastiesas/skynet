@@ -3,7 +3,8 @@
 void create_dynamic_partition(uint32_t size) {
 
 	t_partition* partition = malloc(sizeof(t_partition));
-	t_partition* available_partition = find_available_dynamic_partition(size);
+	t_partition* available_partition;
+	//available_partition = find_available_dynamic_partition(size);
 	// define uint32_t delimiting_position = available_partition->initial_position + (int) size;
 
 	partition->available = false;
@@ -32,12 +33,13 @@ void create_partition(uint32_t size) {
 	}
 }
 
-void delete_dynamic_partition() {
+void delete_dynamic_partition(t_list** deleted_messages) {
 
 	uint32_t victim_partition_number = get_partition_number_to_delete();
 	uint32_t previous_partition_number = victim_partition_number - 1;
 	uint32_t next_partition_number = victim_partition_number + 1;
 	t_partition* victim_partition = list_get(partitions, victim_partition_number);
+	list_add(*deleted_messages, (void*)victim_partition_number);
 
 	victim_partition->available = true;
 
@@ -68,7 +70,7 @@ void delete_partition() {
 
 }
 
-int32_t __find_available_dynamic_partition(uint32_t size) {
+int32_t __find_available_dynamic_partition(uint32_t size, t_list** deleted_messages) {
 
 	int32_t available_partition_number;
 
@@ -79,13 +81,13 @@ int32_t __find_available_dynamic_partition(uint32_t size) {
 
 			if (compaction_frequency < 2) {
 
-				delete_dynamic_partition();
+				delete_dynamic_partition(deleted_messages);
 				memory_compaction();
 			} else {
 
 				if (count < compaction_frequency) {
 
-					delete_dynamic_partition();
+					delete_dynamic_partition(deleted_messages);
 					count++;
 				} else {
 
@@ -100,7 +102,7 @@ int32_t __find_available_dynamic_partition(uint32_t size) {
 }
 
 
-int32_t find_available_dynamic_partition(uint32_t size){
+int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_messages){
 	int32_t available_partition_number = -1;
 	uint32_t current_compation_value = compaction_frequency;	//TODO queda ver si la frecuencia de compactacion es global en vez de resetearse para cada mensaje
 
@@ -110,7 +112,7 @@ int32_t find_available_dynamic_partition(uint32_t size){
 			available_partition_number = get_available_partition_number(size);
 			if(available_partition_number != -1)
 				return available_partition_number;
-			delete_dynamic_partition();
+			delete_dynamic_partition(deleted_messages);
 
 		}
 	}
@@ -121,7 +123,7 @@ int32_t find_available_dynamic_partition(uint32_t size){
 			available_partition_number = get_available_partition_number(size);
 			if(available_partition_number != -1)
 				return available_partition_number;
-			delete_dynamic_partition();
+			delete_dynamic_partition(deleted_messages);
 			current_compation_value--;
 		}
 
@@ -131,7 +133,7 @@ int32_t find_available_dynamic_partition(uint32_t size){
 			current_compation_value = compaction_frequency;
 			available_partition_number = get_available_partition_number(size);
 			if(available_partition_number == -1)
-				delete_dynamic_partition();
+				delete_dynamic_partition(deleted_messages);
 		}
 
 	}
