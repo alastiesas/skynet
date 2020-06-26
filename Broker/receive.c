@@ -152,9 +152,9 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//En el caso de trabajar con memoria, agregar el mensaje a memoria
 
 	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
-		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, queueIds, semaforos->mutex_cola);
+		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
 	else if(strcmp(memory_algorithm, "BS") == 0)
-		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, queueIds, semaforos->mutex_cola);
+		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
 
 //------------------------------------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	log_info(obligatorio, "Se agrega un mensaje a la cola %s", queue_to_string(queue_code));
 }
 
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola){
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
 
 	t_partition* new_partition = malloc(sizeof(t_partition));
 	new_partition->ID_message = message_id;
@@ -211,35 +211,82 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 		log_error(logger, "No hay particion disponible");
 		free(new_partition);
 	}
+
 	pthread_mutex_unlock(&(mutex_cache));
 
 	//eliminar de la cola los mensajes que se eliminaron de la memoria
 	//TODO ver si conviene meter este mutex adentro del mutex anterior para que no haya inconsistencias
-	delete_messages_from_queue(deleted_messages, queue, queueIds, mutex_cola);
+	delete_messages_from_queue(deleted_messages);
 
 	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 }
 
-void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola){
+void delete_messages_from_queue(t_list* deleted_messages){
 	uint32_t id_mensaje;
+	queue_code queue_id;
 	t_pending* t_mensaje;
+	pthread_mutex_t mutex_cola;
+	t_list* queue;
+	t_list* queueIds;
 
-	pthread_mutex_lock(&(mutex_cola));
 		while(!list_is_empty(deleted_messages)){
 			id_mensaje = (uint32_t)list_remove(deleted_messages, 0);
-			t_mensaje = remove_element_given_ID_short(id_mensaje, queue);
-			free(t_mensaje->subs_enviados);
-			free(t_mensaje->subs_confirmados);
-			//if(t_mensaje->datos_mensaje != NULL)
-				//free(t_mensaje->datos_mensaje);
-			free(t_mensaje);
-			remove_ID_short(id_mensaje, queueIds);
+			queue_id = (queue_code)list_remove(deleted_messages, 0);
+			mutex_cola = get_mutex_and_queues_by_id(queue_id, &queue, &queueIds);
+			pthread_mutex_lock(&(mutex_cola));
+				t_mensaje = remove_element_given_ID_short(id_mensaje, queue);
+				free(t_mensaje->subs_enviados);
+				free(t_mensaje->subs_confirmados);
+				//if(t_mensaje->datos_mensaje != NULL)
+					//free(t_mensaje->datos_mensaje);
+				free(t_mensaje);
+				remove_ID_short(id_mensaje, queueIds);
+			pthread_mutex_unlock(&(mutex_cola));
 		}
-	pthread_mutex_unlock(&(mutex_cola));
+
 	list_destroy(deleted_messages);
 }
 
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola){
+pthread_mutex_t get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue, t_list** queueIDS){
+	switch(queue_id){
+	case COLA_NEW:
+		*queue = queues->NEW_POKEMON;
+		*queueIDS = queues->NEW_POKEMON_IDS;
+		return semaphores_new->mutex_cola;
+		break;
+	case COLA_APPEARED:
+		*queue = queues->APPEARED_POKEMON;
+		*queueIDS = queues->APPEARED_POKEMON_IDS;
+		return semaphores_appeared->mutex_cola;
+		break;
+	case COLA_GET:
+		*queue = queues->GET_POKEMON;
+		*queueIDS = queues->GET_POKEMON_IDS;
+		return semaphores_get->mutex_cola;
+		break;
+	case COLA_LOCALIZED:
+		*queue = queues->LOCALIZED_POKEMON;
+		*queueIDS = queues->LOCALIZED_POKEMON_IDS;
+		return semaphores_localized->mutex_cola;
+		break;
+	case COLA_CATCH:
+		*queue = queues->CATCH_POKEMON;
+		*queueIDS = queues->CATCH_POKEMON_IDS;
+		return semaphores_catch->mutex_cola;
+		break;
+	case COLA_CAUGHT:
+		*queue = queues->CAUGHT_POKEMON;
+		*queueIDS = queues->CAUGHT_POKEMON_IDS;
+		return semaphores_caught->mutex_cola;
+		break;
+	default:
+		log_error(logger, "Error impossible");
+		return semaphores_new->mutex_cola; //???
+		break;
+	}
+}
+
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
 
 	//Primero crear la t_partition nueva, no se necesita mutex hasta tocar la lista de particiones
 	//t0do el resto necesita el mismo mutex

@@ -40,6 +40,7 @@ void delete_dynamic_partition(t_list** deleted_messages) {
 	uint32_t next_partition_number = victim_partition_number + 1;
 	t_partition* victim_partition = list_get(partitions, victim_partition_number);
 	list_add(*deleted_messages, (void*)message_id);
+	list_add(*deleted_messages, (void*)(victim_partition->queue_code));
 
 	victim_partition->available = true;
 	if(min_partition_size > victim_partition->size)
