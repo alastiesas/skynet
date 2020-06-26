@@ -152,9 +152,9 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//En el caso de trabajar con memoria, agregar el mensaje a memoria
 
 	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
-		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, semaforos->mutex_cola);
+		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, queueIds, semaforos->mutex_cola);
 	else if(strcmp(memory_algorithm, "BS") == 0)
-		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, semaforos->mutex_cola);
+		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code, queue, queueIds, semaforos->mutex_cola);
 
 //------------------------------------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	log_info(obligatorio, "Se agrega un mensaje a la cola %s", queue_to_string(queue_code));
 }
 
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola){
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola){
 
 	t_partition* new_partition = malloc(sizeof(t_partition));
 	new_partition->ID_message = message_id;
@@ -215,30 +215,31 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 
 	//eliminar de la cola los mensajes que se eliminaron de la memoria
 	//TODO ver si conviene meter este mutex adentro del mutex anterior para que no haya inconsistencias
-	delete_messages_from_queue(deleted_messages, queue, mutex_cola);
+	delete_messages_from_queue(deleted_messages, queue, queueIds, mutex_cola);
 
 	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 }
 
-void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, pthread_mutex_t mutex_cola){
-	uint32_t id_elemento;
+void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola){
+	uint32_t id_mensaje;
 	t_pending* t_mensaje;
 
 	pthread_mutex_lock(&(mutex_cola));
 		while(!list_is_empty(deleted_messages)){
-			id_elemento = (uint32_t)list_remove(deleted_messages, 0);
-			t_mensaje = remove_element_given_ID_short(id_elemento, queue);
+			id_mensaje = (uint32_t)list_remove(deleted_messages, 0);
+			t_mensaje = remove_element_given_ID_short(id_mensaje, queue);
 			free(t_mensaje->subs_enviados);
 			free(t_mensaje->subs_confirmados);
-			if(t_mensaje->datos_mensaje != NULL)
-				free(t_mensaje->datos_mensaje);
+			//if(t_mensaje->datos_mensaje != NULL)
+				//free(t_mensaje->datos_mensaje);
 			free(t_mensaje);
+			remove_ID_short(id_mensaje, queueIds);
 		}
 	pthread_mutex_unlock(&(mutex_cola));
 	list_destroy(deleted_messages);
 }
 
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola){
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola){
 
 	//Primero crear la t_partition nueva, no se necesita mutex hasta tocar la lista de particiones
 	//t0do el resto necesita el mismo mutex

@@ -192,6 +192,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 	t_list* not_sent_ids = list_create();
 	void* elemento;
 	uint32_t current_total_count;
+	uint32_t current_count;
 	t_pending* mensaje;
 	void* message_data;
 	uint32_t bytes;
@@ -211,9 +212,10 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 		//obtener lista global de ids
 		pthread_mutex_lock(&(semaforos->mutex_cola));
 			list_add_all(current_global_message_ids, colaIDs);
+			current_count = list_size(colaIDs);
 			current_total_count = (*total_queue_messages);
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
-		log_debug(suscriber->log, "Hay un total de %d mensajes actualmente en la cola", current_total_count);
+		log_debug(suscriber->log, "Hay un total de %d mensajes actualmente en la cola", current_count);
 
 		no_enviados_lista(current_global_message_ids, suscriber->sent_messages, &not_sent_ids);
 		not_sent_size = list_size(not_sent_ids);

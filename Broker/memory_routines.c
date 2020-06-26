@@ -36,12 +36,14 @@ void create_partition(uint32_t size) {
 void delete_dynamic_partition(t_list** deleted_messages) {
 	uint32_t message_id;
 	uint32_t victim_partition_number = get_partition_number_to_delete(&message_id);
-	uint32_t previous_partition_number = victim_partition_number - 1;
+	int32_t previous_partition_number = victim_partition_number - 1;
 	uint32_t next_partition_number = victim_partition_number + 1;
 	t_partition* victim_partition = list_get(partitions, victim_partition_number);
 	list_add(*deleted_messages, (void*)message_id);
 
 	victim_partition->available = true;
+	if(min_partition_size > victim_partition->size)
+		victim_partition->size = min_partition_size;
 
 	if (next_partition_number < list_size(partitions)) {
 
@@ -104,7 +106,7 @@ int32_t __find_available_dynamic_partition(uint32_t size, t_list** deleted_messa
 
 int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_messages){
 	int32_t available_partition_number = -1;
-	uint32_t current_compation_value = compaction_frequency;	//TODO queda ver si la frecuencia de compactacion es global en vez de resetearse para cada mensaje
+	uint32_t current_compation_value = compaction_frequency;
 
 	if(compaction_frequency == -1){	//no se compacta nunca
 		while(available_partition_number != -1){

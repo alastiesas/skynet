@@ -212,9 +212,9 @@ void create_first_partition(void* memory_initial_position, uint32_t memory_size)
 
 t_package* broker_serialize(queue_code queue_code, uint32_t id_message, uint32_t id_co, void** message, uint32_t bytes);
 
-void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, pthread_mutex_t mutex_cola);
-void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola);
-void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, pthread_mutex_t mutex_cola);
+void delete_messages_from_queue(t_list* deleted_messages, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola);
+void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola);
+void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code, t_list* queue, t_list* queueIds, pthread_mutex_t mutex_cola);
 int32_t find_free_position();
 void free_some_space();
 
