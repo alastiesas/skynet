@@ -491,20 +491,23 @@ void deadlock_handler(){
 	//fixeamos parejas
 
 }
-
+//printf("ROMPE EN ");//DEBUG TODO sacar
 void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 	//tomo los entrenadores que esten interbloqueados
 	t_list* locked_trainers = list_filter(block_list, &trainer_locked);
 	printf("ENTRENADORES BLOQUEADOS: %d\n", list_size(locked_trainers));
 	list_iterate(locked_trainers, &debug_trainer);
 
-
+//TODO HASTA ACA LLEGA SIN ROMPER
+	printf("ROMPE EN [DEFINICION DE ADD TO TABLES]\n");//DEBUG TODO sacar
 	void add_to_tables(t_trainer* trainer) {
+		printf("ENTRA EN add_to_tables()\n");
 		//uint32_t* id = malloc(sizeof(uint32_t));
 		//*id = trainer->id;
 		t_list* waiting_pokemons = trainer_waiting_pokemons(trainer);
 		t_list* held_pokemons = trainer_held_pokemons(trainer);
 		void add_to_waiting(char* pokemon) {
+			printf("ENTRA EN [add_to_waiting(pokemon)]\n");
 			if(dictionary_has_key(waiting_table, pokemon)){
 				t_list* trainers  = dictionary_get(waiting_table, pokemon);
 				list_add(trainers ,trainer);
@@ -516,21 +519,24 @@ void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 
 		}
 		void add_to_held(char* pokemon) {
+			t_list* trainers;
 			if(dictionary_has_key(held_table, pokemon)){
-				t_list* trainers  = dictionary_get(held_table, pokemon);
+				trainers  = dictionary_get(held_table, pokemon);
 				list_add(trainers ,trainer);
 			} else {
-				t_list* trainers = list_create();
+				trainers = list_create();
 				list_add(trainers ,trainer);
 				dictionary_put(held_table, pokemon, trainers);
 			}
 
 		}
-		list_iterate(waiting_pokemons, &add_to_waiting);
+		printf("ROMPE EN list_iterate(held_pokemons, &add_to_held);\n");
 		list_iterate(held_pokemons, &add_to_held);
+		printf("ROMPE EN list_iterate(waiting_pokemons, &add_to_waiting);\n");
+		list_iterate(waiting_pokemons, &add_to_waiting);
 
 	}
-
+    printf("ROMPE EN list_iterate(locked_trainers, &add_to_tables);\n");//DEBUG TODO sacar
 	list_iterate(locked_trainers, &add_to_tables);
 
 	//buscar posibles intercambios parejas > indivuales
@@ -634,7 +640,7 @@ void trainer_assign_move(char* type,char* pokemon, uint32_t index, t_position* p
 
 void trainer_assign_move2(t_trainer* trainer, char* pokemon, t_position* position, bool catching)
 {
-	//TODO algo no está andando, se rompe en el segundo entrenador. . .
+	//TODO
 	printf("\nse asignara al entrenado %d a atrapar al pokemon %s, en la posicion (%d, %d)\n", trainer->id, pokemon, position->x, position->y);
 
 	memcpy(trainer->target->pokemon,pokemon, strlen(pokemon)+1);
