@@ -223,8 +223,6 @@ bool trainer_locked(t_trainer* trainer) {
 			}
 		}
 	}
-	debug_trainer(trainer);
-	printf("\tel entrenador esta bloqueado? = %d\n", locked);
 	return locked;
 }
 
@@ -238,7 +236,6 @@ t_list* trainer_held_pokemons(t_trainer* trainer) {
 	t_list* held_pokemons = list_create();
 
 	while(trainer->pokemons[i] != NULL) {
-		//char* pokemon = malloc(strlen(trainer->pokemons[i]+1));
 
 		list_add(held_pokemons, create_copy_string(trainer->pokemons[i]));
 		i++;
@@ -251,7 +248,7 @@ t_list* trainer_held_pokemons(t_trainer* trainer) {
 		i++;
 	}//resta los objetivos de la lista
 
-
+	return held_pokemons;
 }
 
 t_list* trainer_waiting_pokemons(t_trainer* trainer) {
@@ -263,35 +260,19 @@ t_list* trainer_waiting_pokemons(t_trainer* trainer) {
 	t_list* waiting_pokemons = list_create();
 
 	while(trainer->objectives[i] != NULL) {
-		//char* pokemon = malloc(strlen(trainer->pokemons[i]+1));
 
 		list_add(waiting_pokemons, create_copy_string(trainer->objectives[i]));
 		i++;
-	}//agregar los pokes FUNCIONA BIEN
-
-	//DEBUG
-	void debug(char* pokemon) {
-		printf("%s\n", pokemon);
 	}
-	printf("(antes de remove)pokemones waiting de trainer[%d]: %d\n", trainer->id, list_size(waiting_pokemons));
-	list_iterate(waiting_pokemons, &debug);
-	printf("\n");
-	//FIN DEBUG
 
 	i = 0;
 
 	while(trainer->pokemons[i] != NULL) {
 		char* removed = list_remove_by_condition(waiting_pokemons, &condition);
-		printf("Se eliminio %s porque es igual que %s\n", removed, trainer->pokemons[i]);
 		i++;
-	}//ppor alguna razon se borran todos
+	}
 
-	//DEBUG
-	printf("pokemones waiting de trainer[%d]: %d\n", trainer->id, list_size(waiting_pokemons));
-	list_iterate(waiting_pokemons, &debug);
-	printf("\n");
-	//FIN DEBUG
-
+	return waiting_pokemons;
 
 }//*/
 
