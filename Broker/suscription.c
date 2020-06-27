@@ -150,10 +150,14 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		//crear logger para el suscriptor
 		char* nombre = string_new();
 		string_append(&nombre, "sub-");
-		string_append(&nombre, string_itoa(suscriber->ID_suscriber));
+		char* ID = string_itoa(suscriber->ID_suscriber); //TODO string_itoa sigue perdiendo bytes...
+		string_append(&nombre, ID);
+		free(ID);
 		char* file = string_duplicate(nombre);
 		string_append(&nombre, ".log");
 		suscriber->log = log_create(nombre, file, LOG_CONSOLE, LOG_LEVEL_TRACE);
+		free(nombre);
+		free(file);
 
 	}
 	else if(suscriber->connected == false){
@@ -267,7 +271,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
 				pthread_mutex_lock(&(semaforos->mutex_cola));
-				list_add(mensaje->subs_enviados, (void*)suscriber->ID_suscriber);
+				list_add(mensaje->subs_enviados, suscriber->ID_suscriber);
 				//verificar si el mensaje ya fue enviado a todos para borrar de la cola. (sigue en la cache)
 				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
@@ -284,7 +288,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
 				pthread_mutex_lock(&(semaforos->mutex_cola));
-				list_add(mensaje->subs_confirmados, (void*)suscriber->ID_suscriber);
+				list_add(mensaje->subs_confirmados, suscriber->ID_suscriber);
 				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
 				free(message_data);

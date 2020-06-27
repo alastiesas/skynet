@@ -46,6 +46,7 @@ t_pending* remove_ID_short(uint32_t ID_encontrar, t_list* colaIDs){
 
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
+	bool Default = strcmp(memory_algorithm, "DEFAULT") == 0;
 
 	bool _soy_ID_buscado(void* p){
 		return ((t_pending*) p)->ID_mensaje == (uint32_t) ID_encontrar;
@@ -55,8 +56,10 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		elemento = list_find(cola, _soy_ID_buscado);
 		if(elemento != NULL){
 			*bytes = elemento->bytes;
+			if(Default){
 			*datos_mensaje = malloc(*bytes);
 			memcpy(*datos_mensaje, elemento->datos_mensaje, *bytes);
+			}
 			if(elemento->ID_correlativo != 0)
 				*id_co = elemento->ID_correlativo;
 		}

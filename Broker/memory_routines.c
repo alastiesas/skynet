@@ -65,7 +65,7 @@ void delete_dynamic_partition(t_list** deleted_messages) {
 	}
 
 	log_info(obligatorio, "Se elimina la particion en posicion %d - %d", victim_partition->initial_position - mem, victim_partition->final_position - mem);
-	free(victim_partition);
+	//eliminar la particion implica convertirla en disponible (no se hacen frees)
 }
 
 void delete_fixed_partition() {
