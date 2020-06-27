@@ -76,25 +76,44 @@ void delete_partition() {
 
 }
 
-int32_t __find_available_dynamic_partition(uint32_t size, t_list** deleted_messages) {
+/* count < 0:
+ * 1. busco
+ * 1.1. si encuentro, me voy
+ * 1.2. si no encuentro, elimino
+ * 2. repito
+ * count == 0 || count ==1:
+ * 1. busco
+ * 1.1. si encuentro, me voy
+ * 1.2. si no encuentro, elimino
+ * 1.2.1. busco
+ * 1.2.1.1. si encuentro, me voy
+ * 1.2.1.2. si no encuentro, compacto
+ * 2. repito
+ * count > 1:
+ * 1. busco
+ * 1.1. si encuentro, me voy
+ * 1.2. si no encuentro y el contador es menor a la frecuencia de compactacion, elimino e incremento el contador
+ * 1.3. si no encuentro y el contador es igual a la frecuencia de compactacion, compacto y reinicio el contador
+ * 2. repito */
+int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_messages) {
 
 	int32_t available_partition_number;
+	uint32_t count = 0;
 
 	do {
 
 		available_partition_number = get_available_partition_number(size);
 		if (available_partition_number == -1) {
 
-			if (compaction_frequency < 2) {
+			if (compaction_frequency < 0) {
 
 				delete_dynamic_partition(deleted_messages);
-				memory_compaction();
 			} else {
 
-				if (count < compaction_frequency) {
+				count++;
+				if (count == 1 || (compaction_frequency > 1 && count < compaction_frequency)) {
 
 					delete_dynamic_partition(deleted_messages);
-					count++;
 				} else {
 
 					memory_compaction();
@@ -108,7 +127,7 @@ int32_t __find_available_dynamic_partition(uint32_t size, t_list** deleted_messa
 }
 
 
-int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_messages){
+int32_t _find_available_dynamic_partition(uint32_t size, t_list** deleted_messages){
 	int32_t available_partition_number = -1;
 	uint32_t current_compation_value = compaction_frequency;
 
