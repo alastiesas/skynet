@@ -154,7 +154,8 @@ void merge_partitions(uint32_t initial_partition_number, uint32_t final_partitio
 
 	initial_partition->final_position = final_partition->final_position;
 	initial_partition->size += final_partition->size;
-	list_remove(partitions, final_partition_number); //TOD change para que libere memoria
+	final_partition = list_remove(partitions, final_partition_number);
+	free(final_partition);
 }
 
 int32_t get_available_partition_number(uint32_t size) {
@@ -320,7 +321,7 @@ void create_first_partition(void* memory_initial_position, uint32_t memory_size)
 	list_add(partitions, free_big_partition);
 }
 
-void memory_compaction() {
+void _memory_compaction() {
 
 	uint32_t available_size = 0;
 	uint32_t unavailable_size = 0;
@@ -350,5 +351,69 @@ void memory_compaction() {
 
 	list_add(partitions, available_partition);
 	free(available_partition);
+	log_info(obligatorio, "Se ha compactado la memoria");
+}
+
+int32_t get_available_partition_index(){
+	t_partition* partition;
+	int32_t i;
+
+	for (i = 0; i < list_size(partitions); i++) {
+		partition = list_get(partitions, i);
+		if (partition->available)
+			return i;
+	}
+	return -1;
+}
+
+
+void memory_compaction() {
+	bool _available_partition(void* p){
+		return ((t_partition*) p)->available;
+	}
+
+	t_partition* free_partition;
+	t_partition* partition_ocupada;
+
+	int32_t partition_index;
+	partition_index = get_available_partition_index();	//encontrar primer particion libre
+	while((partition_index != -1) && ((partition_index + 1) < list_size(partitions))){	//si existe particion libre y existe particion siguiente
+		free_partition = list_get(partitions, partition_index);
+		partition_ocupada = list_get(partitions, partition_index + 1); //la siguiente siempre va a estar ocupada
+		void* data_position = partition_ocupada->initial_position;
+		uint32_t size_data = partition_ocupada->size;
+		void* free_position = free_partition->initial_position;
+
+		//correr la libre a la derecha
+		if(partition_ocupada->size < min_partition_size){
+			free_partition->initial_position += min_partition_size;
+			free_partition->final_position += min_partition_size;
+		}else{
+			free_partition->initial_position += partition_ocupada->size;
+			free_partition->final_position += partition_ocupada->size;
+		}
+		//correr la ocupada a la izquierda		//el tamano de las libres siempre tiene el tamano real
+		partition_ocupada->initial_position -= free_partition->size;
+		partition_ocupada->final_position -= free_partition->size;
+
+		//adentro de la lista mover la libre a la derecha
+		free_partition = list_remove(partitions, partition_index);
+		list_add_in_index(partitions, partition_index + 1, free_partition);
+
+		//consolidar si habia otra libre a la derecha
+		if(partition_index + 2 < list_size(partitions)){
+			t_partition* next_partition = list_get(partitions, partition_index + 2);
+			if(next_partition->available){
+				merge_partitions(partition_index + 1, partition_index + 2);
+			}
+		}
+
+		//mover los datos de la ocupada dentro de la memoria
+		memmove(free_position, data_position, size_data);
+
+		//repetir el while
+		partition_index = get_available_partition_index();
+	}
+
 	log_info(obligatorio, "Se ha compactado la memoria");
 }

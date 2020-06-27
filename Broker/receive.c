@@ -281,7 +281,7 @@ pthread_mutex_t get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue, 
 		return semaphores_caught->mutex_cola;
 		break;
 	default:
-		log_error(logger, "Error impossible");
+		log_error(logger, "Error impossible en get_mutex_and_queues_by_id()");
 		return semaphores_new->mutex_cola; //???
 		break;
 	}
