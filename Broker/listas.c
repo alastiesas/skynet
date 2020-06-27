@@ -15,8 +15,8 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 			*bytes = partition->size;
 			message_data = malloc(*bytes);
 			memcpy(message_data, partition->initial_position, *bytes);
+			update_LRU(partition);
 		}
-		update_LRU(partition);
 		pthread_mutex_unlock(&mutex_cache);
 
 		if(partition == NULL)
