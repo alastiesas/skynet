@@ -258,9 +258,10 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				if((result == -1) || (result == 0)){
 					close_suscriber_thread(suscriber);
 				}
-				else
+				else{
 					log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d. El send dio: %d (no asegura que lo haya recibido)", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber, result);
-
+					log_info(obligatorio, "Se envio el mensaje de ID %d al suscriptor %d", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber);
+				}
 				//agregar el ID del mensaje como enviado en suscriber->sent_messages
 				list_add(suscriber->sent_messages, elemento);
 
@@ -276,8 +277,10 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				if((result == -1) || (result == 0)){
 					close_suscriber_thread(suscriber);
 				}
-				else
+				else{
 					log_info(logger, "El suscriptor confirma haber recibido el mensaje");
+					log_info(obligatorio, "El suscriptor %d confirma haber recibido el mensaje %d", (uint32_t) suscriber->ID_suscriber, (uint32_t) elemento);
+				}
 
 				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
 				pthread_mutex_lock(&(semaforos->mutex_cola));

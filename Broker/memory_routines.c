@@ -63,6 +63,9 @@ void delete_dynamic_partition(t_list** deleted_messages) {
 			merge_partitions(previous_partition_number, victim_partition_number);
 		}
 	}
+
+	log_info(obligatorio, "Se elimina la particion en posicion %d - %d", victim_partition->initial_position - mem, victim_partition->final_position - mem);
+	free(victim_partition);
 }
 
 void delete_fixed_partition() {
@@ -336,4 +339,5 @@ void memory_compaction() {
 
 	list_add(partitions, available_partition);
 	free(available_partition);
+	log_info(obligatorio, "Se ha compactado la memoria");
 }

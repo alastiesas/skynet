@@ -301,4 +301,6 @@ pthread_mutex_lock(&(mutex_cache));
 
 pthread_mutex_unlock(&(mutex_cache));
 	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
+
+	//TODO indicar por log obligatorio cuando se realiza asociacion de bloques
 }

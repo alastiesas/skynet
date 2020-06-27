@@ -172,6 +172,7 @@ void dump_cache(void){
 
 	free(dump);
 	printf("dump.txt creado\n");
+	log_info(obligatorio, "Dump creado");
 }
 
 char* queue_to_string(queue_code queue_code){
