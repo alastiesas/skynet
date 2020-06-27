@@ -150,9 +150,9 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		//crear logger para el suscriptor
 		char* nombre = string_new();
 		string_append(&nombre, "sub-");
-		char* ID = string_itoa(suscriber->ID_suscriber); //TODO string_itoa sigue perdiendo bytes...
-		string_append(&nombre, ID);
-		free(ID);
+		char* ID_char = string_itoa(suscriber->ID_suscriber); //TODO string_itoa sigue perdiendo bytes...
+		string_append(&nombre, ID_char);
+		free(ID_char);
 		char* file = string_duplicate(nombre);
 		string_append(&nombre, ".log");
 		suscriber->log = log_create(nombre, file, LOG_CONSOLE, LOG_LEVEL_TRACE);
