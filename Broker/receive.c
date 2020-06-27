@@ -173,7 +173,7 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 	new_partition->available = false;
 	new_partition->size = size_message;
 	new_partition->queue_code = queue_code;
-	//TODO agregar lru si corresponde
+	new_partition->lru = 0; //para que no quede sin inicializar, pero en update lru se setea
 	t_list* deleted_messages = list_create();
 
 	pthread_mutex_lock(&(mutex_cache));
@@ -205,6 +205,7 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 		//guardar el message_data en la particion
 		memmove(new_partition->initial_position, message_data, size_message);
 
+		update_LRU(new_partition);
 		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", new_partition->initial_position - mem, new_partition->final_position - mem);
 	}
 	else{
@@ -237,7 +238,7 @@ void delete_messages_from_queue(t_list* deleted_messages){
 				t_mensaje = remove_element_given_ID_short(id_mensaje, queue);
 				free(t_mensaje->subs_enviados);
 				free(t_mensaje->subs_confirmados);
-				//if(t_mensaje->datos_mensaje != NULL)
+				//if(t_mensaje->datos_mensaje != NULL)	//TODO checkear que no cause memory LIK
 					//free(t_mensaje->datos_mensaje);
 				free(t_mensaje);
 				remove_ID_short(id_mensaje, queueIds);

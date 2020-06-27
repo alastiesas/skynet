@@ -250,6 +250,17 @@ uint32_t get_buddy_partition_size(uint32_t size){
 
 }
 
+void update_LRU(t_partition* touched_partition){
+	void _inc_lru(void* p) {
+		if(!((t_partition*) p)->available)	//solo usa el lru de las ocupadas
+			((t_partition*) p)->lru++;
+	}
+
+	list_iterate(partitions, (void*) _inc_lru);
+
+	touched_partition->lru = 0;
+}
+
 uint32_t get_partition_number_to_delete(uint32_t* message_id) {
 
 	t_partition* partition;
@@ -304,7 +315,7 @@ void create_first_partition(void* memory_initial_position, uint32_t memory_size)
 	free_big_partition->initial_position = memory_initial_position;
 	free_big_partition->final_position = free_big_partition->initial_position + memory_size;
 	free_big_partition->size = memory_size;
-	free_big_partition->lru = 0;
+	free_big_partition->lru = 0; //no se usa en particion vacia
 
 	list_add(partitions, free_big_partition);
 }
