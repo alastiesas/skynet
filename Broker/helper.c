@@ -74,7 +74,7 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t
     args->suscriptores = suscriptores;
 
 	pthread_create(&thread,NULL,(void*)broker_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
-	//pthread_detach(thread);
+	pthread_detach(thread);
 
 }
 
@@ -110,7 +110,7 @@ void broker_serves_client(void* input){
 	else
 		first_process(cod_op, socket, logger, colas);
 
-	//free(input);		//liberar args una vez cerrado el hilo
+	free(input);		//liberar args una vez cerrado el hilo
 }
 
 

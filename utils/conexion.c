@@ -133,9 +133,7 @@ void esperar_cliente(int32_t socket_servidor, t_log* logger)
     args->socket = socket_cliente;
     args->logger = logger;
 	pthread_create(&thread,NULL,(void*)listen_messages, (void *)args);		//TODO comprobar errores de pthread_create
-
-//	pthread_detach(thread);
-//	free(args);		//liberar args una vez cerrado el hilo
+	pthread_detach(thread);
 
 }
 
@@ -183,6 +181,7 @@ int32_t listen_messages(void* input)
 		vez++;
 	}
 
+	free(input);
 }
 
 void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
