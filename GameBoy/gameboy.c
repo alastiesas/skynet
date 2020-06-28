@@ -54,8 +54,8 @@ int main(int argc, char* argv[]) {
 		t_package* package; /*pending1*/
 		if (strcmp(argv[1], "BROKER") == 0) {
 
-			ip = config_get_string_value(config, "BROKER_IP");
-			port = config_get_string_value(config, "BROKER_PORT");
+			ip = config_get_string_value(config, "IP_BROKER");
+			port = config_get_string_value(config, "PUERTO_BROKER");
 			if (argc == 4 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy BROKER GET_POKEMON [POKEMON]
 				t_message_get* get;
@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
 
 		} else if (strcmp(argv[1], "GAMECARD") == 0) {
 
-			ip = config_get_string_value(config, "GAMECARD_IP");
-			port = config_get_string_value(config, "GAMECARD_PORT");
+			ip = config_get_string_value(config, "IP_GAMECARD");
+			port = config_get_string_value(config, "PUERTO_CAMECARD");
 			if (argc == 5 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy GAMECARD GET_POKEMON [POKEMON] [ID_MENSAJE]
 				t_message_get* get;
@@ -135,8 +135,8 @@ int main(int argc, char* argv[]) {
 			}
 
 		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6 && strcmp(argv[2], "APPEARED_POKEMON") == 0) {
-			ip = config_get_string_value(config, "TEAM_IP");
-			port = config_get_string_value(config, "TEAM_PORT");
+			ip = config_get_string_value(config, "IP_TEAM");
+			port = config_get_string_value(config, "PUERTO_TEAM");
 			//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]
 			t_message_appeared* appeared;
 			appeared = create_message_appeared_long(0, argv[3], atoi(argv[4]), atoi(argv[5]));	//TODO ver id correlativo

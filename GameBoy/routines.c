@@ -4,8 +4,8 @@
 
 void subscribe_timed(queue_code queue_code, int time) {
 
-	ip = config_get_string_value(config, "BROKER_IP");
-	port = config_get_string_value(config, "BROKER_PORT");
+	ip = config_get_string_value(config, "IP_BROKER");
+	port = config_get_string_value(config, "PUERTO_BROKER");
 
 	int32_t socket = connect_to_server(ip, port, 4, logger); //TODO el gameboy no tiene tiempo de reintento?
 
