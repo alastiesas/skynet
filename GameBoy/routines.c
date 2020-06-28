@@ -4,6 +4,8 @@
 
 void subscribe_timed(queue_code queue_code, int time) {
 
+	puts(" 4. subscription instruction");
+
 	ip = config_get_string_value(gameboy_config, "IP_BROKER");
 	port = config_get_string_value(gameboy_config, "PUERTO_BROKER");
 
