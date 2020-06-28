@@ -9,12 +9,14 @@
 #define LOG_CONSOLE true
 
 int main(int argc, char* argv[]) {
-	puts("starting gameboy");
+
+	puts(" 0. starting gameboy process");
 
 	gameboy_log = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
-	log_info(gameboy_log, "log created");
+	puts(" 1. gameboy log created");
+
 	gameboy_config = config_create("gameboy.config");
-	log_info(gameboy_log, "config created");
+	puts(" 2. gameboy config created");
 
 	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
 		//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
@@ -137,7 +139,7 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	puts("ending gameboy");
+	puts(" 5. ending gameboy process");
 	log_destroy(gameboy_log);
 	config_destroy(gameboy_config);
 	return EXIT_SUCCESS;
