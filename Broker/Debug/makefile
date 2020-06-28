@@ -25,7 +25,7 @@ endif
 all: broker
 
 dependents:
-	-cd /home/utnso/tp-2020-1c-Skynet/utils/Debug && $(MAKE) clean all
+	-cd /home/utnso/tp-2020-1c-Skynet/utils/Debug && $(MAKE) all
 
 # Tool invocations
 broker: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so

@@ -44,6 +44,13 @@ t_pending* remove_ID_short(uint32_t ID_encontrar, t_list* colaIDs){
 	return list_remove_by_condition(colaIDs, _soy_ID_buscado);
 }
 
+t_pending* find_element_given_ID_short(void* ID_encontrar, t_list* colaIDs){
+	bool _soy_ID_buscado(void* p){
+		return ((uint32_t) p) == (uint32_t) ID_encontrar;
+	}
+	return list_find(colaIDs, _soy_ID_buscado);
+}
+
 t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
 	bool Default = strcmp(memory_algorithm, "DEFAULT") == 0;

@@ -271,7 +271,8 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue enviado a este
 				pthread_mutex_lock(&(semaforos->mutex_cola));
-				list_add(mensaje->subs_enviados, suscriber->ID_suscriber);
+				if(find_element_given_ID_short(elemento, colaIDs) != NULL)
+					list_add(mensaje->subs_enviados, (void*)suscriber->ID_suscriber);
 				//verificar si el mensaje ya fue enviado a todos para borrar de la cola. (sigue en la cache)
 				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
@@ -288,7 +289,8 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 				//Agregar el ID suscriptor en el mensaje de la cola, como que ya fue confirmado para este
 				pthread_mutex_lock(&(semaforos->mutex_cola));
-				list_add(mensaje->subs_confirmados, suscriber->ID_suscriber);
+				if(find_element_given_ID_short(elemento, colaIDs) != NULL)
+					list_add(mensaje->subs_confirmados, (void*)suscriber->ID_suscriber);
 				pthread_mutex_unlock(&(semaforos->mutex_cola));
 
 				free(message_data);
@@ -301,6 +303,8 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 
 	}
+	list_destroy(not_sent_ids);
+	list_destroy(current_global_message_ids);
 }
 
 void close_suscriber_thread(t_suscriber* suscriber){

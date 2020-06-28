@@ -41,6 +41,8 @@ void delete_dynamic_partition(t_list** deleted_messages) {
 	t_partition* victim_partition = list_get(partitions, victim_partition_number);
 	list_add(*deleted_messages, (void*)message_id);
 	list_add(*deleted_messages, (void*)(victim_partition->queue_code));
+	uint32_t log_initial = victim_partition->initial_position - mem;
+	uint32_t log_final = victim_partition->final_position - mem;
 
 	victim_partition->available = true;
 	if(min_partition_size > victim_partition->size)
@@ -64,7 +66,7 @@ void delete_dynamic_partition(t_list** deleted_messages) {
 		}
 	}
 
-	log_info(obligatorio, "Se elimina la particion en posicion %d - %d", victim_partition->initial_position - mem, victim_partition->final_position - mem);
+	log_info(obligatorio, "Se elimina la particion en posicion %d - %d", log_initial, log_final);
 	//eliminar la particion implica convertirla en disponible (no se hacen frees)
 }
 

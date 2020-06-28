@@ -236,8 +236,8 @@ void delete_messages_from_queue(t_list* deleted_messages){
 			mutex_cola = get_mutex_and_queues_by_id(queue_id, &queue, &queueIds);
 			pthread_mutex_lock(&(mutex_cola));
 				t_mensaje = remove_element_given_ID_short(id_mensaje, queue);
-				free(t_mensaje->subs_enviados);
-				free(t_mensaje->subs_confirmados);
+				list_destroy(t_mensaje->subs_enviados);
+				list_destroy(t_mensaje->subs_confirmados);
 				//if(t_mensaje->datos_mensaje != NULL)	//TODO checkear que no cause memory LIK
 					//free(t_mensaje->datos_mensaje);
 				free(t_mensaje);
