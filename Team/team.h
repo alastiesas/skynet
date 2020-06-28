@@ -102,7 +102,9 @@ void transition_block_to_exit(uint32_t index);
 void long_term_scheduler();
 bool possible_deadlock();
 void deadlock_handler();
-void deadlock_detector();
+void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table, t_dictionary* held_table_lasti);
+void bad_couples(t_dictionary* waiting_table,t_dictionary* held_table, t_dictionary* held_table_lasti);
+void search_trade_couple(t_dictionary* waiting_table, t_dictionary* held_table);
 void* short_thread();
 void fifo_algorithm();
 void rr_algorithm();
@@ -175,11 +177,13 @@ void initialize_trainers()
 	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
 	int i = 0;
 	while(positions_config[i] != NULL){
-		t_trainer* test_entrenador = initialize_trainer(i+1, positions_config[i], objectives_config[i], pokemons_config[i]);
-		if(trainer_success_objective(test_entrenador))
-			list_add(exit_list, test_entrenador);
-		else
-			list_add(new_list, test_entrenador);
+		t_trainer* trainer = initialize_trainer(i+1, positions_config[i], objectives_config[i], pokemons_config[i]);
+		if(trainer_success_objective(trainer))
+			list_add(exit_list, trainer);
+		else if(trainer_full(trainer)) {
+			list_add(block_list, trainer);
+		} else
+			list_add(new_list, trainer);
 		i++;
 	}
 	//liberar memoria (todos los char**)
@@ -382,6 +386,8 @@ void* trainer_thread(t_callback* callback_thread)
 void long_thread() {
 	sem_init(&sem_long, 0, 0);
 	sem_init(&sem_scheduler, 0, 1);
+	//sem post para pruebas
+	sem_post(&sem_long);
 	while(1){
 		sem_wait(&sem_long);
 		sem_wait(&sem_scheduler);
@@ -466,8 +472,9 @@ bool possible_deadlock(){
 void deadlock_handler(){
 	t_dictionary* waiting_table = dictionary_create();
 	t_dictionary* held_table = dictionary_create();
+	t_dictionary* held_table_lasti = dictionary_create();
 
-	deadlock_detector(waiting_table,held_table);
+	deadlock_detector(waiting_table,held_table, held_table_lasti);
 	//fixeamos parejas perfectas
 
 	void debug_table(char* key, t_list* table) {
@@ -483,16 +490,32 @@ void deadlock_handler(){
 	dictionary_iterator(waiting_table, &debug_table);
 	printf("TABLA DE HELD:\n");
 	dictionary_iterator(held_table, &debug_table);
+	bad_couples(waiting_table,held_table,held_table_lasti);
 
-	dictionary_clean_and_destroy_elements(waiting_table, &list_destroy);
-	dictionary_clean_and_destroy_elements(held_table, &list_destroy);
+	debug_trainer(list_get(block_list,0));
+	debug_trainer(list_get(block_list,1));
+	//t_list* pokemons = dictionary_get(held_table_lasti,"167738992");
+	//printf("mi diccionario tiene %s\n", list_get(pokemons,0));
+	//dictionary_clean_and_destroy_elements(waiting_table, &list_destroy);
+	//dictionary_clean_and_destroy_elements(held_table, &list_destroy);
 
-	deadlock_detector(waiting_table,held_table);
+	//deadlock_detector(waiting_table,held_table);
+
+	//PAREJAS INPERFECTAS
+
+	// 2 TABLAS HOLD - WAITING
+
+	//RECORRO HOLD Y ASIGNO AL ENTRENADOR QUE TENGA MAS CERCANO
+	//pokemon (char*) -> trainers (t_list*)
+	//para el primer pokemon, agarro el primer entrenador en la lista. Con este entrandor pokemon voy al otro mapa
+	//y en ese pokemon agarro al entrenador que este mas cerca del que seleccione.
+
+
 	//fixeamos parejas
 
 }
 //printf("ROMPE EN ");//DEBUG TODO sacar
-void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
+void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table, t_dictionary* held_table_lasti) {
 	//tomo los entrenadores que esten interbloqueados
 	t_list* locked_trainers = list_filter(block_list, &trainer_locked);
 	printf("ENTRENADORES BLOQUEADOS: %d\n", list_size(locked_trainers));
@@ -506,6 +529,7 @@ void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 		//*id = trainer->id;
 		t_list* waiting_pokemons = trainer_waiting_pokemons(trainer);
 		t_list* held_pokemons = trainer_held_pokemons(trainer);
+
 		void add_to_waiting(char* pokemon) {
 			printf("ENTRA EN [add_to_waiting(pokemon)]\n");
 			if(dictionary_has_key(waiting_table, pokemon)){
@@ -530,25 +554,224 @@ void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 			}
 
 		}
-		printf("ROMPE EN list_iterate(held_pokemons, &add_to_held);\n");
+		printf("el size de la lista%d\n",list_size(waiting_pokemons));
+
 		list_iterate(held_pokemons, &add_to_held);
-		printf("ROMPE EN list_iterate(waiting_pokemons, &add_to_waiting);\n");
+
 		list_iterate(waiting_pokemons, &add_to_waiting);
 
+		//Aca armo mi 2 DICCIONARIO LASTI
+		printf("the trainer id is %d\n",trainer);
+
+		if(!dictionary_has_key(held_table_lasti, trainer)){
+			dictionary_put(held_table_lasti,trainer, held_pokemons);
+		} else {
+			printf("entrenador repedido en el mapa de held deadlock\n");
+		}
+
+
 	}
-    printf("ROMPE EN list_iterate(locked_trainers, &add_to_tables);\n");//DEBUG TODO sacar
+
 	list_iterate(locked_trainers, &add_to_tables);
+
+	//printf("dictionary has %d\n",dictionary_has_key(waiting_table,"Pidgey"));
+
+	//printf("trainer has charmander %d\n",list_get((dictionary_get(waiting_table, "Pidgey")),0));
 
 	//buscar posibles intercambios parejas > indivuales
 
+}
+
+void bad_couples(t_dictionary* waiting_table,t_dictionary* held_table, t_dictionary* held_table_lasti)
+{
+	//RECORRO LISTA DE TRAINERS, por cada trainer encuentro su pareja en la tabla de waiting y guardo la que tenga menor distancia.
+
+	void assign_trade_first(char* pokemon,t_list* trainer_list){
+		//POR CADA ENTRENADOR ENTRO CON EL
+		void assing_trade_second(t_trainer* trainer){
+			if(dictionary_has_key(held_table,pokemon)){
+				//aca me traigo los tainers de held y tengo que comparar en cada uno la distancia.
+				t_list* traine_list_held = dictionary_get(held_table,pokemon);
+				int32_t position = closest_free_trainer_deadlock(traine_list_held, trainer->position);
+				t_trainer* trainer_couple = list_get(traine_list_held,position);
+				if(trainer->action == FREE && trainer_couple->action == FREE){
+
+
+					trainer->action = MOVE;
+					free(trainer->target->pokemon);
+					trainer->target->pokemon = malloc(strlen(pokemon)+1);
+					memcpy(trainer->target->pokemon, pokemon, strlen(pokemon)+1);
+					trainer->target->trainer_trade_index = position;
+					trainer->target->position = trainer_couple->position;
+					trainer->target->catching = 0;
+
+					trainer_couple->action = TRADE;
+					trainer_couple->target->catching = 0;
+					free(trainer_couple->target->pokemon);
+					t_list* pokemons_from_held = dictionary_get(held_table_lasti,trainer);
+					char* pokemon_from_held = list_remove(pokemons_from_held, 0);
+					trainer_couple->target->pokemon = malloc(strlen(pokemon_from_held)+1);
+					memcpy(trainer_couple->target->pokemon, pokemon_from_held, strlen(pokemon_from_held)+1);
+					trainer_couple->target->position = trainer_couple->position;
+
+
+					assign_trade_couple(trainer, pokemon_from_held, trainer_couple, pokemon);
+				}
+			}
+
+		}
+		list_iterate(trainer_list,&assing_trade_second);
+	}
 
 
 
+	//list_iterate(waiting_table, &assign_trade)
+	//ITERO SOBRE LOS QUE QUIERO
+	dictionary_iterator(waiting_table, &assign_trade_first);
+	//ITERO WAITING por cada uno, entro a held y agarro al trainer mas cercano. Luego a uno le pongo action MOVE (al destino) y al otro TRADE
+	//para la seleccion ambos trainner deben estar en FREE
+	//list_iterate(, void(*closure)(void*));
+}
 
+void resolve_deadlocks(t_dictionary* waiting_table, t_dictionary* held_table) {
+	printf("\tENTRA EN [resolve_deadlocks]\n");
+	void debug_table(char* key, t_list* table) {
+		void debug_list(t_trainer* trainer) {
+			printf(" [%d] ", trainer->id);
+		}
 
+		printf("%s: ", key);
+		list_iterate(table, &debug_list);
+		printf("\n");
+	}
+	printf("\n\tTABLA DE WAITING:\n");
+	dictionary_iterator(waiting_table, &debug_table);
+	printf("\tTABLA DE HELD:\n");
+	dictionary_iterator(held_table, &debug_table);
+	//iterar waitng table
+	//para cada entrenador:
+	//1) tomar la key en la que esta parado pero de la held
+	//2) filtrar esos entrenadores por quienes estan libres Y necesitan alguno de los pokemones que le sobra al trainer actual
+	//3)iterar lista filtrada buscando al más cercano
+
+	void iterarwaiting_trainers(char* pokemon, t_list* waiting_trainers) {
+
+		printf("ENTRA EN[iterarwaiting_trainers] -> pokemon: %s\n", pokemon);
+		t_list* holding_trainers = dictionary_get(held_table, pokemon);
+		printf("OBTIENE LOS HOLDING_TRAINERS\n");
+
+		void iterar_waiting_trainer(t_trainer* waiting_trainer) {
+			printf("ENTRA EN [iterar_waiting_trainer]\n");
+			find_best_match(waiting_trainer, pokemon, holding_trainers);
+			printf("SALE DE [iterar_waiting_trainer]\n");
+		}
+
+		printf("ROMPE EN [list_iterate(waiting_trainers, &iterar_waiting_trainer);]\n");
+		list_iterate(waiting_trainers, &iterar_waiting_trainer);
+	}
+
+	printf("ROMPE EN [list_iterate(waiting_table, &iterarwaiting_trainers);]\n");
+	dictionary_iterator(waiting_table, &iterarwaiting_trainers);
+}
+
+//resolve_deadlocks2 ojo que no anda
+void resolve_deadlocks2(t_dictionary* waiting_table, t_dictionary* held_table) {
+printf("ENTRA EN [resolve_deadlocks]\n");
+
+	void find_couple(char* pokemon, t_list* waiting_trainers) {
+		printf("ENTRA EN [find_couple]\n");
+		//busco los entrenadores que tienen el pokemon que se necesita
+		t_list* holding_trainers = dictionary_get(held_table, pokemon);
+
+		void find_match(t_trainer* trainer) {
+			printf("ENTRA EN [try_trade]\n");
+			uint32_t match_distance = -1;
+			t_trainer* match = NULL;
+			void best_match(t_trainer* possible_match) {
+				printf("ENTRA EN [best_match]\n");
+				if(possible_match->action == FREE){
+					printf("CALCULA LA DISTANCIA DEL POSIBLE MATCH\n");
+					int32_t possible_match_distance = distance(trainer->position, possible_match->position);
+					printf("CALCULA LA DISTANCIA DEL POSIBLE MATCH\n");
+					if(match_distance < 0 || possible_match_distance < match_distance) {
+						printf("\tIT'S A MATCH!\n");
+						match_distance = possible_match_distance;
+						match = possible_match;
+					}
+				}else
+					printf("ACTION != FREE\n");//sino esta free es que ya se paso a trade
+			}
+
+			printf("ROMPE EN [list_iterate(holding_trainers, &best_match);]\n");
+			list_iterate(holding_trainers, &best_match);
+			printf("TERMINO [list_iterate(holding_trainers, &best_match);]\n");
+			//assign_trade_couple()
+		}
+
+		list_iterate(waiting_trainers, &find_match);
+		printf("TERMINO [list_iterate(waiting_trainers, &find_match);]\n");
+
+	}
+
+	dictionary_iterator(waiting_table, &find_couple);
+	printf("TERMINO [dictionary_iterator(waiting_table, &find_couple);]\n");
+	sleep(10);
 
 
 }
+
+void find_best_match(t_trainer* trainer, char* pokemon, t_list* trainers_list) {
+	printf("ENTRA EN[find_best_match]\n");
+	t_list* trainer_holds = trainer_held_pokemons(trainer);
+	t_trainer* best_match = NULL;
+	uint32_t best_match_distance = -1;
+	char* pokemon_exchange = NULL;
+	void search_match(t_trainer* match_trainer) {
+		printf("ENTRA EN [search_match]\n");
+
+		bool needs_what_this_holds(char* need_pokemon) {
+			printf("ENTRA EN [needs_what_this_holds]\n");
+
+			//REVISAR SI NECESITA ALGUN POKEMON Y ASIGNARLO PARA EL INTERCAMBIO
+			bool needs = false;
+			if(trainer_needs(match_trainer, need_pokemon)) {
+				printf("ENTRA EN [if(trainer_needs(match_trainer, need_pokemon))]\n");
+				pokemon_exchange = create_copy_string(need_pokemon);
+				needs = true;
+			} else {
+				printf("LA CAGASTE\n");
+			}
+		return needs;
+		}
+		//si el match necesita alguno de los pokemones que el trainer retiene. . .
+		printf("ROMPE EN [list_any_satisfy(trainer_holds, &needs_what_this_holds)]\n");
+		if(list_any_satisfy(trainer_holds, &needs_what_this_holds)) {
+			printf("NO ROMPE EN [list_any_satisfy(trainer_holds, &needs_what_this_holds)]\n");
+			//reviso la distancia y si está free
+			if(match_trainer->action == FREE) {
+				//tomo la distancia
+				int32_t match_distance = distance(trainer->position, match_trainer->position);
+				//si es el primero en ser evaluado o si está mas cerca que el anterior
+				if(best_match_distance < 0 || match_distance < best_match_distance) {
+					best_match = match_trainer;
+
+				}
+			}
+		}
+
+	}
+	list_iterate(trainers_list, search_match);
+	if(best_match != NULL) {
+		assign_trade_couple(trainer, pokemon_exchange, best_match, pokemon);
+	}
+}
+
+void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer2, char* pokemon2) {
+	printf("DEBE REALIZARSE EL SIGUIENTE INTERCAMBIO\n");
+	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer1->id, pokemon1, trainer2->id);
+	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer2->id, pokemon2, trainer1->id);
+	sleep(20);
+}//*/
 
 void short_term_scheduler()
 {
@@ -667,10 +890,10 @@ void trainer_assign_job(char* pokemon, t_list* positions)
 			t_trainer* trainer_new = NULL;
 			t_trainer* trainer_block = NULL;
 			printf("\n---Buscar entrenador más cercano a %s (%d, %d) en la cola NEW---\n", pokemon, position->x, position->y);
-			int32_t closest_from_new = closest_free_trainer(new_list, position);
+			int32_t closest_from_new = closest_free_trainer_job(new_list, position);
 
 			printf("\n---Buscar entrenador más cercano a (%d. %d) en la cola BLOCKED---\n", position->x, position->y);
-			int32_t closest_from_block = closest_free_trainer(block_list, position);
+			int32_t closest_from_block = closest_free_trainer_job(block_list, position);
 
 			if(closest_from_new >= 0){
 				trainer_new = list_get(new_list,closest_from_new);

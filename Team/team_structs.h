@@ -33,6 +33,7 @@ typedef struct {
 	char* pokemon;
 	t_position* position;
 	uint32_t distance;
+	uint32_t trainer_trade_index;
 	bool catching;
 } t_target;
 
@@ -104,12 +105,15 @@ void add_pokemon(t_trainer* trainer, char*pokemon);
 
 //consultas
 bool success_objective(t_objective* objective);
-uint32_t dinstance(t_position* current, t_position* destiny);
+uint32_t distance(t_position* current, t_position* destiny);
 bool trainer_full(t_trainer* trainer);
 bool trainer_free_space(t_trainer* trainer);
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position);
-int32_t closest_free_trainer(t_list* entrenadores, t_position* destiny);
+int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* channel);
+int32_t closest_free_trainer_job(t_list* list_trainer, t_position* destiny);
+int32_t closest_free_trainer_deadlock(t_list* list_trainer, t_position* destiny);
 bool trainer_success_objective(t_trainer* trainer);
+bool trainer_needs(t_trainer* trainer, char* pokemon);
 bool trainer_locked(t_trainer* trainer);
 t_list* trainer_held_pokemons(t_trainer* trainer);
 t_list* trainer_waiting_pokemons(t_trainer* trainer);//*/

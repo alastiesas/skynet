@@ -86,7 +86,7 @@ bool success_objective(t_objective* objective) {
 	return objective->count == objective->caught;
 }
 
-uint32_t dinstance(t_position* current, t_position* destiny) {
+uint32_t distance(t_position* current, t_position* destiny) {
 	uint32_t distance_x = abs(current->x-destiny->x);
 	uint32_t distance_y = abs(current->y-destiny->y);
 
@@ -105,10 +105,10 @@ bool trainer_free_space(t_trainer* trainer) {
 }
 
 bool first_closer(t_trainer* trainer, t_trainer* trainer2,t_position* position){
-	return  dinstance(trainer->position, position) <= dinstance(trainer2->position, position);
+	return  distance(trainer->position, position) <= distance(trainer2->position, position);
 }
 
-int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
+int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* channel)
 {
 	//printf("elements count %d\",list_trainer->elements_count);
 	int32_t i = -1;
@@ -120,23 +120,26 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 	{
 
 		t_link_element* element = list_trainer->head;
-		uint32_t distance = -1;
+		uint32_t closest_distance = -1;
 		//uint32_t distance = dinstance(((t_trainer*)element->data)->position, destiny);
 		//t_trainer* trainer = (t_trainer*) element->data;
 
 		//element = element->next;
 		i = 0;
 		while(element != NULL) {
-			uint32_t distance_aux = dinstance(((t_trainer*)element->data)->position, destiny);
+			uint32_t distance_aux = distance(((t_trainer*)element->data)->position, destiny);
 			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
 			printf("distance actual de este entrenador: %d\n" ,distance_aux);
-			printf("distance minima: %d\n" ,distance);
+			printf("distance minima: %d\n" ,closest_distance);
 			printf("el actions es (0=libre): %d\n", ((t_trainer*)element->data)->action);
 			printf("teiene espacio en inventario: %d\n" ,trainer_free_space(((t_trainer*)element->data)));
-			debug_trainer(((t_trainer*)element->data));
+			//debug_trainer(((t_trainer*)element->data));
+			bool trainer_free_space2 = 1;
+			if(strcmp(channel,"job") == 0)
+				trainer_free_space2 = trainer_free_space(((t_trainer*)element->data));
 
-			if(((t_trainer*)element->data)->action == FREE && trainer_free_space(((t_trainer*)element->data)) && (distance_aux < distance || distance < 0)){
-				distance = distance_aux;
+			if(((t_trainer*)element->data)->action == FREE && trainer_free_space2 && (distance_aux < closest_distance || closest_distance < 0)){
+				closest_distance = distance_aux;
 				//trainer = (t_trainer*) element->data;
 				index = i;
 				printf("-> SELECCIONADO %d\n",((t_trainer*)element->data)->id);
@@ -149,6 +152,16 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny)
 	}
 	printf("El trainer seleccionado fue: %d\n(indice en la lista actual)\n\n",index);
 	return index;
+}
+
+int32_t closest_free_trainer_job(t_list* list_trainer, t_position* destiny)
+{
+	return closest_free_trainer(list_trainer, destiny, "job");
+}
+
+int32_t closest_free_trainer_deadlock(t_list* list_trainer, t_position* destiny)
+{
+	return closest_free_trainer(list_trainer, destiny, "deadlock");
 }
 
 void add_pokemon(t_trainer* trainer, char*pokemon)
@@ -211,6 +224,26 @@ bool trainer_success_objective(t_trainer* trainer)
 	//dictionary_destroy_and_destroy_elements(dictionary, free);
 	//ACA HAY QUE LIMPIAR EL DICCIONARIO TODO
 	return success;
+}
+
+
+bool trainer_needs(t_trainer* trainer, char* pokemon) {
+	bool needs = false;
+	int32_t count_objective= 0;
+	int32_t count_pokemon= 0;
+	int32_t i= 0;
+
+	while(trainer->objectives[i] != NULL) {
+		if(strcmp(trainer->objectives[i], pokemon) == 0) {
+			count_objective++;
+		}
+	}
+	while(trainer->pokemons[i] != NULL) {
+		if(strcmp(trainer->pokemons[i], pokemon) == 0) {
+			count_pokemon++;
+		}
+	}
+	needs = count_objective > count_pokemon;
 }
 
 bool trainer_locked(t_trainer* trainer) {

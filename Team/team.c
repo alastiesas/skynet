@@ -28,10 +28,6 @@ int main(void)
 	config = config_create("team.config");
 
 
-	subscribe(OPERATION_APPEARED);
-	subscribe(OPERATION_LOCALIZED);
-	subscribe(OPERATION_CAUGHT);
-	sleep(5);
 
 	pthread_t sender_tid;
 	pthread_create(&sender_tid, NULL, sender_thread, NULL);
@@ -49,6 +45,15 @@ int main(void)
 
 	initialize_trainers();
 	initialize_global_objectives();
+
+//	subscribe(OPERATION_APPEARED);
+//	subscribe(OPERATION_LOCALIZED);
+//	subscribe(OPERATION_CAUGHT);
+//	sleep(5);
+
+	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
+
+	//FIN DEBUG DEADLOCKS
 
 /*
 	t_position* test_position_1 = malloc(sizeof(t_position));
