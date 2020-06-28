@@ -1,14 +1,3 @@
-/*
- ============================================================================
- Name        : broker.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
-
-
 #include <pthread.h>
 #include<commons/log.h>
 #include<commons/config.h>
@@ -17,17 +6,15 @@
 #include <mensajes.h>
 #include "gameboy.h"
 
-#define LOG_CONSOLE true /*pending2*/
+#define LOG_CONSOLE true
 
-
-/*pending3*/
 int main(int argc, char* argv[]) {
 	puts("starting gameboy");
 
-	logger = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
-	log_info(logger, "log created");
-	config = config_create("gameboy.config");
-	log_info(logger, "config created");
+	gameboy_log = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
+	log_info(gameboy_log, "log created");
+	gameboy_config = config_create("gameboy.config");
+	log_info(gameboy_log, "config created");
 
 	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
 		//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
@@ -54,8 +41,8 @@ int main(int argc, char* argv[]) {
 		t_package* package; /*pending1*/
 		if (strcmp(argv[1], "BROKER") == 0) {
 
-			ip = config_get_string_value(config, "IP_BROKER");
-			port = config_get_string_value(config, "PUERTO_BROKER");
+			ip = config_get_string_value(gameboy_config, "IP_BROKER");
+			port = config_get_string_value(gameboy_config, "PUERTO_BROKER");
 			if (argc == 4 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy BROKER GET_POKEMON [POKEMON]
 				t_message_get* get;
@@ -105,8 +92,8 @@ int main(int argc, char* argv[]) {
 
 		} else if (strcmp(argv[1], "GAMECARD") == 0) {
 
-			ip = config_get_string_value(config, "IP_GAMECARD");
-			port = config_get_string_value(config, "PUERTO_CAMECARD");
+			ip = config_get_string_value(gameboy_config, "IP_GAMECARD");
+			port = config_get_string_value(gameboy_config, "PUERTO_CAMECARD");
 			if (argc == 5 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy GAMECARD GET_POKEMON [POKEMON] [ID_MENSAJE]
 				t_message_get* get;
@@ -135,8 +122,8 @@ int main(int argc, char* argv[]) {
 			}
 
 		} else if (strcmp(argv[1], "TEAM") == 0 && argc == 6 && strcmp(argv[2], "APPEARED_POKEMON") == 0) {
-			ip = config_get_string_value(config, "IP_TEAM");
-			port = config_get_string_value(config, "PUERTO_TEAM");
+			ip = config_get_string_value(gameboy_config, "IP_TEAM");
+			port = config_get_string_value(gameboy_config, "PUERTO_TEAM");
 			//gameboy TEAM APPEARED_POKEMON [POKEMON] [POSX] [POSY]
 			t_message_appeared* appeared;
 			appeared = create_message_appeared_long(0, argv[3], atoi(argv[4]), atoi(argv[5]));	//TODO ver id correlativo
@@ -151,8 +138,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	puts("ending gameboy");
-	log_destroy(logger);
-	config_destroy(config);
+	log_destroy(gameboy_log);
+	config_destroy(gameboy_config);
 	return EXIT_SUCCESS;
 }
 

@@ -6,8 +6,8 @@
 #include <commons/config.h>
 #include "routines.h"
 
-t_log* logger;
-t_config* config;
+t_log* gameboy_log;
+t_config* gameboy_config;
 char* ip;
 char* port;
 
