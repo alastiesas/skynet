@@ -25,13 +25,13 @@ endif
 all: broker
 
 dependents:
-	-cd /home/utnso/tp-2020-1c-Skynet/utils/Debug && $(MAKE) clean all
+	-cd /home/utnso/operating_systems/development/utils/Debug && $(MAKE) clean all
 
 # Tool invocations
-broker: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so
+broker: $(OBJS) $(USER_OBJS) /home/utnso/operating_systems/development/utils/Debug/libutils.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2020-1c-Skynet/utils/Debug" -o "broker" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/operating_systems/development/utils/Debug" -o "broker" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -41,6 +41,6 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
-/home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so:
+/home/utnso/operating_systems/development/utils/Debug/libutils.so:
 
 -include ../makefile.targets
