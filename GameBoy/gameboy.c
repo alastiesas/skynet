@@ -10,13 +10,38 @@
 
 int main(int argc, char* argv[]) {
 
-	puts(" 0. starting gameboy process");
+	gameboy_behavior_log = log_create("gameboy_behavior.log", "gameboy behavior", LOG_CONSOLE, LOG_LEVEL_INFO);
+	log_info(gameboy_behavior_log, " 0. starting process");
 
 	gameboy_log = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
-	puts(" 1. gameboy log created");
+	log_info(gameboy_behavior_log, " 1. log created");
 
 	gameboy_config = config_create("gameboy.config");
-	puts(" 2. gameboy config created");
+	log_info(gameboy_behavior_log, " 2. config created");
+
+	char* log_line = (char*) malloc(50);
+	strcpy(log_line, "      id=");
+	strcat(log_line, config_get_string_value(gameboy_config, "ID"));
+	log_info(gameboy_behavior_log, log_line);
+	strcpy(log_line, "      ip_broker=");
+	strcat(log_line, config_get_string_value(gameboy_config, "IP_BROKER"));
+	log_info(gameboy_behavior_log, log_line);
+	strcpy(log_line, "      ip_gamecard=");
+	strcat(log_line, config_get_string_value(gameboy_config, "IP_GAMECARD"));
+	log_info(gameboy_behavior_log, log_line);
+	strcpy(log_line, "      ip_team=");
+	strcat(log_line, config_get_string_value(gameboy_config, "IP_TEAM"));
+	log_info(gameboy_behavior_log, log_line);
+	strcpy(log_line, "      puerto_broker=");
+	strcat(log_line, config_get_string_value(gameboy_config, "PUERTO_BROKER"));
+	log_info(gameboy_behavior_log, log_line);
+	strcpy(log_line, "      puerto_gamecard=");
+	strcat(log_line, config_get_string_value(gameboy_config, "PUERTO_GAMECARD"));
+	log_info(gameboy_behavior_log, log_line);
+	strcpy(log_line, "      puerto_team=");
+	strcat(log_line, config_get_string_value(gameboy_config, "PUERTO_TEAM"));
+	log_info(gameboy_behavior_log, log_line);
+	free(log_line);
 
 	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
 		//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
@@ -139,9 +164,10 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	puts(" 5. ending gameboy process");
-	log_destroy(gameboy_log);
+	log_info(gameboy_behavior_log, " 4. ending process");
 	config_destroy(gameboy_config);
+	log_destroy(gameboy_log);
+	log_destroy(gameboy_behavior_log);
 	return EXIT_SUCCESS;
 }
 

@@ -6,6 +6,7 @@
 #include <commons/config.h>
 #include "routines.h"
 
+t_log* gameboy_behavior_log;
 t_log* gameboy_log;
 t_config* gameboy_config;
 char* ip;
