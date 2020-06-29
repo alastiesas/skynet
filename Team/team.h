@@ -127,6 +127,10 @@ void move(t_trainer* trainer);
 void catch(t_trainer* trainer);
 //FIN catch
 
+//trade
+uint32_t trade(t_trainer* trainer, uint32_t trade_cpu);
+void trade_trainer(t_trainer* trainer1);
+//FIN trade
 
 //comunicación
 void message_list_add_catch(t_trainer* trainer);
@@ -142,19 +146,22 @@ void debug_message_list();
 
 
 void callback_fifo(t_trainer* trainer){
-	if(trainer->action == CATCHING){
-		//llama funcion para enviar mensaje, recibe entrenador por parametro y hace post a hilo de sender
-		//sem_post(&sem_sender)
-		printf("---->sem_post(&sem_short);CATCHING(<----\n");
+
+	switch(trainer->action) {
+	case CATCHING:
 		sem_post(&sem_short);
-		//signal a semaforo de exec
-	} else if(trainer->action == FREE){
-		printf("---->sem_post(&sem_short);FREE(<----\n");
+		break;
+	case FREE:
 		sem_post(&sem_short);
-		//signal a semaforo de exec
-	}
-	else
+		break;
+	case FINISH:
+
+		sem_post(&sem_short);
+		break;
+	default:
 		sem_post(&trainer->sem_thread);
+		break;
+	}
 
 }
 
@@ -330,8 +337,8 @@ void* trainer_thread(t_callback* callback_thread)
 	t_trainer* trainer = callback_thread->trainer;
 
 	printf("hola soy el entrenador %d\n", (int)trainer->tid);
+	uint32_t trade_cpu = 0;
 	while(1){
-
 		sem_wait(&trainer->sem_thread);
 
 		switch(trainer->action){
@@ -354,6 +361,7 @@ void* trainer_thread(t_callback* callback_thread)
 				printf("Estoy atrapando pokemon, comando CATCHING\n");
 				break;
 			case TRADE:
+				trade_cpu = trade(trainer,trade_cpu);
 				printf("Estoy tradeando pokemon, comando TRADE\n");
 				break;
 			default:
@@ -444,14 +452,11 @@ void long_term_scheduler(){
 		if(possible_deadlock()) {
 			printf("ALERTA HAY DEADLOCK ALERTAAAAAAAAAAAAAAAAAAAA\n");
 			deadlock_handler();
-			sleep(500);
 		}else {
 			printf("NO HAY DEADLOCK ---------------------------\n");
-			sleep(5);
 		}
 	} else {
 		printf("NO HAY RAZON PARA EVALUAR DEADLOCKS\n");
-		sleep(5);
 	}
 	//RAZONES PARA CORRER DETECTOR DE DL
 	//loop SHORT LONG -> EXEC = 0 READY = 0
@@ -503,7 +508,6 @@ void deadlock_handler(){
 	printf("TABLA DE HELD:\n");
 	dictionary_iterator(held_table, &debug_table);
 	assign_trade_couples(waiting_table,held_table, false);
-	sleep(99);
 
 }
 //printf("ROMPE EN ");//DEBUG TODO sacar
@@ -605,7 +609,10 @@ void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, 
 				else{
 					trainer_couple = closest_couple(trainer, dictionary_get(held_table,pokemon));
 				}
-
+				printf("SE SELECCIONO COMO COUPLE A\n");
+				debug_trainer(trainer_couple);
+				printf("PARA\n");
+				debug_trainer(trainer);
 				//aca buscar segun perfect o no
 				if(trainer_couple != NULL){
 					if(trainer->action == FREE && trainer_couple->action == FREE){
@@ -651,6 +658,10 @@ void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer
 	trainer_assign_move(trainer1, pokemon1, trainer2->position, 0, trainer2->id);
 	trainer_assign_trade(trainer2, pokemon2, trainer1->id);
 
+	printf("\tassign_trade_couple\n");
+	debug_trainer(trainer1);
+	debug_trainer(trainer2);
+	printf("\tassign_trade_couple\n");
 
 
 }//*/
@@ -846,7 +857,7 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	bool condition(void* trainer) {
 		return (((t_trainer*)trainer)->id != id);
 	}
-	printf("the size of all list are %d %d %d %d %d\n",list_size(block_list),list_size(new_list),list_size(ready_list),list_size(exec_list), list_size(exit_list));
+	debug_colas();
 	void* element = NULL;
 
 	if(list_size(from)>1)
@@ -859,7 +870,7 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	else
 		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\n");
 	
-	printf("the size of all list are %d %d %d %d %d\n",list_size(block_list),list_size(new_list),list_size(ready_list),list_size(exec_list), list_size(exit_list));
+	debug_colas();
 }
 
 void transition_from_id_to_ready(uint32_t id) {
@@ -870,17 +881,18 @@ void transition_from_id_to_ready(uint32_t id) {
 	t_trainer* trainer = list_remove_by_condition(new_list, &condition);
 	if(trainer != NULL) {
 		list_add(ready_list, trainer);
-		printf("new_list->trainer[%d]->tready_list\n", trainer->id);
+		printf("new_list->trainer[%d]->ready_list\n", trainer->id);
 	} else {
 		trainer = list_remove_by_condition(block_list, &condition);
 		if(trainer != NULL) {
 			list_add(ready_list, trainer);
-			printf("block_list->trainer[%d]->tready_list\n", trainer->id);
+			printf("block_list->trainer[%d]->ready_list\n", trainer->id);
 		}else {
 			printf("**ERROR**SE INTENTÓ HACER UNA TRANSICIÓN A READY DE UN ENTRENADOR QUE NO SE ENCUENTRA EN NEW NI BLOCK!**ERROR**\n");
 
 		}
 	}
+	//FALTA SEM POST
 }
 
 void transition_new_to_ready(uint32_t index)
@@ -1209,6 +1221,112 @@ void catch(t_trainer* trainer){
 	printf(" -> Catch: %s\n", trainer->target->pokemon);
 }
 
+uint32_t trade(t_trainer* trainer, uint32_t trade_cpu){
+
+	sleep(time_delay);
+	trainer->burst++;
+	cpu_cycles++;
+	trade_cpu++;
+	printf("trade_cpu = %d\n", trade_cpu);
+
+	if(trade_cpu == 5){
+		//efectuamos el trade
+		//entrenador1 target->pokemon pasa al inventario del entrenador2 y el entrenador2 target->pokemon pasa al inventario del 1
+		trade_trainer(trainer);
+		trade_cpu = 0;
+	}
+
+	return trade_cpu;
+
+
+
+}
+
+void trade_trainer(t_trainer* trainer1){
+	bool condition(void* trainer) {
+		return (((t_trainer*)trainer)->id == trainer1->target->trainer_id);
+	}
+
+	t_trainer* trainer2 = list_get(list_filter(block_list, &condition),0);
+
+	printf("\tBEFORE TRADE:\n");
+	debug_trainer(trainer1);
+	if(trainer2 ==NULL) {
+		printf("EL TRAINER ES NULL LA CONCHA DE LA LORA\n");
+	}
+	debug_trainer(trainer2);
+	if(trainer2 != NULL) {
+		char* pokemon1 = NULL;
+		char* pokemon2 = NULL;
+		uint32_t index1 = 0;
+		uint32_t index2 = 0;
+		uint32_t i = 0;
+
+		while(trainer1->pokemons[i] != NULL){
+			if(strcmp(trainer1->pokemons[i],trainer1->target->pokemon) == 0){
+				pokemon1 = trainer1->pokemons[i];
+				index1 = i;
+			}
+			i++;
+		}
+		i = 0;
+
+		while(trainer2->pokemons[i] != NULL){
+			if(strcmp(trainer2->pokemons[i],trainer2->target->pokemon) == 0){
+				pokemon2 = trainer2->pokemons[i];
+				index2 = i;
+			}
+			i++;
+		}
+
+		if(pokemon1 != NULL && pokemon2 != NULL){
+			trainer1->pokemons[index1] = pokemon2;
+			trainer2->pokemons[index2] = pokemon1;
+		}
+
+	} else {
+		printf("TRAINER2 = null, se rompio todo\n");
+	}
+	destroy_target(trainer1->target);
+	destroy_target(trainer2->target);
+
+	if(trainer_success_objective(trainer1) == 1){
+		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
+		trainer1->action = FINISH;
+		transition_by_id(trainer1->id, exec_list, exit_list);
+		printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
+		if(success_global_objective(objectives_list)) {
+			printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
+		} else {
+			printf("SEGUI PARTICIPANDO\n");
+		}
+	} else{
+		printf("ESTE ENTRENADOR NO CUMPLIO TODOS SUS OBJETIVOS\n");
+		trainer1->action = FREE;
+	}
+
+	if(trainer_success_objective(trainer2) == 1){
+		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
+		trainer2->action = FINISH;
+		transition_by_id(trainer2->id, block_list, exit_list);
+		printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
+		if(success_global_objective(objectives_list)) {
+			printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
+		} else {
+			printf("SEGUI PARTICIPANDO\n");
+		}
+	} else{
+		printf("ESTE ENTRENADOR NO CUMPLIO TODOS SUS OBJETIVOS\n");
+		trainer2->action = FREE;
+	}
+
+
+	printf("\tAFTER TRADE:\n");
+	debug_trainer(trainer1);
+	debug_trainer(trainer2);
+
+}
+
 void message_list_add_catch(t_trainer* trainer) {
 	printf(" message_list_add_catch acallego y dspues rompio\n");
 	t_message_team* message = malloc(sizeof(t_message_team));
@@ -1232,7 +1350,7 @@ void message_list_add_catch(t_trainer* trainer) {
 }
 
 void debug_colas() {
-	printf("the size of all list are new: %d ready: %d block: %d exec: %d exit: %d\n",list_size(new_list),list_size(ready_list),list_size(block_list),list_size(exec_list), list_size(exit_list));
+	printf("the size of all list are [new: %d] [ready: %d] [block: %d] [exec: %d] [exit: %d]\n",list_size(new_list),list_size(ready_list),list_size(block_list),list_size(exec_list), list_size(exit_list));
 }
 void debug_message_list() {
 	void printf_function(char*key,void*n){

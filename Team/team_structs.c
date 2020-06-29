@@ -12,10 +12,10 @@ void debug_trainer(t_trainer* trainer) {
 	printf("\n**DEBUG DEL ENTRENADOR**\n");
 	printf("trainer->id: %d\n", trainer->id);
 	printf("trainer->action: %d\n", trainer->action);
-//	if(trainer->target != NULL)
-//		printf("trainer->target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
-//	else
-//		printf("sin target\n");
+	if(trainer->target != NULL)
+		printf("trainer->target: [pokemon: %s, posicion: (%d, %d), catching: %d, trainer_id: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching, trainer->target->trainer_id);
+	else
+		printf("sin target\n");
 
 	printf("trainer->posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
 	uint32_t i = 0;
