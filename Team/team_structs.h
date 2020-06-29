@@ -33,7 +33,7 @@ typedef struct {
 	char* pokemon;
 	t_position* position;
 	uint32_t distance;
-	uint32_t trainer_trade_index;
+	uint32_t trainer_id;
 	bool catching;
 } t_target;
 

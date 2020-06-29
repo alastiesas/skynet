@@ -46,10 +46,6 @@ int main(void)
 	initialize_trainers();
 	initialize_global_objectives();
 
-//	subscribe(OPERATION_APPEARED);
-//	subscribe(OPERATION_LOCALIZED);
-//	subscribe(OPERATION_CAUGHT);
-//	sleep(5);
 
 	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
 
@@ -58,20 +54,27 @@ int main(void)
 /*
 	t_position* test_position_1 = malloc(sizeof(t_position));
 	test_position_1->x = 0;
-	test_position_1->y = 0;
-	add_to_poke_map("Pikachu",(void*) test_position_1);
+	test_position_1->y = 1;
+	add_to_poke_map("Evee",(void*) test_position_1);
 
 	t_position* test_position_2 = malloc(sizeof(t_position));
 	test_position_2->x = 3;
 	test_position_2->y = 8;
-	add_to_poke_map("Charmander",(void*) test_position_2);
+	add_to_poke_map("Bulbasaur",(void*) test_position_2);
 
 	t_position* test_position_3 = malloc(sizeof(t_position));
 	test_position_3->x = 6;
 	test_position_3->y = 6;
 	add_to_poke_map("Bulbasaur",(void*) test_position_3);
-	long_term_scheduler();*/
+
+	long_term_scheduler();//*/
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
+
+//	subscribe(OPERATION_APPEARED);
+//	subscribe(OPERATION_LOCALIZED);
+//	subscribe(OPERATION_CAUGHT);
+//	sleep(5);
+
 
 	pthread_t long_tid;
 
