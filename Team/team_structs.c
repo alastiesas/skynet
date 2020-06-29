@@ -113,8 +113,8 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* ch
 	//printf("elements count %d\",list_trainer->elements_count);
 	int32_t i = -1;
 	int32_t index = -1;
-	printf("LA POSICION DE DESTINO ES (%d,%d)\n",destiny->x,destiny->y);
-	printf("el size de la lista de entrenadores es %d\n", list_size(list_trainer));
+//	printf("LA POSICION DE DESTINO ES (%d,%d)\n",destiny->x,destiny->y);
+//	printf("el size de la lista de entrenadores es %d\n", list_size(list_trainer));
 
 	if(list_size(list_trainer) != 0)
 	{
@@ -128,11 +128,11 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* ch
 		i = 0;
 		while(element != NULL) {
 			uint32_t distance_aux = distance(((t_trainer*)element->data)->position, destiny);
-			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
-			printf("distance actual de este entrenador: %d\n" ,distance_aux);
-			printf("distance minima: %d\n" ,closest_distance);
-			printf("el actions es (0=libre): %d\n", ((t_trainer*)element->data)->action);
-			printf("teiene espacio en inventario: %d\n" ,trainer_free_space(((t_trainer*)element->data)));
+//			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
+//			printf("distance actual de este entrenador: %d\n" ,distance_aux);
+//			printf("distance minima: %d\n" ,closest_distance);
+//			printf("el actions es (0=libre): %d\n", ((t_trainer*)element->data)->action);
+//			printf("teiene espacio en inventario: %d\n" ,trainer_free_space(((t_trainer*)element->data)));
 			//debug_trainer(((t_trainer*)element->data));
 			bool trainer_free_space2 = 1;
 			if(strcmp(channel,"job") == 0)
@@ -142,15 +142,15 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* ch
 				closest_distance = distance_aux;
 				//trainer = (t_trainer*) element->data;
 				index = i;
-				printf("-> SELECCIONADO %d\n",((t_trainer*)element->data)->id);
+//				printf("-> SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			}
 			else
-				printf("-> NO SELECCIONADO %d\n",((t_trainer*)element->data)->id);
+//				printf("-> NO SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			element = element->next;
 			i++;
 		}
 	}
-	printf("El trainer seleccionado fue: %d\n(indice en la lista actual)\n\n",index);
+//	printf("El trainer seleccionado fue: %d\n(indice en la lista actual)\n\n",index);
 	return index;
 }
 
@@ -237,13 +237,17 @@ bool trainer_needs(t_trainer* trainer, char* pokemon) {
 		if(strcmp(trainer->objectives[i], pokemon) == 0) {
 			count_objective++;
 		}
+			i++;
 	}
+	i = 0;
 	while(trainer->pokemons[i] != NULL) {
 		if(strcmp(trainer->pokemons[i], pokemon) == 0) {
 			count_pokemon++;
 		}
+			i++;
 	}
 	needs = count_objective > count_pokemon;
+	return needs;
 }
 
 bool trainer_locked(t_trainer* trainer) {
