@@ -4,12 +4,14 @@
 
 void subscribe_timed(queue_code queue_code, int time) {
 
-	puts(" 4. subscription instruction");
+	log_info(gameboy_behavior_log, " 4. subscription instruction");
 
 	ip = config_get_string_value(gameboy_config, "IP_BROKER");
 	port = config_get_string_value(gameboy_config, "PUERTO_BROKER");
 
 	int32_t socket = connect_to_server(ip, port, 4, gameboy_log); //TODO el gameboy no tiene tiempo de reintento?
+
+	log_info(gameboy_log, " 1. connected to process broker");
 
 	char* id = config_get_string_value(gameboy_config, "ID");
 	t_package* suscription_package = serialize_suscripcion(atoi(id), queue_code);
@@ -18,6 +20,31 @@ void subscribe_timed(queue_code queue_code, int time) {
 	if (receive_ACK(socket, gameboy_log) == -1) {
 		exit(EXIT_FAILURE);
 	}
+
+	char* log_line = (char*) malloc(40);
+	strcpy(log_line, " 2. subscribed to queue ");
+	switch (queue_code) {
+	case 1:
+		strcat(log_line, "new");
+		break;
+	case 2:
+		strcat(log_line, "appeared");
+		break;
+	case 3:
+		strcat(log_line, "get");
+		break;
+	case 4:
+		strcat(log_line, "localized");
+		break;
+	case 5:
+		strcat(log_line, "catch");
+		break;
+	case 6:
+		strcat(log_line, "caught");
+		break;
+	}
+	log_info(gameboy_log, log_line);
+	free(log_line);
 
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
@@ -38,10 +65,28 @@ void subscribe_timed(queue_code queue_code, int time) {
 
 }
 
+void send_message(int process_code, char* ip, char* port, t_package* package) {
 
-void send_message(char* ip, char* port, t_package* package) {
+	log_info(gameboy_behavior_log, " 4. message instruction");
 
-	int32_t socket = connect_to_server(ip, port, 4, gameboy_log); //TODO el gameboy no tiene tiempo de reintento?
+	int32_t socket = connect_to_server(ip, port, 4, gameboy_log);
+
+	char* log_line = (char*) malloc(40);
+	strcpy(log_line, " 1. connected to process ");
+	switch (process_code) {
+	case 1:
+		strcat(log_line, "broker");
+		break;
+	case 2:
+		strcat(log_line, "gamecard");
+		break;
+	case 3:
+		strcat(log_line, "team");
+		break;
+	}
+	log_info(gameboy_log, log_line);
+	free(log_line);
+
 	send_paquete(socket, package);
 
 	receive_ID(socket, gameboy_log);

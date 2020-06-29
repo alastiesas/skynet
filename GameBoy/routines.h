@@ -11,7 +11,7 @@
 #include "gameboy.h"
 
 void subscribe_timed(queue_code queue, int time);
-void send_message(char* ip, char* port, t_package* package);
+void send_message(int process_code, char* ip, char* port, t_package* package);
 
 
 #endif /* ROUTINES_H_ */
