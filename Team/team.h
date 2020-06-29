@@ -443,7 +443,7 @@ void long_term_scheduler(){
 		if(possible_deadlock()) {
 			printf("ALERTA HAY DEADLOCK ALERTAAAAAAAAAAAAAAAAAAAA\n");
 			deadlock_handler();
-			sleep(5);
+			sleep(500);
 		}else {
 			printf("NO HAY DEADLOCK ---------------------------\n");
 			sleep(5);
@@ -493,15 +493,15 @@ void deadlock_handler(){
 	dictionary_destroy_and_destroy_elements(waiting_table, &list_destroy);
 	dictionary_destroy_and_destroy_elements(held_table, &list_destroy);
 
-	waiting_table = dictionary_create();
-	held_table = dictionary_create();
-	deadlock_detector(waiting_table,held_table);
+	t_dictionary* waiting_table2 = dictionary_create();
+	t_dictionary* held_table2 = dictionary_create();
+	deadlock_detector(waiting_table2,held_table2);
 
 	printf("TABLA DE WAITING:\n");
-	dictionary_iterator(waiting_table, &debug_table);
+	dictionary_iterator(waiting_table2, &debug_table);
 	printf("TABLA DE HELD:\n");
-	dictionary_iterator(held_table, &debug_table);
-	assign_trade_couples(waiting_table,held_table, false);
+	dictionary_iterator(held_table2, &debug_table);
+	assign_trade_couples(waiting_table2,held_table2, false);
 	sleep(99);
 
 }
@@ -606,29 +606,30 @@ void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, 
 				}
 
 				//aca buscar segun perfect o no
-
-				if(trainer->action == FREE && trainer_couple->action == FREE){
-
-
-					trainer->action = MOVE;
-					free(trainer->target->pokemon);
-					trainer->target->pokemon = malloc(strlen(pokemon)+1);
-					memcpy(trainer->target->pokemon, pokemon, strlen(pokemon)+1);
-					trainer->target->trainer_id = trainer_couple->id;
-					trainer->target->position = trainer_couple->position;
-					trainer->target->catching = 0;
-
-					trainer_couple->action = TRADE;
-					trainer_couple->target->catching = 0;
-					free(trainer_couple->target->pokemon);
-					t_list* pokemons_from_held = trainer_held_pokemons(trainer);
-					char* pokemon_from_held = list_remove(pokemons_from_held, 0);
-					trainer_couple->target->pokemon = malloc(strlen(pokemon_from_held)+1);
-					memcpy(trainer_couple->target->pokemon, pokemon_from_held, strlen(pokemon_from_held)+1);
-					trainer_couple->target->position = trainer_couple->position;
+				if(trainer_couple != NULL){
+					if(trainer->action == FREE && trainer_couple->action == FREE){
 
 
-					assign_trade_couple(trainer, pokemon_from_held, trainer_couple, pokemon);
+						trainer->action = MOVE;
+						free(trainer->target->pokemon);
+						trainer->target->pokemon = malloc(strlen(pokemon)+1);
+						memcpy(trainer->target->pokemon, pokemon, strlen(pokemon)+1);
+						trainer->target->trainer_id = trainer_couple->id;
+						trainer->target->position = trainer_couple->position;
+						trainer->target->catching = 0;
+
+						trainer_couple->action = TRADE;
+						trainer_couple->target->catching = 0;
+						free(trainer_couple->target->pokemon);
+						t_list* pokemons_from_held = trainer_held_pokemons(trainer);
+						char* pokemon_from_held = list_remove(pokemons_from_held, 0);
+						trainer_couple->target->pokemon = malloc(strlen(pokemon_from_held)+1);
+						memcpy(trainer_couple->target->pokemon, pokemon_from_held, strlen(pokemon_from_held)+1);
+						trainer_couple->target->position = trainer_couple->position;
+
+
+						assign_trade_couple(trainer, pokemon_from_held, trainer_couple, pokemon);
+					}
 				}
 			}
 
