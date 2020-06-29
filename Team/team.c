@@ -53,9 +53,9 @@ int main(void)
 
 /*
 	t_position* test_position_1 = malloc(sizeof(t_position));
-	test_position_1->x = 0;
-	test_position_1->y = 1;
-	add_to_poke_map("Evee",(void*) test_position_1);
+	test_position_1->x = 10;
+	test_position_1->y = 10;
+	add_to_poke_map("Slackoth",(void*) test_position_1);
 
 	t_position* test_position_2 = malloc(sizeof(t_position));
 	test_position_2->x = 3;

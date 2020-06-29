@@ -32,7 +32,6 @@ typedef enum {
 typedef struct {
 	char* pokemon;
 	t_position* position;
-	uint32_t distance;
 	uint32_t trainer_id;
 	bool catching;
 } t_target;
@@ -100,6 +99,9 @@ void debug_trainer(t_trainer* trainer);
 t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, char** pokemons);
 t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons);
 t_position* create_position_from_config(char* positions);
+t_target* create_target(char* pokemon, t_position* position, uint32_t trainer_id, bool catching);
+void destroy_target(t_target* target);
+void trainer_set_target(t_trainer* trainer, t_target* target);
 void add_pokemon(t_trainer* trainer, char*pokemon);
 //FIN constructores
 

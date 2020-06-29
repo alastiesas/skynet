@@ -12,10 +12,10 @@ void debug_trainer(t_trainer* trainer) {
 	printf("\n**DEBUG DEL ENTRENADOR**\n");
 	printf("trainer->id: %d\n", trainer->id);
 	printf("trainer->action: %d\n", trainer->action);
-	if(trainer->target->position != NULL)
-		printf("trainer->target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
-	else
-		printf("sin target\n");
+//	if(trainer->target != NULL)
+//		printf("trainer->target: [pokemon: %s, posicion: (%d, %d), catching: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching);
+//	else
+//		printf("sin target\n");
 
 	printf("trainer->posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
 	uint32_t i = 0;
@@ -41,10 +41,7 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	t_trainer* trainer = malloc(sizeof(t_trainer));
 	trainer->id = id;
 	trainer->action = FREE;
-	trainer->target = malloc(sizeof(t_target));
-	trainer->target->position = NULL;
-	trainer->target->distance = NULL;
-	trainer->target->pokemon = NULL;
+	trainer->target = NULL;
 	trainer->burst = 0;
 	trainer->quantum = 0;
 	trainer->action_burst = 0;
@@ -81,6 +78,29 @@ t_position* create_position_from_config(char* config_position) {
 
 	return position;
 }
+
+t_target* create_target(char* pokemon, t_position* position, uint32_t trainer_id, bool catching) {
+	t_target* target = malloc(sizeof(t_target));
+	target->pokemon = create_copy_string(pokemon);
+	target->position = create_position(position->x, position->y);
+	target->trainer_id = trainer_id;
+	target->catching = catching;
+	return target;
+}
+
+void destroy_target(t_target* target) {
+	if(target != NULL) {
+		free(target->pokemon);
+		free(target->position);
+		free(target);
+	}
+}
+
+void trainer_set_target(t_trainer* trainer, t_target* target) {
+	destroy_target(trainer->target);
+	trainer->target = target;
+}
+
 
 bool success_objective(t_objective* objective) {
 	return objective->count == objective->caught;
@@ -257,8 +277,15 @@ bool trainer_locked(t_trainer* trainer) {
 		if(trainer_full(trainer)) {
 			if(!trainer_success_objective(trainer)) {
 				locked = true;
+				printf("trainer[%d] está bloqueado\n", trainer->id);
+			}else {
+				printf("trainer[%d] no está bloqueado porque ya cumplio sus objetivos\n", trainer->id);
 			}
+		}else {
+			printf("trainer[%d] no está bloqueado porque no tiene el inventario lleno\n", trainer->id);
 		}
+	}else {
+		printf("trainer[%d] no está bloqueado porque no está en FREE\n", trainer->id);
 	}
 	return locked;
 }
