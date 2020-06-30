@@ -19,7 +19,8 @@ int main(int argc, char* argv[]) {
 	gameboy_config = config_create("gameboy.config");
 	log_info(gameboy_behavior_log, " 2. config created");
 
-	char* log_line = (char*) malloc(50);
+	log_line = (char*) malloc(300);
+
 	strcpy(log_line, "    id=");
 	strcat(log_line, config_get_string_value(gameboy_config, "ID"));
 	log_info(gameboy_behavior_log, log_line);
@@ -41,7 +42,7 @@ int main(int argc, char* argv[]) {
 	strcpy(log_line, "    puerto_team=");
 	strcat(log_line, config_get_string_value(gameboy_config, "PUERTO_TEAM"));
 	log_info(gameboy_behavior_log, log_line);
-	free(log_line);
+
 
 	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
 		//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
@@ -168,10 +169,17 @@ int main(int argc, char* argv[]) {
 
 	}
 
+
+	free(log_line);
+
 	log_info(gameboy_behavior_log, " 4. ending process");
+
 	config_destroy(gameboy_config);
+
 	log_destroy(gameboy_log);
+
 	log_destroy(gameboy_behavior_log);
+
 	return EXIT_SUCCESS;
 }
 
