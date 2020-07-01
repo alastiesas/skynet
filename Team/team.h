@@ -609,12 +609,12 @@ void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, 
 				else{
 					trainer_couple = closest_couple(trainer, dictionary_get(held_table,pokemon));
 				}
-				printf("SE SELECCIONO COMO COUPLE A\n");
-				debug_trainer(trainer_couple);
-				printf("PARA\n");
-				debug_trainer(trainer);
 				//aca buscar segun perfect o no
 				if(trainer_couple != NULL){
+					printf("SE SELECCIONO COMO COUPLE A\n");
+					debug_trainer(trainer_couple);
+					printf("PARA\n");
+					debug_trainer(trainer);
 					if(trainer->action == FREE && trainer_couple->action == FREE){
 						char* pokemon_from_held = NULL;
 						t_list* trainer_held_pokemons_list = trainer_held_pokemons(trainer);
@@ -809,7 +809,7 @@ t_list* trainer_actual_list_by_id(uint32_t id) {
 
 	t_list* actual_list = NULL;
 	bool condition(void* trainer) {
-		return (((t_trainer*)trainer)->id != id);
+		return (((t_trainer*)trainer)->id == id);
 	}
 	if(list_any_satisfy(new_list, &condition))
 		actual_list = new_list;
@@ -855,7 +855,7 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 
 void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	bool condition(void* trainer) {
-		return (((t_trainer*)trainer)->id != id);
+		return (((t_trainer*)trainer)->id == id);
 	}
 	debug_colas();
 	void* element = NULL;
@@ -875,7 +875,7 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 
 void transition_from_id_to_ready(uint32_t id) {
 	bool condition(void* trainer) {
-		return (((t_trainer*)trainer)->id = id);
+		return (((t_trainer*)trainer)->id == id);
 	}
 
 	t_trainer* trainer = list_remove_by_condition(new_list, &condition);
@@ -1293,6 +1293,7 @@ void trade_trainer(t_trainer* trainer1){
 	if(trainer_success_objective(trainer1) == 1){
 		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 		trainer1->action = FINISH;
+		free(trainer1->target);
 		transition_by_id(trainer1->id, exec_list, exit_list);
 		printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
 		if(success_global_objective(objectives_list)) {
@@ -1308,6 +1309,7 @@ void trade_trainer(t_trainer* trainer1){
 	if(trainer_success_objective(trainer2) == 1){
 		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 		trainer2->action = FINISH;
+		free(trainer2->target);
 		transition_by_id(trainer2->id, block_list, exit_list);
 		printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
 		if(success_global_objective(objectives_list)) {

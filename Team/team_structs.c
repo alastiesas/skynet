@@ -92,7 +92,7 @@ void destroy_target(t_target* target) {
 	if(target != NULL) {
 		free(target->pokemon);
 		free(target->position);
-		free(target);
+		//free(target);
 	}
 }
 
