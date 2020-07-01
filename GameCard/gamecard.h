@@ -27,16 +27,19 @@ char* IP_GAMECARD;
 char* PUERTO_GAMECARD;
 uint32_t MY_ID;
 
-
+struct gamecard_thread_args {
+    int32_t socket;
+    t_log* logger;
+};
 
 pthread_t gameboy_thread;
 pthread_t new_thread;
 pthread_t catch_thread;
 pthread_t get_thread;
 
-
-
-
+void iniciar_servidor_gamecard();
+void wait_clients(int32_t socket_servidor, t_log* logger);
+void gamecard_serves_client(void* input);
 
 void gameboy_function(void);
 void message_function(void (*function)(void*), queue_code queue_code);

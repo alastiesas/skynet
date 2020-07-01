@@ -28,6 +28,7 @@ void serve_new(void* input){
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
+	free(input);
 
 }
 
@@ -53,7 +54,7 @@ void serve_catch(void* input){
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
-
+	free(input);
 }
 
 void serve_get(void* input){
@@ -86,5 +87,5 @@ void serve_get(void* input){
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
-
+	free(input);
 }
