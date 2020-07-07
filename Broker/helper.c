@@ -1,5 +1,5 @@
 #include "broker.h"
-
+#include <errno.h>
 
 void iniciar_servidor_broker()
 {
@@ -59,22 +59,24 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t
 	log_info(logger, "Esperando conexion en el thread %d", self);
 
 	int32_t socket_cliente;
-	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
+	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1){
 		log_error(logger, "Error al aceptar cliente");
+		printf("\n%s\n", strerror(errno));
+		sleep(500);
+	}
 	else{
 		log_info(logger, "Conexion aceptada");
 		log_info(obligatorio, "Nueva conexion de un proceso");
+
+	    struct broker_thread_args* args = malloc(sizeof(struct broker_thread_args));
+	    args->socket = socket_cliente;
+	    args->logger = logger;
+	    args->colas = colas;
+	    args->suscriptores = suscriptores;
+
+		pthread_create(&thread,NULL,(void*)broker_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
+		pthread_detach(thread);
 	}
-
-
-    struct broker_thread_args* args = malloc(sizeof(struct broker_thread_args));
-    args->socket = socket_cliente;
-    args->logger = logger;
-    args->colas = colas;
-    args->suscriptores = suscriptores;
-
-	pthread_create(&thread,NULL,(void*)broker_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
-	pthread_detach(thread);
 
 }
 

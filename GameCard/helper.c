@@ -23,6 +23,7 @@ void message_function(void (*function)(void*), queue_code queue_code){
 		int32_t result = listen_messages(args);
 		if(result == -2){
 			log_info(logger, "Se vuelve a conectar en %d segundos", TIEMPO_DE_REINTENTO_CONEXION);
+			close(socket_cliente);
 			sleep(TIEMPO_DE_REINTENTO_CONEXION);
 		}
 		else
@@ -67,6 +68,7 @@ void send_to_broker(t_package* package){
 
 	receive_ID(socket, logger);
 	send_ACK(socket, logger);
+	close(socket);
 
 }
 

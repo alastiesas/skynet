@@ -146,7 +146,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 
 	//Recibir confirmacion de haber recibido la ID
 	receive_ACK(socket_cliente, logger);
-
+	close(socket_cliente);
 
 //------------------------------------------------------------------------------------------------------
 	//En el caso de trabajar con memoria, agregar el mensaje a memoria
@@ -164,6 +164,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos, total_queue_messages);
 
 	log_info(obligatorio, "Se agrega un mensaje a la cola %s", queue_to_string(queue_code));
+	pthread_exit(NULL);
 }
 
 void store_message_partition(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){

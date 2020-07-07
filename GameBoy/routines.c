@@ -113,6 +113,7 @@ void send_message(int process_code, char* ip, char* port, t_package* package) {
 
 	receive_ID(socket, gameboy_log);
 	send_ACK(socket, gameboy_log);
+	close(socket);
 }
 
 void process_free(void* input){
