@@ -19,8 +19,10 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 		}
 		pthread_mutex_unlock(&mutex_cache);
 
-		if(partition == NULL)
+		if(partition == NULL){
 			log_warning(logger, "El mensaje ya no se encuentra en la cache");
+			//TODO borrar el mensaje de la cola en este punto para que no haya loop infinito
+		}
 
 	}
 	else if(strcmp(memory_algorithm, "BS") == 0){

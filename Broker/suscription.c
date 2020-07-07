@@ -260,7 +260,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 				//si falla el envio, cambiar el flag a desconectado, y cerrar el hilo.
 				if((result == -1) || (result == 0)){
-					close_suscriber_thread(suscriber);
+					close_suscriber_thread(suscriber, not_sent_ids, current_global_message_ids);
 				}
 				else{
 					log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d. El send dio: %d (no asegura que lo haya recibido)", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber, result);
@@ -280,7 +280,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				result = receive_ACK(suscriber->socket, suscriber->log);
 
 				if((result == -1) || (result == 0)){
-					close_suscriber_thread(suscriber);
+					close_suscriber_thread(suscriber, not_sent_ids, current_global_message_ids);
 				}
 				else{
 					log_info(logger, "El suscriptor confirma haber recibido el mensaje");
@@ -300,18 +300,17 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 			}
 		}
 
-
-
 	}
-	list_destroy(not_sent_ids);
-	list_destroy(current_global_message_ids);
+
 }
 
-void close_suscriber_thread(t_suscriber* suscriber){
+void close_suscriber_thread(t_suscriber* suscriber, t_list* list1, t_list* list2){
 	suscriber->connected = false;
 	log_info(suscriber->log, "No se encuentra conectado el suscriptor %d\n", suscriber->ID_suscriber);
 	close(suscriber->socket);
 	suscriber->socket = 0;
+	list_destroy(list1);
+	list_destroy(list2);
 	pthread_exit(NULL);
 }
 

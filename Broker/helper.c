@@ -83,9 +83,10 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t
 
 void broker_serves_client(void* input){
 	int32_t socket = ((struct broker_thread_args*)input)->socket;
-	t_log*	logger = ((struct broker_thread_args*)input)->logger;
+	t_log* logger = ((struct broker_thread_args*)input)->logger;
 	t_queues* colas = ((struct broker_thread_args*)input)->colas;
-	t_suscribers*	suscriptores = ((struct broker_thread_args*)input)->suscriptores;
+	t_suscribers* suscriptores = ((struct broker_thread_args*)input)->suscriptores;
+	free(input);
 
 	pthread_t self = pthread_self();
 	log_info(logger, "Se creo un thread %d para atender la conexion del cliente %d\n", self, socket);
@@ -112,7 +113,6 @@ void broker_serves_client(void* input){
 	else
 		first_process(cod_op, socket, logger, colas);
 
-	free(input);		//liberar args una vez cerrado el hilo
 }
 
 
