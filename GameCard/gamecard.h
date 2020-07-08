@@ -27,6 +27,9 @@ char* IP_GAMECARD;
 char* PUERTO_GAMECARD;
 uint32_t MY_ID;
 
+uint32_t blocks;
+uint32_t block_size;
+
 struct gamecard_thread_args {
     int32_t socket;
     t_log* logger;

@@ -3,12 +3,13 @@
 void initiliaze_file_system() {
 
 	char* tall_grass_mount_point = config_get_string_value(config, "PUNTO_MONTAJE_TALLGRASS");
-	char* metadata_path = (char*) malloc(strlen(tall_grass_mount_point) + 24);
+	char* metadata_path = (char*) malloc(strlen(tall_grass_mount_point) + 24);	//22?
 	strcpy(metadata_path, tall_grass_mount_point);
 	strcat(metadata_path, "/Metadata/Metadata.bin");
 
 	t_config* metadata = config_create(metadata_path);
-	int blocks = config_get_string_value(metadata, "BLOCKS");
+	blocks = config_get_int_value(metadata, "BLOCKS");
+	block_size = config_get_int_value(metadata, "BLOCK_SIZE");
 
 	char* blocks_directory = (char*) malloc(strlen(tall_grass_mount_point) + 8);
 	strcpy(blocks_directory, tall_grass_mount_point);
@@ -28,4 +29,74 @@ void initiliaze_file_system() {
 
 void terminate_file_system() {
 
+}
+
+//convierte una lista de numeros de bloque a un void* con el archivo pokemon
+void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
+	void* pokemon_file = malloc(total_size);
+	FILE *p;
+	uint32_t block_number;
+	char* number;
+	char* block_path;
+	uint32_t blocks_amount = list_size(file_blocks);
+	uint32_t size;
+	uint32_t i = 0;
+
+	while(!list_is_empty(file_blocks)){
+		block_number = (uint32_t) list_remove(file_blocks, 0);
+		//obtener path del archivo
+		number = string_itoa(block_number);
+		block_path = string_new();
+		string_append(&block_path, number);
+		string_append(&block_path, ".bin");
+		free(number);
+		//abrir el archivo
+		p=fopen(block_path,"r");
+		//leer el tamano del bloque, o el tamano restante si es el ultimo bloque
+		if(list_is_empty(file_blocks))
+			size = total_size - (block_size * (blocks_amount - 1));
+		else
+			size = block_size;
+
+		fread(pokemon_file + (block_size * i), size, 1, p);
+		fclose(p);
+
+		free(block_path);
+		i++;
+	}
+
+	list_destroy(file_blocks);
+	return pokemon_file;	//este es mi void* del string del archivo pokemon, sin el '\0' del string
+}
+
+//escribe el archivo_pokemon en los bloques
+void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size){
+	//chequear si ahora el archivo ocupa mas o menos bloques
+	uint32_t blocks_amount = total_size/block_size + 1; //?? esta bien?
+	if(list_size(my_blocks) < blocks_amount){
+		//calcular cuantos bloques mas necesita
+		//encontrar esa cantidad de bloques libres
+		//agregar los bloques encontrados a my_blocks
+	//TODO modificar los bloques en el metadata del pokemon
+	}
+	else if(list_size(my_blocks) > blocks_amount){
+		//calcular cuantos bloques de menos
+		//borrar de la lista esta cantidad de bloques ??? puede ser cualquier bloque?
+	//TODO modificar los bloques en el metadata del pokemon
+	}
+	//TODO modificar el size en el metadata del pokemon
+
+
+	//TODO escribir los bloques, similar a la lectura
+	//al abrir un archivo en modo "w", ya borra todo el contenido, no preocuparse si ahora el contenido es menos
+
+	list_destroy(my_blocks);
+}
+
+//retorna una lista con amount bloques que esten disponibles en el bitmap
+t_list* find_available_blocks(uint32_t amount){
+	t_list* available_blocks = list_create();
+	//TODO encontrar amount cantidad de bloques libres y meterlos a la lista
+	//TODO marcar esos bloques como ocupados en el bitmap
+	return available_blocks;
 }
