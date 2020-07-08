@@ -45,6 +45,13 @@ void iniciar_servidor_gamecard();
 void wait_clients(int32_t socket_servidor, t_log* logger);
 void gamecard_serves_client(void* input);
 
+void init_fs();
+t_bitarray* get_bitarray();
+t_bitarray* create_bitarray();
+void save_bitarray(t_bitarray* bitarray);
+void* open_file_blocks(t_list* file_blocks, uint32_t total_size);
+void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size);
+t_list* find_available_blocks(uint32_t amount);
 void gameboy_function(void);
 void message_function(void (*function)(void*), queue_code queue_code);
 void new_function(void);

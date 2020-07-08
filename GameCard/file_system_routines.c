@@ -1,5 +1,75 @@
 #include "gamecard.h"
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #define BIT_NUMBERING LSB_FIRST
+
+void init_fs(){
+	char* metadata_path = (char*) malloc(strlen(PUNTO_MONTAJE_TALLGRASS) + 24);	//22?
+	strcpy(metadata_path, PUNTO_MONTAJE_TALLGRASS);
+	strcat(metadata_path, "/Metadata/Metadata.bin");
+	char* files_metadata_path = string_new();
+	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&files_metadata_path, "/Files/Metadata.bin");
+	//mirar si el filesystem ya existia
+	t_config* metaconfig;
+	if((metaconfig = config_create(metadata_path)) == NULL){
+		blocks = config_get_int_value(config, "DEFAULT_BLOCKS");
+		block_size = config_get_int_value(config, "DEFAULT_BLOCK_SIZE");
+		log_warning(logger, "Se crea filesystem vacio");
+		//se crea un filesystem
+		char* blocks_char;
+		char* block_size_char;
+		blocks_char = config_get_string_value(config, "DEFAULT_BLOCKS");
+		block_size_char = config_get_string_value(config, "DEFAULT_BLOCK_SIZE");
+		//crear archivo metadata
+		FILE* file;
+		char s[100];
+		printf("%s\n", getcwd(s, 100));
+		chdir("..");
+		printf("%s\n", getcwd(s, 100));
+		chdir("..");	//TODO desde eclipse hay un .. de mas
+		printf("%s\n", getcwd(s, 100));
+		mkdir("tall_grass", 0700);
+		chdir("tall_grass");
+		mkdir("Metadata", 0700);
+		mkdir("Files", 0700);
+		chdir("..");
+		chdir("GameCard");
+		chdir("Debug");
+		printf("%s\n", getcwd(s, 100));
+		file = fopen(metadata_path, "w");
+		if(file == NULL){
+			log_error(logger, "dio n ull la afile");
+		    printf("fopen failed, errno = %d\n", errno);
+		}
+		fclose(file);
+		metaconfig = config_create(metadata_path);
+		config_set_value(metaconfig, "BLOCK_SIZE", block_size_char);
+		config_set_value(metaconfig, "BLOCKS", blocks_char);
+		config_set_value(metaconfig, "MAGIC_NUMBER", "TALL_GRASS");
+		config_save(metaconfig);
+
+		//crear bitmap
+		t_bitarray* bitmap = create_bitarray();
+		save_bitarray(bitmap);
+
+		//crear directorio en /Files
+		file = fopen(files_metadata_path, "w");
+		fclose(file);
+		t_config* files_config = config_create(files_metadata_path);
+		config_set_value(files_config, "DIRECTORY", "Y");
+		config_save(files_config);
+		config_destroy(files_config);
+		free(files_metadata_path);
+	}
+	else{
+		//si ya existia el FS, se usa y listo, no se crea nada
+		blocks = config_get_int_value(metaconfig, "BLOCKS");
+		block_size = config_get_int_value(metaconfig, "BLOCK_SIZE");
+	}
+	config_destroy(metaconfig);
+}
 
 void initiliaze_file_system() {
 
@@ -9,8 +79,8 @@ void initiliaze_file_system() {
 	strcat(metadata_path, "/Metadata/Metadata.bin");
 
 	t_config* metadata = config_create(metadata_path);
-	blocks = config_get_int_value(metadata, "BLOCKS");
-	block_size = config_get_int_value(metadata, "BLOCK_SIZE");
+	blocks = config_get_int_value(metadata, "DEFAULT_BLOCKS");
+	block_size = config_get_int_value(metadata, "DEFAULT_BLOCK_SIZE");
 
 	char* blocks_directory = (char*) malloc(strlen(tall_grass_mount_point) + 8);
 	strcpy(blocks_directory, tall_grass_mount_point);
