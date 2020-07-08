@@ -1,6 +1,6 @@
 #include "listas.h"
 
-void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* logger){
+void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* logger, queue_code queue_cod){
 	//TODO armar esta funcion (devuelva void* message_data) con mutex_cache (duplicar el message_data de la cache)
 	void* message_data;
 	t_partition* partition;
@@ -20,8 +20,13 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 		pthread_mutex_unlock(&mutex_cache);
 
 		if(partition == NULL){
+			message_data = NULL;
 			log_warning(logger, "El mensaje ya no se encuentra en la cache");
-			//TODO borrar el mensaje de la cola en este punto para que no haya loop infinito
+			//borrar el mensaje de la cola en este punto para que no haya loop infinito
+			t_list* element_to_delete = list_create();
+			list_add(element_to_delete, ID_encontrar);
+			list_add(element_to_delete, (void*)queue_cod);
+			delete_messages_from_queue(element_to_delete);
 		}
 
 	}
@@ -53,7 +58,7 @@ t_pending* find_element_given_ID_short(void* ID_encontrar, t_list* colaIDs){
 	return list_find(colaIDs, _soy_ID_buscado);
 }
 
-t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
+t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex_t* mutex_cola, uint32_t* bytes, uint32_t* id_co, void** datos_mensaje, t_log* logsub){
 	t_pending* elemento;
 	bool Default = strcmp(memory_algorithm, "DEFAULT") == 0;
 
@@ -61,7 +66,7 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 		return ((t_pending*) p)->ID_mensaje == (uint32_t) ID_encontrar;
 	}
 
-	pthread_mutex_lock(&mutex_cola);
+	pthread_mutex_lock(mutex_cola);
 		elemento = list_find(cola, _soy_ID_buscado);
 		if(elemento != NULL){
 			*bytes = elemento->bytes;
@@ -72,29 +77,25 @@ t_pending* find_element_given_ID(void* ID_encontrar, t_list* cola, pthread_mutex
 			if(elemento->ID_correlativo != 0)
 				*id_co = elemento->ID_correlativo;
 		}
-	pthread_mutex_unlock(&mutex_cola);
+	pthread_mutex_unlock(mutex_cola);
 
 
-	if(elemento != NULL){
-		log_trace(logsub, "Se encontro el t_pending de ID: %d", elemento->ID_mensaje);
-		log_trace(logsub, "Adentro de la struct hay %d bytes", elemento->bytes);
-	}
-	else
+	if(elemento == NULL)
 		log_debug(logsub, "No existe mas el mensaje en la cola\n");
 
 	return elemento;
 }
 
-t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_mutex_t mutex_subs){
+t_suscriber* find_suscriber_given_ID(void* ID_encontrar, t_list* subs, pthread_mutex_t* mutex_subs){
 	t_suscriber* suscriber;
 
 	bool _soy_ID_buscado(void* p){
 		return ((t_suscriber*) p)->ID_suscriber == (uint32_t) ID_encontrar;
 	}
 
-	pthread_mutex_lock(&mutex_subs);
+	pthread_mutex_lock(mutex_subs);
 		suscriber = list_find(subs, _soy_ID_buscado);
-	pthread_mutex_unlock(&mutex_subs);
+	pthread_mutex_unlock(mutex_subs);
 
 	if(suscriber == NULL)
 		log_info(logger, "No se encontro el suscriptor %d en la lista", (int) ID_encontrar);

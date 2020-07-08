@@ -7,15 +7,15 @@
 
 #include "broker.h"
 
-void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger){
+void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t* mutex, t_log* logger){
 
 	suscriber->suscribed_queue = cola;
 	suscriber->connected = true;
 	suscriber->socket = socket;
 
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(mutex);
 		list_add(lista_subs, suscriber);
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(mutex);
 	log_info(logger, "Se agrego el socket '%d' a suscriptores\n", socket);
 
 }
@@ -49,7 +49,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	switch(cola){
 	case COLA_NEW:
 		//buscar sub en la lista de subs de la cola elegida. (un ID de proceso se puede suscribir a todas las colas independientemente)
-		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->NEW, semaphores_new->mutex_subs);
+		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->NEW, &(semaphores_new->mutex_subs));
 		my_semaphores = semaphores_new;
 		my_queue = queues->NEW_POKEMON;
 		my_queueIDs = queues->NEW_POKEMON_IDS;
@@ -57,7 +57,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		queue_name = "NEW";
 		break;
 	case COLA_APPEARED:
-		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->APPEARED, semaphores_appeared->mutex_subs);
+		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->APPEARED, &(semaphores_appeared->mutex_subs));
 		my_semaphores = semaphores_appeared;
 		my_queue = queues->APPEARED_POKEMON;
 		my_queueIDs = queues->APPEARED_POKEMON_IDS;
@@ -65,7 +65,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		queue_name = "APPEARED";
 		break;
 	case COLA_GET:
-		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->GET, semaphores_get->mutex_subs);
+		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->GET, &(semaphores_get->mutex_subs));
 		my_semaphores = semaphores_get;
 		my_queue = queues->GET_POKEMON;
 		my_queueIDs = queues->GET_POKEMON_IDS;
@@ -73,7 +73,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		queue_name = "GET";
 		break;
 	case COLA_LOCALIZED:
-		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->LOCALIZED, semaphores_localized->mutex_subs);
+		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->LOCALIZED, &(semaphores_localized->mutex_subs));
 		my_semaphores = semaphores_localized;
 		my_queue = queues->LOCALIZED_POKEMON;
 		my_queueIDs = queues->LOCALIZED_POKEMON_IDS;
@@ -81,7 +81,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		queue_name = "LOCALIZED";
 		break;
 	case COLA_CATCH:
-		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->CATCH, semaphores_catch->mutex_subs);
+		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->CATCH, &(semaphores_catch->mutex_subs));
 		my_semaphores = semaphores_catch;
 		my_queue = queues->CATCH_POKEMON;
 		my_queueIDs = queues->CATCH_POKEMON_IDS;
@@ -89,7 +89,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		queue_name = "CATCH";
 		break;
 	case COLA_CAUGHT:
-		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->CAUGHT, semaphores_caught->mutex_subs);
+		suscriber = find_suscriber_given_ID((void*) ID_proceso, suscribers->CAUGHT, &(semaphores_caught->mutex_subs));
 		my_semaphores = semaphores_caught;
 		my_queue = queues->CAUGHT_POKEMON;
 		my_queueIDs = queues->CAUGHT_POKEMON_IDS;
@@ -114,32 +114,32 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 
 		case COLA_NEW:
 			log_info(logger, "Por suscribir al socket '%d' a la cola de NEW", socket_cliente);
-			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->NEW, my_semaphores->mutex_subs, logger);
+			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->NEW, &(my_semaphores->mutex_subs), logger);
 			break;
 
 		case COLA_APPEARED:
 			log_info(logger, "Por suscribir al socket '%d' a la cola de APPEARED", socket_cliente);
-			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->APPEARED, my_semaphores->mutex_subs, logger);
+			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->APPEARED, &(my_semaphores->mutex_subs), logger);
 			break;
 
 		case COLA_CATCH:
 			log_info(logger, "Por suscribir al socket '%d' a la cola de CATCH", socket_cliente);
-			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CATCH, my_semaphores->mutex_subs, logger);
+			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CATCH, &(my_semaphores->mutex_subs), logger);
 			break;
 
 		case COLA_CAUGHT:
 			log_info(logger, "Por suscribir al socket '%d' a la cola de CAUGHT", socket_cliente);
-			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CAUGHT, my_semaphores->mutex_subs, logger);
+			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->CAUGHT, &(my_semaphores->mutex_subs), logger);
 			break;
 
 		case COLA_GET:
 			log_info(logger, "Por suscribir al socket '%d' a la cola de GET", socket_cliente);
-			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->GET, my_semaphores->mutex_subs, logger);
+			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->GET, &(my_semaphores->mutex_subs), logger);
 			break;
 
 		case COLA_LOCALIZED:
 			log_info(logger, "Por suscribir al socket '%d' a la cola de LOCALIZED", socket_cliente);
-			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->LOCALIZED, my_semaphores->mutex_subs, logger);
+			agregar_Asubs(suscriber, socket_cliente, cola, suscriptores->LOCALIZED, &(my_semaphores->mutex_subs), logger);
 			break;
 
 		default:
@@ -235,8 +235,8 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
 		log_debug(suscriber->log, "Aparecieron nuevos mensajes a enviar");
 
-		if((*total_queue_messages) < current_total_count)
-			printf("ERROR imposible, nunca puede ser menor\n");
+		/*if((*total_queue_messages) < current_total_count)	//si se vuelve a agregar meter mutex en total_queue_messages
+			printf("ERROR imposible, nunca puede ser menor\n");*/
 
 		//-----------------------------------------------------------------------------------------------
 
@@ -247,10 +247,10 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 
 			//obtener el mensaje con ese ID
 			//Buscar el t_pending adentro de la cola, siempre se hace.
-			mensaje = find_element_given_ID(elemento, cola, semaforos->mutex_cola, &bytes, &id_co, &message_data, suscriber->log);
+			mensaje = find_element_given_ID(elemento, cola, &(semaforos->mutex_cola), &bytes, &id_co, &message_data, suscriber->log);
 			//buscar los datos en la cache solo en el caso de (particiones o buddy)
 			if(strcmp(memory_algorithm, "PARTICIONES") == 0 || strcmp(memory_algorithm, "BS") == 0)
-				message_data = find_cache_element_given_ID(elemento, &bytes, suscriber->log);
+				message_data = find_cache_element_given_ID(elemento, &bytes, suscriber->log, suscriber->suscribed_queue);
 
 			if(mensaje != NULL && message_data != NULL){	//en modo sin memoria, siempre va a encontrar el mensaje
 				paquete = broker_serialize(suscriber->suscribed_queue, (uint32_t) elemento, id_co, &message_data, bytes);

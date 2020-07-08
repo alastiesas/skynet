@@ -7,15 +7,15 @@
 
 #include "broker.h"
 
-void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger, t_semaforos* semaforos, uint32_t* total_queue_messages){
+void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t* mutex, t_log* logger, t_semaforos* semaforos, uint32_t* total_queue_messages){
 
-    pthread_mutex_lock(&(mutex));
+    pthread_mutex_lock(mutex);
     /* do something that might make condition true */
     	list_add(cola, t_mensaje);
     	list_add(colaIds, (void*)(t_mensaje->ID_mensaje));
     	(*total_queue_messages)++;		//solo se suma, no se resta al eliminar mensajes.
     	pthread_cond_broadcast(&(semaforos->broadcast));
-    pthread_mutex_unlock(&(mutex));
+    pthread_mutex_unlock(mutex);
 }
 
 void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger, t_queues* colas) {
@@ -161,7 +161,7 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 	//La cola la tomamos como estructura administrativa, hay que actualizarla luego de que el mensaje ya este en la memoria
 	//Se puede usar un mutex separado para cache y cola, igual el hilo de envio no se va a enterar de mensajes nuevos hasta que aparezca en la cola
 	//Agregar mensaje a cola correspondiente
-	agregar_Acola(queue, queueIds, t_mensaje, semaforos->mutex_cola, logger, semaforos, total_queue_messages);
+	agregar_Acola(queue, queueIds, t_mensaje, &(semaforos->mutex_cola), logger, semaforos, total_queue_messages);
 
 	log_info(obligatorio, "Se agrega un mensaje a la cola %s", queue_to_string(queue_code));
 	pthread_exit(NULL);
@@ -227,7 +227,7 @@ void delete_messages_from_queue(t_list* deleted_messages){
 	uint32_t id_mensaje;
 	queue_code queue_id;
 	t_pending* t_mensaje;
-	pthread_mutex_t mutex_cola;
+	pthread_mutex_t* mutex_cola;
 	t_list* queue;
 	t_list* queueIds;
 
@@ -235,7 +235,7 @@ void delete_messages_from_queue(t_list* deleted_messages){
 			id_mensaje = (uint32_t)list_remove(deleted_messages, 0);
 			queue_id = (queue_code)list_remove(deleted_messages, 0);
 			mutex_cola = get_mutex_and_queues_by_id(queue_id, &queue, &queueIds);
-			pthread_mutex_lock(&(mutex_cola));
+			pthread_mutex_lock(mutex_cola);
 				t_mensaje = remove_element_given_ID_short(id_mensaje, queue);
 				if(t_mensaje != NULL){
 					list_destroy(t_mensaje->subs_enviados);
@@ -245,47 +245,47 @@ void delete_messages_from_queue(t_list* deleted_messages){
 					free(t_mensaje);
 					remove_ID_short(id_mensaje, queueIds);
 				}
-			pthread_mutex_unlock(&(mutex_cola));
+			pthread_mutex_unlock(mutex_cola);
 		}
 
 	list_destroy(deleted_messages);
 }
 
-pthread_mutex_t get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue, t_list** queueIDS){
+pthread_mutex_t* get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue, t_list** queueIDS){
 	switch(queue_id){
 	case COLA_NEW:
 		*queue = queues->NEW_POKEMON;
 		*queueIDS = queues->NEW_POKEMON_IDS;
-		return semaphores_new->mutex_cola;
+		return &(semaphores_new->mutex_cola);
 		break;
 	case COLA_APPEARED:
 		*queue = queues->APPEARED_POKEMON;
 		*queueIDS = queues->APPEARED_POKEMON_IDS;
-		return semaphores_appeared->mutex_cola;
+		return &(semaphores_appeared->mutex_cola);
 		break;
 	case COLA_GET:
 		*queue = queues->GET_POKEMON;
 		*queueIDS = queues->GET_POKEMON_IDS;
-		return semaphores_get->mutex_cola;
+		return &(semaphores_get->mutex_cola);
 		break;
 	case COLA_LOCALIZED:
 		*queue = queues->LOCALIZED_POKEMON;
 		*queueIDS = queues->LOCALIZED_POKEMON_IDS;
-		return semaphores_localized->mutex_cola;
+		return &(semaphores_localized->mutex_cola);
 		break;
 	case COLA_CATCH:
 		*queue = queues->CATCH_POKEMON;
 		*queueIDS = queues->CATCH_POKEMON_IDS;
-		return semaphores_catch->mutex_cola;
+		return &(semaphores_catch->mutex_cola);
 		break;
 	case COLA_CAUGHT:
 		*queue = queues->CAUGHT_POKEMON;
 		*queueIDS = queues->CAUGHT_POKEMON_IDS;
-		return semaphores_caught->mutex_cola;
+		return &(semaphores_caught->mutex_cola);
 		break;
 	default:
 		log_error(logger, "Error impossible en get_mutex_and_queues_by_id()");
-		return semaphores_new->mutex_cola; //???
+		return &(semaphores_new->mutex_cola); //???
 		break;
 	}
 }

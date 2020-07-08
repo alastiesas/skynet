@@ -166,11 +166,11 @@ void first_process(operation_code cod_op, int32_t socket_cliente, t_log* logger,
 void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_list* cola, t_list* colaIDs, uint32_t* total_queue_messages);
 
 //mutex funciona sin pasarlo como puntero??
-void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t mutex, t_log* logger);
+void agregar_Asubs(t_suscriber* suscriber, int32_t socket, queue_code cola, t_list* lista_subs, pthread_mutex_t* mutex, t_log* logger);
 
 //agrega a una cola del broker un t_pending, dada una estructura t_mensaje (new, catch, etc..)
 //mutex funciona sin pasarlo como puntero??
-void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t mutex, t_log* logger, t_semaforos* semaforos, uint32_t* total_queue_messages);
+void agregar_Acola(t_list* cola, t_list* colaIds, t_pending* t_mensaje, pthread_mutex_t* mutex, t_log* logger, t_semaforos* semaforos, uint32_t* total_queue_messages);
 
 void close_suscriber_thread(t_suscriber* suscriber, t_list* list1, t_list* list2);
 
@@ -223,7 +223,7 @@ void free_partition();
 uint32_t get_partition_number_to_delete(uint32_t* message_id);
 
 void dump_cache(void);
-pthread_mutex_t get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue, t_list** queueIDS);
+pthread_mutex_t* get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue, t_list** queueIDS);
 void create_dynamic_partition(uint32_t size);
 void create_fixed_partition(uint32_t size);
 void create_partition(uint32_t size);
