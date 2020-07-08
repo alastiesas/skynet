@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 		} else if (strcmp(argv[1], "GAMECARD") == 0) {
 
 			ip = config_get_string_value(gameboy_config, "IP_GAMECARD");
-			port = config_get_string_value(gameboy_config, "PUERTO_CAMECARD");
+			port = config_get_string_value(gameboy_config, "PUERTO_GAMECARD");
 			process_code = 2;
 			if (argc == 5 && strcmp(argv[2], "GET_POKEMON") == 0) {
 				//gameboy GAMECARD GET_POKEMON [POKEMON] [ID_MENSAJE]

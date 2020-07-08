@@ -41,7 +41,7 @@ void iniciar_servidor_broker()
     }
 
 	listen(socket_servidor, SOMAXCONN);
-	log_info(logger, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
+	log_info(logger, "Escuchando en el socket %d, en %s:%s", socket_servidor, IP, PORT);
 
     freeaddrinfo(servinfo);
 

@@ -30,10 +30,11 @@ void init_fs(){
 		printf("%s\n", getcwd(s, 100));
 		chdir("..");	//TODO desde eclipse hay un .. de mas
 		printf("%s\n", getcwd(s, 100));
-		mkdir("tall_grass", 0700);
+		mkdir("tall_grass", 0777);
 		chdir("tall_grass");
-		mkdir("Metadata", 0700);
-		mkdir("Files", 0700);
+		mkdir("Metadata", 0777);
+		mkdir("Files", 0777);
+		mkdir("Blocks", 0777);
 		chdir("..");
 		chdir("GameCard");
 		chdir("Debug");

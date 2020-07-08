@@ -114,7 +114,7 @@ void iniciar_servidor_gamecard()
     }
 
 	listen(socket_servidor, SOMAXCONN);
-	log_info(logger, "Escuchando en el socket %d, en el thread %d", socket_servidor, thread);
+	log_info(logger, "Escuchando en el socket %d, en %s:%s", socket_servidor, IP_GAMECARD, PUERTO_GAMECARD);
 
     freeaddrinfo(servinfo);
 
@@ -152,9 +152,9 @@ void wait_clients(int32_t socket_servidor, t_log* logger)
 void gamecard_serves_client(void* input){
 	int32_t socket = ((struct gamecard_thread_args*)input)->socket;
 	t_log*	logger = ((struct gamecard_thread_args*)input)->logger;
+	free(input);
 
 	log_info(logger, "Se creo un thread para recibir mensajes del cliente %d\n", socket);
-
 
 	operation_code cod_op;
 
@@ -170,7 +170,7 @@ void gamecard_serves_client(void* input){
 
     serve_thread_args* argus = malloc(sizeof(serve_thread_args));
     argus->op_code = cod_op;
-    uint32_t* size;
+    uint32_t* size = malloc(sizeof(uint32_t));
     void* message;
 
 	switch(cod_op){
@@ -200,5 +200,4 @@ void gamecard_serves_client(void* input){
 		break;
 	}
 
-	free(input);		//liberar args una vez cerrado el hilo
 }

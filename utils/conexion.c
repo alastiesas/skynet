@@ -299,7 +299,7 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, t_log* 
 
 		conexion = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
 		if(conexion == -1)
-			log_warning(logger, "Error de conexion con el proceso\n");
+			log_warning(logger, "Error de conexion con el proceso %s:%s\n", ip, puerto);
 
 		freeaddrinfo(server_info);
 	}
