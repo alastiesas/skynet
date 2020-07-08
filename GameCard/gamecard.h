@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include<commons/config.h>
+#include<commons/bitarray.h>
 #include <conexion.h>
 #include <mensajes.h>
 

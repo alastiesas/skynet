@@ -1,4 +1,5 @@
 #include "gamecard.h"
+#define BIT_NUMBERING LSB_FIRST
 
 void initiliaze_file_system() {
 
@@ -25,6 +26,41 @@ void initiliaze_file_system() {
 		file = fopen(file_name, "w");
 		free(file);
 	}
+}
+
+t_bitarray* get_bitarray(){
+	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
+	bitarray->mode = BIT_NUMBERING;
+	bitarray->size = blocks;
+
+	//TODO ver donde van los mutex
+	FILE *p;
+	p = fopen("aca va el path del bitarray", "r");
+	fread(bitarray->bitarray, blocks/8, 1, p);
+	fclose(p);
+
+	return bitarray;
+}
+
+t_bitarray* create_bitarray(){
+	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
+	bitarray->mode = BIT_NUMBERING;
+	bitarray->size = blocks;
+	bitarray->bitarray = malloc(blocks/8);
+	//TODO setear los bits en 0?
+
+	return bitarray;
+}
+
+void save_bitarray(t_bitarray* bitarray){
+	//TODO si ya estaba modificando el bitarray entonces el mutex supuestamente ya lo tenia
+	FILE *p;
+	p = fopen("aca va el path del bitarray", "w");
+	fwrite(bitarray->bitarray, blocks/8, 1, p);
+	fclose(p);
+
+	free(bitarray->bitarray);
+	free(bitarray);
 }
 
 void terminate_file_system() {
