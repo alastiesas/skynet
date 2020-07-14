@@ -44,6 +44,7 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	trainer->target = NULL;
 	trainer->burst = 0;
 	trainer->quantum = 0;
+	trainer->burst_estimate = 0;
 	trainer->action_burst = 0;
 	sem_init(&trainer->sem_thread, 0, 0);
 	trainer->position = position;
@@ -338,7 +339,36 @@ t_list* trainer_waiting_pokemons(t_trainer* trainer) {
 
 	return waiting_pokemons;
 
-}//*/
+}
+
+
+
+bool trainer_full_quantum(t_trainer* trainer, uint32_t quantum){
+
+	return trainer->burst == quantum;
+
+}
+
+uint32_t trainer_burst_estimate(t_trainer* trainer) {
+	return max(trainer->burst_estimate - trainer->burst, 0);
+}
+
+t_algorithm read_algorithm(char* config_algorithm) {
+	t_algorithm algorithm = EMPTY;
+	if(strcmp(config_algorithm, "FIFO") == 0) {
+		algorithm = FIFO;
+	}else if(strcmp(config_algorithm, "RR") == 0) {
+		algorithm = RR;
+	}else if(strcmp(config_algorithm, "SJF-SD") == 0) {
+		algorithm = SJFS;
+	}else if(strcmp(config_algorithm, "SJF-CD") == 0) {
+		algorithm = SJFC;
+	}else {
+		printf("no se leyo el algoritmo en el config, default: FIFO\n");
+	}
+	return algorithm;
+}
+//*/
 
 
 

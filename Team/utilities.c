@@ -80,4 +80,19 @@ char* create_copy_string(char* from) {
 
 }
 
+uint32_t max(int32_t x, int32_t y) {
+	uint32_t max_number = x;
+	if(x < y) {
+		max_number = y;
+	}
+	return max_number;
+}
+
+uint32_t min(int32_t x, int32_t y) {
+	uint32_t max_number = x;
+	if(x > y) {
+		max_number = y;
+	}
+	return max_number;
+}
 

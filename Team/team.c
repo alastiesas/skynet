@@ -11,22 +11,14 @@
 //#include <libs/conexion.h>
 //atoi(test_split[0])
 
-
-void *myThreadFun(void *vargp)
-{
-    sleep(1);
-    printf("Printing GeeksQuiz from Thread \n");
-    return NULL;
-}
-
-
 int main(void)
 {
+
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
 	log_info(log, "STARTING TEAM PROGRAM, GOOD LUCK");
 
 	config = config_create("team.config");
-
+	initialize_global_config();
 
 
 	pthread_t sender_tid;
@@ -46,6 +38,8 @@ int main(void)
 	initialize_trainers();
 	initialize_global_objectives();
 
+	t_trainer* trainersjf = list_get(block_list, 0);
+	trainersjf->burst_estimate = 20;
 
 	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
 
@@ -67,7 +61,7 @@ int main(void)
 	test_position_3->y = 6;
 	add_to_poke_map("Bulbasaur",(void*) test_position_3);
 
-	long_term_scheduler();//*/
+	//*/
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
 //	subscribe(OPERATION_APPEARED);
@@ -82,6 +76,7 @@ int main(void)
 
 	pthread_t short_tid;
 
+	printf("Creacion Hilo short\n");
 	pthread_create(&short_tid, NULL, short_thread, NULL);
 
 

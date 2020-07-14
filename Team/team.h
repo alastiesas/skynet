@@ -21,9 +21,13 @@
 t_config* config;
 t_log* log;
 uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
-t_list* objectives_list;
+uint32_t quantum = 0;
+uint32_t initial_estimate = 0;
+double alpha = 0.5;
+bool new_trainer_in_ready = false;
 t_algorithm algorithm = FIFO;
 uint32_t retry_time = 15; // TIENE QUE LEVANTAR DATO DEL CONFIG
+t_list* objectives_list;
 
 
 //de aca para abajo, revisar condiciones de carrera
@@ -37,8 +41,8 @@ t_list* exit_list;
 
 
 //planificacion
-uint32_t context_changes = 0;
 uint32_t cpu_cycles = 0;
+uint32_t context_changes = 0;
 uint32_t deadlock_priority;
 uint32_t deadlocks = 0;
 uint32_t solved_deadlocks = 0;
@@ -59,7 +63,7 @@ sem_t sem_messages_recieve_list;
 //---FIN GLOBALS---
 
 
-
+void initialize_global_config();
 //entrenadores y objertivos
 t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
 void initialize_trainers();//inicializa todos los entrenadores del conig
@@ -108,11 +112,19 @@ void deadlock_handler();
 void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table);
 void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, bool perfect);
 void* short_thread();
+// algoritmos de seleccion
 void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
 void sjfc_algorithm();
+void exit_cpu(t_trainer* trainer);
+void trainer_update_burst_estimate(t_trainer* trainer);
+t_trainer* shortest_job_trainer_from_ready();
+//callbacks segun algoritmo
 void callback_fifo(t_trainer* trainer);
+void callback_rr(t_trainer* trainer);
+void callback_sjfs(t_trainer* trainer);
+void callback_sjfc(t_trainer* trainer);
 //FIN planificacion
 
 //movimientos
@@ -145,17 +157,46 @@ void debug_message_list();
 //FIN debugs
 
 
+
+void initialize_global_config() {
+
+	char* config_algorithm = config_get_string_value(config, "ALGORITMO_PLANIFICACION");
+	algorithm = read_algorithm(config_algorithm);
+	time_delay = config_get_int_value(config, "RETARDO_CICLO_CPU");
+	quantum = config_get_int_value(config, "QUANTUM");
+	initial_estimate = config_get_int_value(config, "ESTIMACION_INICIAL");
+	if(config_has_property(config, "ALPHA")) {
+		alpha = config_get_double_value(config, "ALPHA");
+	}
+	printf("CONFIG-> algoritmo: %s\tretardo: %d\tquantum: %d\testimacion inicial: %d\n", config_algorithm, time_delay, quantum, initial_estimate);
+}
+
 void callback_fifo(t_trainer* trainer){
+	printf("callback FIFO[%d]\n", algorithm);
 
 	switch(trainer->action) {
-	case CATCHING:
+	case FREE:
+		//liberar cpu y llamar al short
 		sem_post(&sem_short);
 		break;
-	case FREE:
+	case MOVE:
+		//continuar ejecutando o volver a ready
+		sem_post(&trainer->sem_thread);
+		break;
+	case CATCH:
+		//continuar ejecutando o volver a ready
+		sem_post(&trainer->sem_thread);
+		break;
+	case CATCHING:
+		//liberar cpu y llamar al short
+		sem_post(&sem_short);
+		break;
+	case TRADE:
+		//liberar cpu y llamar al short
 		sem_post(&sem_short);
 		break;
 	case FINISH:
-
+		//liberar cpu y llamar al short
 		sem_post(&sem_short);
 		break;
 	default:
@@ -164,15 +205,178 @@ void callback_fifo(t_trainer* trainer){
 	}
 
 }
+void callback_rr(t_trainer* trainer) {
+	printf("callback RR[%d]\n", algorithm);
+
+	switch(trainer->action) {
+		case FREE:
+			//liberar cpu y llamar al short
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case MOVE:
+			//continuar ejecutando o volver a ready
+			if(trainer_full_quantum(trainer, quantum)) {
+				//si se cumpleto el quantum, se desaloja
+				trainer->burst = 0;
+				sem_post(&sem_short);
+			}else {
+				//si no completó el quantum, continua ejecutando
+				sem_post(&trainer->sem_thread);
+			}
+			break;
+		case CATCH:
+			//continuar ejecutando o volver a ready
+			if(trainer_full_quantum(trainer, quantum)) {
+				//si se cumpleto el quantum, se desaloja
+				trainer->burst = 0;
+				sem_post(&sem_short);
+			}else {
+				//si no completó el quantum, continua ejecutando
+				sem_post(&trainer->sem_thread);
+			}
+			break;
+		case CATCHING:
+			//liberar cpu y llamar al short
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case TRADE:
+			//liberar cpu y llamar al short
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case FINISH:
+			//liberar cpu y llamar al short
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		default:
+			sem_post(&trainer->sem_thread);
+			break;
+		}
+}
+void callback_sjfs(t_trainer* trainer) {
+	printf("callback SJF-SD[%d]\n", algorithm, trainer_burst_estimate(trainer));
+
+	switch(trainer->action) {
+		case FREE:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case MOVE:
+			//continuar ejecutando o volver a ready
+			sem_post(&trainer->sem_thread);
+			break;
+		case CATCH:
+			//continuar ejecutando o volver a ready
+			sem_post(&trainer->sem_thread);
+			break;
+		case CATCHING:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case TRADE:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case FINISH:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		default:
+			sem_post(&trainer->sem_thread);
+			break;
+	}
+
+}
+void callback_sjfc(t_trainer* trainer) {
+	printf("callback SJF-CD[%d], estimado: %d, posible desalojo: %d\n", algorithm, trainer_burst_estimate(trainer), new_trainer_in_ready);
+	//TODO FALTA DESALOJO
+	switch(trainer->action) {
+		case FREE:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case MOVE:
+			//continuar ejecutando o volver a ready
+			if(new_trainer_in_ready) {
+				t_trainer* sj_trainer = shortest_job_trainer_from_ready();
+				if(trainer_burst_estimate(sj_trainer) < trainer_burst_estimate(trainer)){
+					//Uno de los nuevos en ready tiene menor estimado -> se desaloja (sin actualizar el estimado
+					sem_post(&sem_short);
+				} else {//Ninguno con menor estimado -> no se desaloja
+					sem_post(&trainer->sem_thread);
+				}
+			} else {//flag en false -> imposible ser desalojado
+			sem_post(&trainer->sem_thread);
+			}
+			break;
+		case CATCH:
+			//continuar ejecutando o volver a ready
+			sem_post(&trainer->sem_thread);
+			break;
+		case CATCHING:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case TRADE:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		case FINISH:
+			//liberar cpu y llamar al short
+			trainer_update_burst_estimate(trainer);
+			trainer->burst = 0;
+			sem_post(&sem_short);
+			break;
+		default:
+			sem_post(&trainer->sem_thread);
+			break;
+	}
+
+}
 
 t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons)
 {
 	t_trainer* trainer = create_trainer_from_config(id, config_position, onfig_objectives, config_pokemons);
-
+	trainer->burst_estimate = initial_estimate;
 	t_callback* callback_thread = malloc(sizeof(t_callback));
 	callback_thread->trainer = trainer;
 
-	callback_thread->callback = &callback_fifo;
+
+	switch(algorithm) {
+		case FIFO:
+			callback_thread->callback = &callback_fifo;
+			break;
+		case RR:
+			callback_thread->callback = &callback_rr;
+			break;
+		case SJFS:
+			callback_thread->callback = &callback_sjfs;
+			break;
+		case SJFC:
+			callback_thread->callback = &callback_sjfc;
+			break;
+		default:
+			callback_thread->callback = &callback_fifo;
+			break;
+	}
+	//TODO ACA LEER DEL CONFIG!
 	pthread_create(&(trainer->tid), NULL, trainer_thread, callback_thread);
 
 	return trainer;
@@ -181,6 +385,7 @@ t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_ob
 
 void initialize_trainers()
 {
+	printf("\nINICIALIZANDO ENTRENADORES\n");
 	char** positions_config = config_get_array_value(config,"POSICIONES_ENTRENADORES");
 	char** objectives_config = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
 	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
@@ -200,7 +405,12 @@ void initialize_trainers()
 	//free_string_list(objectives_config);
 	//free_string_list(pokemons_config);
 
+	printf("TODOS LOS ENTRENADORES HAN SIDO CONFIGURADOS\n");
 
+	//*
+	t_trainer* trainer = list_get(block_list, 0);
+	trainer->burst_estimate = 5;
+	//*/
 }
 
 
@@ -283,6 +493,7 @@ bool pokemon_is_needed(char* pokemon,char* channel)
 	//return (objective->count > (objective->caught + objective->catching));
 	return needed;
 }
+
 bool pokemon_is_needed_on_trainer(char* pokemon)
 {
 	return pokemon_is_needed(pokemon,"trainer");
@@ -315,7 +526,6 @@ void initialize_global_objectives()
 	objectives_list = (t_list*) list_fold( new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
 }
 
-
 bool success_global_objective(t_list* global_objectives)
 {
 	bool success = false;
@@ -343,7 +553,7 @@ void* trainer_thread(t_callback* callback_thread)
 
 		switch(trainer->action){
 			case MOVE:
-				printf("Me estoy moviendo (comando MOVE), mi objetivo: %s <----\n", trainer->target->pokemon);
+				printf("trainer[%d]->(comando MOVE), objetivo: [%s (%d, %d)]\n", trainer->id, trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
 				printf("Posicion actual: (%d,%d)", trainer->position->x,trainer->position->y);
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y)
@@ -410,7 +620,27 @@ void long_thread() {
 
 void* short_thread()
 {
+	void (*short_term_scheduler)(void);
+	switch(algorithm) {
+	case FIFO:
+		short_term_scheduler = &fifo_algorithm;
+		break;
+	case RR:
+		short_term_scheduler = &rr_algorithm;
+		break;
+	case SJFS:
+		short_term_scheduler = &sjfs_algorithm;
+		break;
+	case SJFC:
+		short_term_scheduler = &sjfc_algorithm;
+		break;
+	default:
+		printf("no se leyo el algoritmo en el config, default: FIFO\n");
+		short_term_scheduler = &fifo_algorithm;
+		break;
+	}
 	sem_init(&sem_short, 0, 0);
+
 	while(1){
 		sem_wait(&sem_short);
 		sem_wait(&sem_scheduler);
@@ -665,7 +895,7 @@ void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer
 
 
 }//*/
-
+/*
 void short_term_scheduler()
 {
 
@@ -690,19 +920,20 @@ void short_term_scheduler()
 	}
 
 	// lo unico que hace es mueve de ready to exec
-}
+}*/
 
 void fifo_algorithm()
 {
-	//printf("estoy en fifo\n");
+	printf("fifo_algorithm\n");
+
 	if(list_size(exec_list) > 0){
-		printf("aca llego\n");
-		transition_exec_to_block();
+		//trainer debe volver a ready o pasar a block
+		t_trainer* trainer = list_get(exec_list, 0);
+		exit_cpu(trainer);
 	}
 
 	if(list_size(ready_list) > 0){
-		printf("aca llego transition_ready_to_exec\n");
-		transition_ready_to_exec(0);
+		transition_ready_to_exec(0);//toma el primero de la cola ready
 	}
 	else{
 		//toma el mando el long
@@ -713,17 +944,114 @@ void fifo_algorithm()
 
 void rr_algorithm()
 {
-	printf("Estoy en RR\n");
+	printf("rr_algorithm\n");
+	if(list_size(exec_list) > 0){
+		//trainer debe volver a ready o pasar a block
+		t_trainer* trainer = list_get(exec_list, 0);
+		if(trainer!=NULL) {
+			exit_cpu(trainer);
+		}
+	}
+
+	if(list_size(ready_list) > 0){
+		transition_ready_to_exec(0);//toma el primero de la cola ready
+	}
+	else{
+		//toma el mando el long
+		sem_post(&sem_long);
+	}
 }
 
 void sjfs_algorithm()
 {
-	printf("Estoy en SJFS\n");
+	printf("sjfs_algorithm\n");
+	if(list_size(exec_list) > 0){
+		//trainer debe volver a ready o pasar a block
+		t_trainer* trainer = list_get(exec_list, 0);
+		if(trainer!=NULL) {
+			exit_cpu(trainer);
+		}
+	}
+
+	if(list_size(ready_list) > 0){
+		t_trainer* trainer = shortest_job_trainer_from_ready();
+		if(trainer != NULL) {
+			transition_by_id(trainer->id, ready_list, exec_list);
+			sem_post(&trainer->sem_thread);
+		}
+	}
+	else{
+		//toma el mando el long
+		sem_post(&sem_long);
+	}
 }
 
 void sjfc_algorithm()
 {
-	printf("Estoy en SJFC\n");
+	new_trainer_in_ready = false;
+	printf("sjfc_algorithm\n");
+	//TODO FALTA DESALOJO
+	if(list_size(exec_list) > 0){
+		//trainer debe volver a ready o pasar a block
+		t_trainer* trainer = list_get(exec_list, 0);
+		if(trainer!=NULL) {
+			exit_cpu(trainer);
+		}
+	}
+
+	if(list_size(ready_list) > 0){
+		t_trainer* trainer = shortest_job_trainer_from_ready();
+		if(trainer != NULL) {
+			transition_by_id(trainer->id, ready_list, exec_list);
+			sem_post(&trainer->sem_thread);
+		}
+	}
+	else{
+		//toma el mando el long
+		sem_post(&sem_long);
+	}
+}
+
+void exit_cpu(t_trainer* trainer) {
+	switch(trainer->action) {
+		case FREE://pasa a block
+			transition_exec_to_block();
+			break;
+		case MOVE://no terminó, vuelve a ready
+			transition_exec_to_ready();
+			break;
+		case CATCH://no terminó, vuelve a ready
+			transition_exec_to_ready();
+			break;
+		case CATCHING://pasa a block
+			transition_exec_to_block();
+			break;
+		case TRADE://pasa a block
+			transition_exec_to_block();
+			break;
+		case FINISH://pasa a exit
+			transition_exec_to_exit();
+			break;
+
+	}
+}
+
+void trainer_update_burst_estimate(t_trainer* trainer) {
+
+	trainer->burst_estimate = alpha * trainer->burst + (1-alpha) * trainer->burst_estimate;
+}
+
+t_trainer* shortest_job_trainer_from_ready() {
+	t_trainer* shortest_job_trainer = NULL;
+	uint32_t shortest_estimate = -1;
+	void shortest_estimate_trainer(t_trainer* trainer) {
+		if(shortest_estimate < 0 || trainer->burst_estimate < shortest_estimate) {
+			shortest_job_trainer = trainer;
+			shortest_estimate = trainer->burst_estimate;
+		}
+	}
+	list_iterate(ready_list, &shortest_estimate_trainer);
+	return shortest_job_trainer;
 }
 
 void trainer_assign_move(t_trainer* trainer, char* pokemon, t_position* position, bool catching, uint32_t target_id /*0 = no trainer*/)
@@ -851,22 +1179,29 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 {
 	void* element = list_remove(from, index);
 	list_add(to, element);
+	context_changes++;
 }
 
 void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	bool condition(void* trainer) {
 		return (((t_trainer*)trainer)->id == id);
 	}
+	if(to==ready_list) {
+		printf("SE PASO ALGO A READY\n");
+		new_trainer_in_ready = true;
+	}
 	debug_colas();
-	void* element = NULL;
+	void* trainer = NULL;
 
 	if(list_size(from)>1)
-		element = list_remove_by_condition(from, &condition);
+		trainer = list_remove_by_condition(from, &condition);
 	else
-		element = list_remove(from, 0);
+		trainer = list_remove(from, 0);
 
-	if(element != NULL)
-		list_add(to, element);
+	if(trainer != NULL){
+		list_add(to, trainer);
+		context_changes++;
+	}
 	else
 		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\n");
 	
@@ -881,11 +1216,15 @@ void transition_from_id_to_ready(uint32_t id) {
 	t_trainer* trainer = list_remove_by_condition(new_list, &condition);
 	if(trainer != NULL) {
 		list_add(ready_list, trainer);
+		context_changes++;
+		new_trainer_in_ready = true;
 		printf("new_list->trainer[%d]->ready_list\n", trainer->id);
 	} else {
 		trainer = list_remove_by_condition(block_list, &condition);
 		if(trainer != NULL) {
 			list_add(ready_list, trainer);
+			context_changes++;
+			new_trainer_in_ready = true;
 			printf("block_list->trainer[%d]->ready_list\n", trainer->id);
 		}else {
 			printf("**ERROR**SE INTENTÓ HACER UNA TRANSICIÓN A READY DE UN ENTRENADOR QUE NO SE ENCUENTRA EN NEW NI BLOCK!**ERROR**\n");
@@ -898,13 +1237,12 @@ void transition_from_id_to_ready(uint32_t id) {
 void transition_new_to_ready(uint32_t index)
 {
 	state_change(index,new_list,ready_list);
-	context_changes++;
+	new_trainer_in_ready = true;
 }
 
 void transition_ready_to_exec(uint32_t index)
 {
 	state_change(index,ready_list,exec_list);
-	context_changes++;
 	t_trainer* trainer = list_get(exec_list,0);
 	sem_post(&trainer->sem_thread);
 }
@@ -912,31 +1250,28 @@ void transition_ready_to_exec(uint32_t index)
 void transition_exec_to_ready()
 {
 	state_change(0,exec_list,ready_list);
-	context_changes++;
+	new_trainer_in_ready = true;
 }
 
 void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
-	context_changes++;
 }
 
 void transition_exec_to_exit()
 {
 	state_change(0,exec_list,exit_list);
-	context_changes++;
 }
 
 void transition_block_to_ready(uint32_t index)
 {
 	state_change(index,block_list,ready_list);
-	context_changes++;
+	new_trainer_in_ready = true;
 }
 
 void transition_block_to_exit(uint32_t index)
 {
 	state_change(index,block_list,exit_list);
-	context_changes++;
 }
 //FIN transiciones
 
@@ -1214,7 +1549,6 @@ void catch(t_trainer* trainer){
 	sleep(time_delay);
 	printf("acallego y dspues rompio\n"); //TODO ACA ROMPE
 	pthread_create(&tid, NULL, &message_list_add_catch, trainer);
-	printf("aca NO llega\n");
 	trainer->action = CATCHING;
 	trainer->burst++;
 	cpu_cycles++;

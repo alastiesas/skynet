@@ -46,6 +46,7 @@ typedef struct
 	t_action action;
 	uint32_t quantum;
 	uint32_t burst;
+	uint32_t burst_estimate;
 	uint32_t action_burst;
 	//esto reemplaza a target->position y target->pokemon
 	//t_objective* objetivo ( target->position, nombre del pokemon y la distancia hasta el pokemon)
@@ -118,7 +119,13 @@ bool trainer_success_objective(t_trainer* trainer);
 bool trainer_needs(t_trainer* trainer, char* pokemon);
 bool trainer_locked(t_trainer* trainer);
 t_list* trainer_held_pokemons(t_trainer* trainer);
-t_list* trainer_waiting_pokemons(t_trainer* trainer);//*/
+t_list* trainer_waiting_pokemons(t_trainer* trainer);
+bool trainer_full_quantum(t_trainer* trainer, uint32_t quantum);
+uint32_t trainer_burst_estimate(t_trainer* trainer);
+uint32_t trainer_actual_burst_estimate(t_trainer* trainer);
+//*/
+
+t_algorithm read_algorithm(char* config_algorithm);
 
 //FIN consultas
 
