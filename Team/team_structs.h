@@ -122,7 +122,6 @@ t_list* trainer_held_pokemons(t_trainer* trainer);
 t_list* trainer_waiting_pokemons(t_trainer* trainer);
 bool trainer_full_quantum(t_trainer* trainer, uint32_t quantum);
 uint32_t trainer_burst_estimate(t_trainer* trainer);
-uint32_t trainer_actual_burst_estimate(t_trainer* trainer);
 //*/
 
 t_algorithm read_algorithm(char* config_algorithm);
