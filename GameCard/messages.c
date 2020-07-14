@@ -6,6 +6,42 @@
  */
 #include "gamecard.h"
 
+void wait_available_file(char* pokemon_name){
+
+	//esperar mutex del pokemon dado, obtener del diccionario de semaforos
+	//abrir metadata del pokemon dado, si no existe, crearlo
+			//PARA NEW, si no existe, crearlo
+			//PARA CATCH, si no existe, informar que no se pudo atrapar
+			//PARA GET, si no existe, retornar un localized sin posiciones ni cantidades
+	//chequear en el metadata si esta ocupado, en ese caso, soltar el mutex y reintentar en TIEMPO_DE_REINTENTO_OPERACION
+	//si esta disponible, actualizarlo como en uso, soltar mutex y listo
+}
+
+void release_pokemon_file(char* pokemon_name){
+	//esperar mutex del pokemon dado, obtener del diccionario de semaforos
+	//abrir metadata del pokemon dado
+	//actualizar el metadata del pokemon a libre
+	//soltar el mutex
+}
+
+t_message_appeared* process_new(t_message_new* message_new){
+
+	t_message_appeared* message_appeared;
+
+	wait_available_file(message_new->pokemon_name);
+	//pasar los bloques del archivo a memoria
+	//crear diccionario con el archivo
+	//verificar si existe en el archivo la posicion recibida, si no existe, crearla
+	//sumar la cantidad de pokemonos nuevos
+	//convertir el diccionario a void*
+	//grabar el void* en los bloques
+	//esperar el tiempo de retardo  operacion
+	release_pokemon_file(message_new->pokemon_name);
+
+	//generar mensaje appeared y destruir el mensaje new
+	return message_appeared;
+}
+
 void serve_new(void* input){
 	operation_code op_code = ((serve_thread_args*)input)->op_code;
 	void* message = ((serve_thread_args*)input)->message;
@@ -15,12 +51,16 @@ void serve_new(void* input){
 
 	t_message_new* message_new = (t_message_new*) message;
 
-	//TODO guardar el mensaje new en el filesystem
+	t_message_appeared* message_appeared;
+	//message_appeared =  process_new(message_new); TODO
 
+//-----------------------------------------------------
 	//Generar mensaje APPEARED
-	t_message_appeared* message_appeared = create_message_appeared_long(message_new->id, message_new->pokemon_name, message_new->location->position->x, message_new->location->position->y);
+	message_appeared = create_message_appeared_long(message_new->id, message_new->pokemon_name, message_new->location->position->x, message_new->location->position->y);
 	log_info(logger, "Se genero el mensaje appeared");
 	destroy_message_new(message_new);
+
+//------------------------------------------------------
 
 	t_package* package = serialize_appeared(message_appeared);
 	destroy_message_appeared(message_appeared);
@@ -32,6 +72,26 @@ void serve_new(void* input){
 
 }
 
+t_message_caught* process_catch(t_message_catch* message_catch){
+
+	t_message_caught* message_caught;
+
+	wait_available_file(message_catch->pokemon_name);
+	//pasar los bloques del archivo a memoria
+	//crear diccionario con el archivo
+	//verificar si existe en el archivo la posicion recibida
+	//si existe la posicion, entonces tiene al menos un pokemon. Restarle 1 y responder que se pudo atrapar
+		//si no existe, responder que no se pudo atrapar
+	//si la cantidad queda en 0 para esa posicion, eliminar linea
+	//convertir el diccionario a void*
+	//grabar el void* en los bloques
+	//esperar el tiempo de retardo  operacion
+	release_pokemon_file(message_catch->pokemon_name);
+
+	//generar mensaje caught y destruir el mensaje catch
+	return message_caught;
+}
+
 void serve_catch(void* input){
 	operation_code op_code = ((serve_thread_args*)input)->op_code;
 	void* message = ((serve_thread_args*)input)->message;
@@ -41,12 +101,16 @@ void serve_catch(void* input){
 
 	t_message_catch* message_catch = (t_message_catch*) message;
 
-	//TODO verificar en el filesystem si el pokemon esta disponible para atrapar
+	t_message_caught* message_caught;
+	//message_caught = process_catch(message_catch); TODO
 
+//-----------------------------------------------------
 	//Generar mensaje CAUGHT												//TODO remover harcodeo true
-	t_message_caught* message_caught = create_message_caught(message_catch->id, 1);
+	message_caught = create_message_caught(message_catch->id, 1);
 	log_info(logger, "Se genero el mensaje caught");
 	destroy_message_catch(message_catch);
+
+//-----------------------------------------------------
 
 	t_package* package = serialize_caught(message_caught);
 	destroy_message_caught(message_caught);
@@ -55,6 +119,22 @@ void serve_catch(void* input){
 	pthread_create(&thread, NULL, (void*) send_to_broker, (void*)package);	//TODO esta de mas crear otro hilo
 	pthread_detach(thread);
 	free(input);
+}
+
+t_message_localized* process_get(t_message_get* message_get){
+
+	t_message_localized* message_localized;
+
+	wait_available_file(message_get->pokemon_name);
+	//pasar los bloques del archivo a memoria
+	//crear diccionario con el archivo
+	//Obtener todas las posiciones y cantidades de Pokemon pedido.
+	//no se modifica el archivo, entonces con destruir el diccionario alcanza
+	//esperar el tiempo de retardo  operacion
+	release_pokemon_file(message_get->pokemon_name);
+
+	//generar mensaje localized y destruir el mensaje get
+	return message_localized;
 }
 
 void serve_get(void* input){
@@ -66,8 +146,10 @@ void serve_get(void* input){
 
 	t_message_get* message_get = (t_message_get*) message;
 
-	//TODO buscar en el filesystem en que posiciones esta el pokemon
+	t_message_localized* message_localized;
+	//message_localized = process_get(message_get); TODO
 
+//-----------------------------------------------------
 	//Generar mensaje LOCALIZED
 			t_position* positions = malloc(3 * sizeof(t_position));
 			positions->x = 1;
@@ -77,9 +159,11 @@ void serve_get(void* input){
 			(positions + 2)->x = 3;
 			(positions + 2)->y = 3;
 																											//TODO remover harcodeo
-	t_message_localized* message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 3, positions);
+	message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 3, positions);
 	log_info(logger, "Se genero el mensaje localized");
 	destroy_message_get(message_get);
+
+//-----------------------------------------------------
 
 	t_package* package = serialize_localized(message_localized);
 	destroy_message_localized(message_localized);
