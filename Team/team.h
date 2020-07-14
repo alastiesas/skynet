@@ -16,6 +16,7 @@
 
 //logs: pueden desactivarse para no mostrarse en consola
 //
+bool probando = true;
 
 //configuracion
 t_config* config;
@@ -177,6 +178,7 @@ void callback_fifo(t_trainer* trainer){
 	switch(trainer->action) {
 	case FREE:
 		//liberar cpu y llamar al short
+		trainer->burst = 0;
 		sem_post(&sem_short);
 		break;
 	case MOVE:
@@ -189,14 +191,17 @@ void callback_fifo(t_trainer* trainer){
 		break;
 	case CATCHING:
 		//liberar cpu y llamar al short
+		trainer->burst = 0;
 		sem_post(&sem_short);
 		break;
 	case TRADE:
 		//liberar cpu y llamar al short
+		trainer->burst = 0;
 		sem_post(&sem_short);
 		break;
 	case FINISH:
 		//liberar cpu y llamar al short
+		trainer->burst = 0;
 		sem_post(&sem_short);
 		break;
 	default:
@@ -301,6 +306,13 @@ void callback_sjfs(t_trainer* trainer) {
 void callback_sjfc(t_trainer* trainer) {
 	printf("callback SJF-CD[%d], estimado: %d, posible desalojo: %d\n", algorithm, trainer_burst_estimate(trainer), new_trainer_in_ready);
 	//TODO FALTA DESALOJO
+	if(probando) {
+		t_trainer* trainer_test = list_get(ready_list, 0);
+		trainer_test->burst_estimate = 2;
+		new_trainer_in_ready = true;
+		probando = false;
+	}
+
 	switch(trainer->action) {
 		case FREE:
 			//liberar cpu y llamar al short
@@ -316,6 +328,7 @@ void callback_sjfc(t_trainer* trainer) {
 					//Uno de los nuevos en ready tiene menor estimado -> se desaloja (sin actualizar el estimado
 					sem_post(&sem_short);
 				} else {//Ninguno con menor estimado -> no se desaloja
+					new_trainer_in_ready = false;
 					sem_post(&trainer->sem_thread);
 				}
 			} else {//flag en false -> imposible ser desalojado
@@ -324,7 +337,17 @@ void callback_sjfc(t_trainer* trainer) {
 			break;
 		case CATCH:
 			//continuar ejecutando o volver a ready
+			if(new_trainer_in_ready) {
+				t_trainer* sj_trainer = shortest_job_trainer_from_ready();
+				if(trainer_burst_estimate(sj_trainer) < trainer_burst_estimate(trainer)){
+					//Uno de los nuevos en ready tiene menor estimado -> se desaloja (sin actualizar el estimado
+					sem_post(&sem_short);
+				} else {//Ninguno con menor estimado -> no se desaloja
+					sem_post(&trainer->sem_thread);
+				}
+			} else {//flag en false -> imposible ser desalojado
 			sem_post(&trainer->sem_thread);
+			}
 			break;
 		case CATCHING:
 			//liberar cpu y llamar al short
@@ -1045,7 +1068,7 @@ t_trainer* shortest_job_trainer_from_ready() {
 	t_trainer* shortest_job_trainer = NULL;
 	uint32_t shortest_estimate = -1;
 	void shortest_estimate_trainer(t_trainer* trainer) {
-		if(shortest_estimate < 0 || trainer->burst_estimate < shortest_estimate) {
+		if(shortest_estimate < 0 || trainer_burst_estimate(trainer) < shortest_estimate) {
 			shortest_job_trainer = trainer;
 			shortest_estimate = trainer->burst_estimate;
 		}
@@ -1499,11 +1522,14 @@ void process_message(serve_thread_args* args) {
 
 
 void subscribe(queue_code queue_code) {
-	printf("COD OPERATION%d\n", queue_code);
+	printf("COD OPERATION %d\n", queue_code);
 	char* ip_broker = config_get_string_value(config, "IP_BROKER");
 	char* port_broker = config_get_string_value(config, "PUERTO_BROKER");
-	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time,log);
 	uint32_t id = config_get_int_value(config, "ID");
+
+
+
+	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time,log);
 
 	t_package* package = serialize_suscripcion(id, queue_code);
 
