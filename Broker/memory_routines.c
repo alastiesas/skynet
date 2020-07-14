@@ -214,27 +214,37 @@ int32_t get_available_partition_number(uint32_t size) {
 uint32_t get_available_partition_number_buddy(uint32_t size) {
 
 	t_partition* partition;
-	uint32_t partition_number = -1;
+	int32_t partition_number = -1;
 
 	uint32_t partition_size = get_buddy_partition_size(size);
 
 	bool partition_finded = false;
+	bool available_space = false;
 
 	if (strcmp(free_partition_algorithm, "BF") == 0) {
 
 		for (int i = 0; !partition_finded && i < list_size(partitions); i++) {
 
 			partition = list_get(partitions, i);
-			if (partition->available == true && partition->size == partition_size) {
+			if (partition->available == true){
+				if (partition->size >= partition_size) {
+					available_space = true;
+					if (partition->size == partition_size) {
+						partition_finded = true;
+						partition_number = i;
+					}
+				}
+			}
 
-				partition_finded = true;
-				partition_number = i;
+		}
+		if (!partition_finded) {
+			if (available_space) {
+				partition_number = create_and_search_partition_buddy(partition_size, -1);
+			}else {
+				// TODO liberar
 			}
 		}
 
-		if (!partition_finded) {
-			// TODO particionar?
-		}
 	} else if (strcmp(free_partition_algorithm, "FF") == 0) {
 
 		for (int i = 0; partition_number == -1 && i < list_size(partitions);
@@ -246,13 +256,70 @@ uint32_t get_available_partition_number_buddy(uint32_t size) {
 				if (partition->size == partition_size) {
 					partition_number = i;
 				}else {
-					//TODO particionar?
+					partition_number = create_and_search_partition_buddy(partition_size, i);
 				}
 
+			}else {
+				//TODO liberar
 			}
 		}
 	}
 
+	return partition_number;
+}
+
+int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partition_location){
+
+	t_partition* partition;
+	uint32_t new_size;
+	int32_t partition_number;
+
+	if (partition_location == -1) {
+
+		for (int i = 0;i < list_size(partitions); i++) {
+			partition = list_get(partitions, i);
+
+			if (partition->size >= searched_size) {
+				new_size = partition->size;
+				while (new_size > searched_size) {
+					partition = list_get(partitions, i);
+					new_size = partition->size/2;
+					partition->size = new_size;
+					partition->final_position = partition->final_position - new_size;
+
+					t_partition* new_buddy_partition;
+					new_buddy_partition->available = true;
+					new_buddy_partition->size = new_size;
+					new_buddy_partition->initial_position = partition->final_position;
+					new_buddy_partition->final_position = new_buddy_partition->initial_position + new_size;
+
+					list_add_in_index(partitions, i + 1, new_buddy_partition);
+				}
+				partition_number = i;
+			}
+		}
+	}else {
+		partition = list_get(partitions, partition_location);
+
+		if (partition->size >= searched_size) {
+			new_size = partition->size;
+			while (new_size > searched_size) {
+				partition = list_get(partitions, partition_location);
+				new_size = partition->size/2;
+				partition->size = new_size;
+				partition->final_position = partition->final_position - new_size;
+
+				t_partition* new_buddy_partition;
+				new_buddy_partition->available = true;
+				new_buddy_partition->size = new_size;
+				new_buddy_partition->initial_position = partition->final_position;
+				new_buddy_partition->final_position = new_buddy_partition->initial_position + new_size;
+
+				list_add_in_index(partitions, partition_location + 1, new_buddy_partition);
+			}
+			partition_number = partition_location;
+		}
+	}
 	return partition_number;
 }
 

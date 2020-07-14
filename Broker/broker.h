@@ -235,6 +235,7 @@ int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_message
 int32_t get_available_partition_number(uint32_t size);
 uint32_t get_available_partition_number_buddy(uint32_t size);
 uint32_t get_buddy_partition_size(uint32_t size);
+int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partition_location);
 void _memory_compaction();
 void memory_compaction();
 void merge_partitions(uint32_t initial_partition_number, uint32_t final_partition_number);
