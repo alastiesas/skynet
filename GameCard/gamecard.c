@@ -25,13 +25,10 @@ int main(void) {
 	// initiliaze_file_system();
 
 
-
-
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);
 	pthread_create(&catch_thread, NULL, (void*) catch_function, NULL);
 	pthread_create(&get_thread, NULL, (void*) get_function, NULL);
-
 
 
 	pthread_join(gameboy_thread, NULL);

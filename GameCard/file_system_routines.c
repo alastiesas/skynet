@@ -112,6 +112,8 @@ t_bitarray* create_bitarray(){
 	bitarray->bitarray = malloc(blocks/8);
 	//TODO setear los bits del bitarray en 0, con memset()
 
+	//pedir aca mutex del bitmap para que no rompa save_bitarray()
+
 	return bitarray;
 }
 
@@ -205,10 +207,11 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 	list_destroy(my_blocks);
 }
 
-//retorna una lista con amount bloques que esten disponibles en el bitmap
+//retorna una lista con n cantidad bloques pedidos que esten disponibles en el bitmap
 t_list* find_available_blocks(uint32_t amount){
 	t_list* available_blocks = list_create();
 	//TODO encontrar amount cantidad de bloques libres y meterlos a la lista
+			//si no existen bloques libres, explota el gamecard?
 	//TODO marcar esos bloques como ocupados en el bitmap
 	return available_blocks;
 }
