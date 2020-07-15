@@ -99,12 +99,29 @@ void initiliaze_file_system() {
 	}
 }
 
+void terminate_file_system() {
+
+}
+
+//se crea un bitmap en el caso de crear el FS de 0, devuelve el bitarray para usar
+//requiere llamar a save_bitarray luego
+t_bitarray* create_bitarray(){
+	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
+	bitarray->mode = BIT_NUMBERING;
+	bitarray->size = blocks;
+	bitarray->bitarray = malloc(blocks/8);
+	//TODO setear los bits del bitarray en 0, con memset()
+
+	return bitarray;
+}
+
+//abre el bitmap del archivo, y devuelve un bitarray para poder modificarlo
 t_bitarray* get_bitarray(){
 	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
 	bitarray->mode = BIT_NUMBERING;
 	bitarray->size = blocks;
 
-	//TODO ver donde van los mutex
+	//TODO pedir aca el mutex del bitmap
 	FILE *p;
 	p = fopen("aca va el path del bitarray", "r");
 	fread(bitarray->bitarray, blocks/8, 1, p);
@@ -113,18 +130,8 @@ t_bitarray* get_bitarray(){
 	return bitarray;
 }
 
-t_bitarray* create_bitarray(){
-	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
-	bitarray->mode = BIT_NUMBERING;
-	bitarray->size = blocks;
-	bitarray->bitarray = malloc(blocks/8);
-	//TODO setear los bits en 0?
-
-	return bitarray;
-}
-
+//guardo el bitarray en el bitmap cuando lo termino de usar
 void save_bitarray(t_bitarray* bitarray){
-	//TODO si ya estaba modificando el bitarray entonces el mutex supuestamente ya lo tenia
 	FILE *p;
 	p = fopen("aca va el path del bitarray", "w");
 	fwrite(bitarray->bitarray, blocks/8, 1, p);
@@ -132,10 +139,7 @@ void save_bitarray(t_bitarray* bitarray){
 
 	free(bitarray->bitarray);
 	free(bitarray);
-}
-
-void terminate_file_system() {
-
+	//TODO soltar aca el mutex del bitmap
 }
 
 //convierte una lista de numeros de bloque a un void* con el archivo pokemon
@@ -191,11 +195,12 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 		//borrar de la lista esta cantidad de bloques ??? puede ser cualquier bloque?
 	//TODO modificar los bloques en el metadata del pokemon
 	}
-	//TODO modificar el size en el metadata del pokemon
+
+	//TODO modificar el size en el metadata del pokemon, segun lo que ocupe el nuevo void* pokemon_file
 
 
-	//TODO escribir los bloques, similar a la lectura
-	//al abrir un archivo en modo "w", ya borra todo el contenido, no preocuparse si ahora el contenido es menos
+	//TODO escribir los bloques, similar a la lectura, (open_file_blocks())
+	//al abrir un archivo en modo "w", ya borra t0do el contenido, no preocuparse si ahora el contenido es menos
 
 	list_destroy(my_blocks);
 }
@@ -207,3 +212,24 @@ t_list* find_available_blocks(uint32_t amount){
 	//TODO marcar esos bloques como ocupados en el bitmap
 	return available_blocks;
 }
+
+t_dictionary* void_to_dictionary(void* pokemon_file){
+
+	t_dictionary* dictionary = dictionary_create();
+
+	//pasar el void* a un diccionario como hace config_create() de config.c
+
+	return dictionary;
+}
+
+void* dictionary_to_void(t_dictionary* pokemon_file_dictionary){
+
+	void* pokemon_file;
+
+	//escribir el diccionario en un void*, similar a config_save_in_file() de config.c
+
+	//destruir el diccionario
+
+	return pokemon_file;
+}
+
