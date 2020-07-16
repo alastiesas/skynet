@@ -23,7 +23,9 @@ int main(void) {
 
 	init_fs();
 	// initiliaze_file_system();
-
+	semaphores = dictionary_create();
+	pthread_mutex_init(&mutex_bitmap, NULL);
+	pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);
@@ -39,3 +41,8 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
+void terminate_gamecard() {
+
+	pthread_mutex_destroy(&mutex_bitmap);
+	dictionary_destroy_and_destroy_elements(semaphores, pthread_mutex_destroy);
+}

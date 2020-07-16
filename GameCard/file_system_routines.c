@@ -113,6 +113,7 @@ t_bitarray* create_bitarray(){
 	//TODO setear los bits del bitarray en 0, con memset()
 
 	//pedir aca mutex del bitmap para que no rompa save_bitarray()
+	pthread_mutex_lock(&mutex_bitmap);
 
 	return bitarray;
 }
@@ -123,7 +124,7 @@ t_bitarray* get_bitarray(){
 	bitarray->mode = BIT_NUMBERING;
 	bitarray->size = blocks;
 
-	//TODO pedir aca el mutex del bitmap
+	pthread_mutex_lock(&mutex_bitmap);
 	FILE *p;
 	p = fopen("aca va el path del bitarray", "r");
 	fread(bitarray->bitarray, blocks/8, 1, p);
@@ -141,7 +142,7 @@ void save_bitarray(t_bitarray* bitarray){
 
 	free(bitarray->bitarray);
 	free(bitarray);
-	//TODO soltar aca el mutex del bitmap
+	pthread_mutex_unlock(&mutex_bitmap);
 }
 
 //convierte una lista de numeros de bloque a un void* con el archivo pokemon
@@ -183,22 +184,24 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 }
 
 //escribe el archivo_pokemon en los bloques
-void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size){
+void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size, char* pokemon_name){
+	pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
+
 	//chequear si ahora el archivo ocupa mas o menos bloques
 	uint32_t blocks_amount = total_size/block_size + 1; //?? esta bien?
 	if(list_size(my_blocks) < blocks_amount){
 		//calcular cuantos bloques mas necesita
 		//encontrar esa cantidad de bloques libres
 		//agregar los bloques encontrados a my_blocks
-	//TODO modificar los bloques en el metadata del pokemon
+	//TODO modificar los bloques en el metadata (con su mutex) del pokemon
 	}
 	else if(list_size(my_blocks) > blocks_amount){
 		//calcular cuantos bloques de menos
 		//borrar de la lista esta cantidad de bloques ??? puede ser cualquier bloque?
-	//TODO modificar los bloques en el metadata del pokemon
+	//TODO modificar los bloques en el metadata (con su mutex) del pokemon
 	}
 
-	//TODO modificar el size en el metadata del pokemon, segun lo que ocupe el nuevo void* pokemon_file
+	//TODO modificar el size en el metadata (con su mutex) del pokemon, segun lo que ocupe el nuevo void* pokemon_file
 
 
 	//TODO escribir los bloques, similar a la lectura, (open_file_blocks())

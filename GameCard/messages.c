@@ -6,9 +6,28 @@
  */
 #include "gamecard.h"
 
+//un semaforo para cada pokemon_metadata. En el caso que rompa t0do, se puede usar "sin problema" un unico mutex global para todos los pokemon_metadata
+pthread_mutex_t* get_pokemon_mutex(char* pokemon_name){
+	pthread_mutex_lock(&semaforo_del_diccionario_de_semaforos_JAJAJA);
+	if(dictionary_has_key(semaphores, pokemon_name)){
+		pthread_mutex_t* found_semaphore = dictionary_get(semaphores, pokemon_name);
+		pthread_mutex_unlock(&semaforo_del_diccionario_de_semaforos_JAJAJA);
+		return found_semaphore;
+	}
+	else{
+		pthread_mutex_t new_semaphore;
+		pthread_mutex_init(&new_semaphore, NULL);
+		dictionary_put(semaphores, pokemon_name, &new_semaphore);
+		pthread_mutex_unlock(&semaforo_del_diccionario_de_semaforos_JAJAJA);
+		return &new_semaphore;
+	}
+}
+
 void wait_available_file_new(char* pokemon_name){
 
 	//esperar mutex del pokemon dado, obtener del diccionario de semaforos
+	pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
+	pthread_mutex_lock(my_semaphore);	//TODO unlock
 	//abrir metadata del pokemon dado, si no existe, crearlo
 	//chequear en el metadata si esta ocupado, en ese caso, soltar el mutex y reintentar en TIEMPO_DE_REINTENTO_OPERACION
 	//si esta disponible, actualizarlo como en uso, soltar mutex y listo
@@ -17,6 +36,8 @@ void wait_available_file_new(char* pokemon_name){
 int32_t wait_available_file(char* pokemon_name){
 
 	//esperar mutex del pokemon dado, obtener del diccionario de semaforos
+	pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
+	pthread_mutex_lock(my_semaphore);	//TODO unlock
 	//abrir metadata del pokemon dado, si no existe, soltar el mutex y retornar directamente que no existe (-1)
 										//si no existe, esperar en este punto el tiempo de retardo operacion (mirar si aplica en este caso ese tiempo)
 	//chequear en el metadata si esta ocupado, en ese caso, soltar el mutex y reintentar en TIEMPO_DE_REINTENTO_OPERACION
@@ -25,9 +46,12 @@ int32_t wait_available_file(char* pokemon_name){
 
 void release_pokemon_file(char* pokemon_name){
 	//esperar mutex del pokemon dado, obtener del diccionario de semaforos
+	pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
+	pthread_mutex_lock(my_semaphore);
 	//abrir metadata del pokemon dado
 	//actualizar el metadata del pokemon a libre
 	//soltar el mutex
+	pthread_mutex_unlock(my_semaphore);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------

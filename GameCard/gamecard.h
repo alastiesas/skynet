@@ -31,6 +31,10 @@ uint32_t MY_ID;
 uint32_t blocks;
 uint32_t block_size;
 
+t_dictionary* semaphores;
+pthread_mutex_t semaforo_del_diccionario_de_semaforos_JAJAJA;
+pthread_mutex_t mutex_bitmap;
+
 struct gamecard_thread_args {
     int32_t socket;
     t_log* logger;
@@ -50,7 +54,7 @@ t_bitarray* get_bitarray();
 t_bitarray* create_bitarray();
 void save_bitarray(t_bitarray* bitarray);
 void* open_file_blocks(t_list* file_blocks, uint32_t total_size);
-void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size);
+void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size, char* pokemon_name);
 t_list* find_available_blocks(uint32_t amount);
 void gameboy_function(void);
 void message_function(void (*function)(void*), queue_code queue_code);
