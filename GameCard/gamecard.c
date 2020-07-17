@@ -10,11 +10,15 @@ void config_init(){
 	IP_GAMECARD = config_get_string_value(config, "IP_GAMECARD");
 	PUERTO_GAMECARD = config_get_string_value(config, "PUERTO_GAMECARD");
 	MY_ID = atoi(config_get_string_value(config, "MY_ID"));
+
+	bitmap_path = string_new();
+	string_append(&bitmap_path, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&bitmap_path, "/Metadata/Bitmap.bin");
 }
 
 int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
-
+	//
 	logger = log_create("gamecard.log", "gameCard", LOG_CONSOLE, LOG_LEVEL_TRACE);
 	if((config = config_create("gamecard.config")) == NULL)
 		log_error(logger, "ERROR DE CONFIG");
@@ -23,6 +27,12 @@ int main(void) {
 
 	init_fs();
 	// initiliaze_file_system();
+	t_location* location = malloc(sizeof(t_location));
+	location->position = malloc(sizeof(t_position));
+	location->position->x = 9;
+	location->position->y = 9;
+	location->amount = 2;
+	create_pokemon_directory("Snorlax",location);
 	semaphores = dictionary_create();
 	pthread_mutex_init(&mutex_bitmap, NULL);
 	pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);

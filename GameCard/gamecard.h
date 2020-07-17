@@ -14,6 +14,7 @@
 #include<commons/bitarray.h>
 #include <conexion.h>
 #include <mensajes.h>
+#include <math.h>
 
 t_log* logger;
 t_config* config;
@@ -27,6 +28,9 @@ char* PUERTO_BROKER;
 char* IP_GAMECARD;
 char* PUERTO_GAMECARD;
 uint32_t MY_ID;
+void* bmap;
+t_bitarray* bitmap;
+char* bitmap_path;
 
 uint32_t blocks;
 uint32_t block_size;
@@ -50,8 +54,9 @@ void wait_clients(int32_t socket_servidor, t_log* logger);
 void gamecard_serves_client(void* input);
 
 void init_fs();
-t_bitarray* get_bitarray();
-t_bitarray* create_bitarray();
+void get_bitarray();
+void create_bitarray();
+void load_bitarray();
 void save_bitarray(t_bitarray* bitarray);
 void* open_file_blocks(t_list* file_blocks, uint32_t total_size);
 void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size, char* pokemon_name);
@@ -69,5 +74,8 @@ void serve_get(void* input);
 
 void send_to_broker(t_package* package);
 void initiliaze_file_system();
+
+void create_pokemon_directory(char*,t_location*);
+char* location_to_string(t_location* location);
 
 #endif /* GAMECARD_H_ */

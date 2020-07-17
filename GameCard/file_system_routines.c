@@ -2,9 +2,13 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <math.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #define BIT_NUMBERING LSB_FIRST
 
 void init_fs(){
+	printf("ACA LLEGA LASTI \n");
 	char* metadata_path = (char*) malloc(strlen(PUNTO_MONTAJE_TALLGRASS) + 24);	//22?
 	strcpy(metadata_path, PUNTO_MONTAJE_TALLGRASS);
 	strcat(metadata_path, "/Metadata/Metadata.bin");
@@ -28,7 +32,7 @@ void init_fs(){
 		printf("%s\n", getcwd(s, 100));
 		chdir("..");
 		printf("%s\n", getcwd(s, 100));
-		chdir("..");	//TODO desde eclipse hay un .. de mas
+		//chdir("..");	//TODO desde eclipse hay un .. de mas
 		printf("%s\n", getcwd(s, 100));
 		mkdir("tall_grass", 0777);
 		chdir("tall_grass");
@@ -52,8 +56,7 @@ void init_fs(){
 		config_save(metaconfig);
 
 		//crear bitmap
-		t_bitarray* bitmap = create_bitarray();
-		save_bitarray(bitmap);
+		create_bitarray();
 
 		//crear directorio en /Files
 		file = fopen(files_metadata_path, "w");
@@ -66,8 +69,10 @@ void init_fs(){
 	}
 	else{
 		//si ya existia el FS, se usa y listo, no se crea nada
+		printf("YA EXISTE \n");
 		blocks = config_get_int_value(metaconfig, "BLOCKS");
 		block_size = config_get_int_value(metaconfig, "BLOCK_SIZE");
+		void load_bitarray();
 	}
 	config_destroy(metaconfig);
 }
@@ -105,43 +110,91 @@ void terminate_file_system() {
 
 //se crea un bitmap en el caso de crear el FS de 0, devuelve el bitarray para usar
 //requiere llamar a save_bitarray luego
-t_bitarray* create_bitarray(){
+void create_bitarray(){
+	/*
 	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
 	bitarray->mode = BIT_NUMBERING;
 	bitarray->size = blocks;
 	bitarray->bitarray = malloc(blocks/8);
+	*/
+	//FILE* file = fopen(bitmap_path, "w+");
+	int fd = open(bitmap_path, O_CREAT | O_RDWR, 0664);
+
+	if (fd == -1) {
+		perror("open file");
+		exit(1);
+	}
+
+	ftruncate(fd, blocks/8);
+
+	bmap = mmap(NULL, blocks/8, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	if (bmap == MAP_FAILED) {
+		perror("mmap");
+		close(fd);
+		exit(1);
+	}
+
+	bitmap = bitarray_create_with_mode((char*) bmap, blocks/8, LSB_FIRST);
+
+	size_t tope = bitarray_get_max_bit(bitmap);
+
+	for(int i = 0; i < tope; i++){
+
+		 bitarray_clean_bit(bitmap, i);
+	}
+
+	close(fd);
+	msync(bmap, blocks/8, MS_SYNC);
+
+
+
+	/*
 	//TODO setear los bits del bitarray en 0, con memset()
 
 	//pedir aca mutex del bitmap para que no rompa save_bitarray()
 	pthread_mutex_lock(&mutex_bitmap);
+*/
 
-	return bitarray;
+}
+
+void load_bitarray(){
+	int fd = open(bitmap_path, O_RDWR, 0664);
+
+	if (fd == -1) {
+		perror("open file");
+		exit(1);
+	}
+
+	ftruncate(fd, blocks/8);
+
+	bmap = mmap(NULL, blocks/8, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	if (bmap == MAP_FAILED) {
+		perror("mmap");
+		close(fd);
+		exit(1);
+	}
+
+	bitmap = bitarray_create_with_mode((char*) bmap, blocks/8, LSB_FIRST);
 }
 
 //abre el bitmap del archivo, y devuelve un bitarray para poder modificarlo
-t_bitarray* get_bitarray(){
-	t_bitarray* bitarray = malloc(sizeof(t_bitarray));
-	bitarray->mode = BIT_NUMBERING;
-	bitarray->size = blocks;
+void get_bitarray(){
+
+
 
 	pthread_mutex_lock(&mutex_bitmap);
-	FILE *p;
-	p = fopen("aca va el path del bitarray", "r");
-	fread(bitarray->bitarray, blocks/8, 1, p);
-	fclose(p);
 
-	return bitarray;
+
+	//return bitmap;
 }
 
 //guardo el bitarray en el bitmap cuando lo termino de usar
 void save_bitarray(t_bitarray* bitarray){
-	FILE *p;
-	p = fopen("aca va el path del bitarray", "w");
-	fwrite(bitarray->bitarray, blocks/8, 1, p);
-	fclose(p);
+	printf("aca rompioooo");
+	msync(bmap, blocks/8, MS_SYNC);
 
-	free(bitarray->bitarray);
-	free(bitarray);
 	pthread_mutex_unlock(&mutex_bitmap);
 }
 
@@ -185,10 +238,12 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 
 //escribe el archivo_pokemon en los bloques
 void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size, char* pokemon_name){
-	pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
+	//pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
 
 	//chequear si ahora el archivo ocupa mas o menos bloques
-	uint32_t blocks_amount = total_size/block_size + 1; //?? esta bien?
+	//double blocks_amount = ceil(total_size/block_size); //?? esta bien?
+	uint32_t blocks_amount;
+	//aca iria tipo de dato float o double y 6.2 y funcion en c math (float y devuelve int)
 	if(list_size(my_blocks) < blocks_amount){
 		//calcular cuantos bloques mas necesita
 		//encontrar esa cantidad de bloques libres
@@ -205,17 +260,74 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 
 
 	//TODO escribir los bloques, similar a la lectura, (open_file_blocks())
-	//al abrir un archivo en modo "w", ya borra t0do el contenido, no preocuparse si ahora el contenido es menos
 
+	void* pos_init = pokemon_file;
+	//uint32_t pos_finish = block_size;
+	//"hosaldkasldasldkasldkasldksald"
+	void write_block(uint32_t number_block){
+		//string a copiar va de pos_init a pos_finish
+		//fopen
+
+		char* block_path = string_new();
+		block_path = PUNTO_MONTAJE_TALLGRASS;
+		string_append(&block_path,PUNTO_MONTAJE_TALLGRASS);
+		string_append(&block_path,"/Blocks/");
+		char* number_block_str = string_itoa(number_block);
+		string_append(&block_path,number_block_str);
+		string_append(&block_path,".bin");
+		FILE* file = fopen(block_path, "w+");
+		//fwrite(void*, tamno, )
+
+		fwrite(pos_init, 1, block_size,	file);
+		fclose(file);
+		printf("acallegofile\n");
+		pos_init =+ block_size;
+		free(number_block_str);
+		free(block_path);
+		//pos_finish =+ block_size;
+
+
+	}
+	list_iterate(my_blocks, &write_block);
+	//al abrir un archivo en modo "w", ya borra t0do el contenido, no preocuparse si ahora el contenido es menos
+	printf("ACALLEGOOOOOOOO?\n");
 	list_destroy(my_blocks);
 }
 
 //retorna una lista con n cantidad bloques pedidos que esten disponibles en el bitmap
 t_list* find_available_blocks(uint32_t amount){
+	printf("aca no llega44\n");
 	t_list* available_blocks = list_create();
-	//TODO encontrar amount cantidad de bloques libres y meterlos a la lista
-			//si no existen bloques libres, explota el gamecard?
-	//TODO marcar esos bloques como ocupados en el bitmap
+	printf("aca no llega55\n");
+	list_add(available_blocks,5);
+	printf("aca no llega22\n");
+	//t_bitarray* bitmap = get_bitarray();
+	printf("aca no llega33\n");
+	uint32_t until = 0;
+	for(uint32_t i = 0; i<blocks;i++){
+		printf("aca no llega43\n");
+		bool result = bitarray_test_bit(bitmap, i);
+		if(result){
+			if(until<amount)
+				list_add(available_blocks,i);
+		}
+		else
+			printf("bloque no disponible o ocupado\n");
+	}
+	printf("aca no llega44\n");
+	if(list_size(available_blocks)<amount){
+		printf("espacio suficiente no disponible en disco\n");
+		list_clean(available_blocks);
+	}
+	else
+	{
+		void bitarray_set_bit_iterate(int32_t index){
+			bitarray_test_bit(bitmap, index);
+		}
+		printf("aca no llega");
+		list_iterate(available_blocks,&bitarray_set_bit_iterate);
+	}
+	save_bitarray(bitmap);
 	return available_blocks;
 }
 
@@ -237,5 +349,62 @@ void* dictionary_to_void(t_dictionary* pokemon_file_dictionary){
 	//destruir el diccionario
 
 	return pokemon_file;
+}
+
+void create_pokemon_directory(char* pokemon,t_location* location){
+	//
+
+	//CREAR DIRECTORIO
+	chdir("..");
+	//chdir("..");
+	chdir("tall_grass");
+	chdir("Files");
+	//buscar mkdir pasandole todo el path
+	mkdir(pokemon, 0777);
+	//	//1-1=10
+		//bitmap con todos los bloques
+		//tendriamos que tener la cantidad de bloques que necesitamos
+		//funcion que en base a la cantidad nos de una lista de bloques vacios y ordenados (lista ordenada)
+		//con esa lista tenemos escribir los bloques.
+		//tenemos que pasar esa lista de bloques al metadata.bin del pokemon.
+	//
+	//pasar location a string
+	char* location_string = location_to_string(location);
+	printf("aca llego0\n");
+	uint32_t total_size = strlen(location_string);
+	printf("aca llego 1\n");
+	//double blocks_amount = ceil(total_size/block_size);
+	t_list* available_blocks = find_available_blocks(1);
+	printf("aca llego2\n");
+	//RECORRER LISTA DE BLOQUES Y CREAR ARCHIVOS
+	write_file_blocks((void*)location_string, available_blocks, total_size, pokemon);
+	//Crear cada bloque y escribirlo. Esto es por va en carpeta Blockes -> 1.bin (1-1=10 ...)
+	//ASIGNAR BLOQUES
+	//CREAR METADATA.BIN
+}
+
+void update_pokemon_metadata(char* pokemon){
+	//entrar en el metada.bin del directorio del pokemon -> con esto tenemos caules son sus bloques.
+	//con los bloques traer a memoria el contenido del archivo.
+	//mapear en un diccionario el contenido.
+	//si existe esa posicion, actualizarla.
+	//si no existe esa posicion agregarla.
+}
+
+char* location_to_string(t_location* location){
+	char* location_string = string_new();
+	char* amount = string_itoa(location->amount);
+	char* posx = string_itoa(location->position->x);
+	char* posy = string_itoa(location->position->y);
+	string_append(&location_string, posx);
+	string_append(&location_string, "-");
+	string_append(&location_string, posy);
+	string_append(&location_string, "=");
+	string_append(&location_string, amount);
+	string_append(&location_string, "\n");
+	free(amount);
+	free(posx);
+	free(posy);
+	return location_string;
 }
 
