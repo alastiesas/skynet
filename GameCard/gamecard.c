@@ -15,11 +15,14 @@ void config_init(){
 	string_append(&bitmap_path, PUNTO_MONTAJE_TALLGRASS);
 	string_append(&bitmap_path, "/Metadata/Bitmap.bin");
 	metadata_path = string_new();
-	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
-	string_append(&files_metadata_path, "/Metadata/Metadata.bin");
+	string_append(&metadata_path, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&metadata_path, "/Metadata/Metadata.bin");
 	files_metadata_path = string_new();
 	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
 	string_append(&files_metadata_path, "/Files/Metadata.bin");
+	blocks_directory = string_new();
+	string_append(&blocks_directory, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&blocks_directory,"/Blocks/");
 }
 
 int main(void) {
@@ -38,9 +41,10 @@ int main(void) {
 	location->position->x = 9;
 	location->position->y = 9;
 	location->amount = 2;
-	create_pokemon_directory("Snorlax",location);
+																	create_pokemon_directory("Snorlax",location);
 	//semaphores = dictionary_create();
 	pthread_mutex_init(&mutex_bitmap, NULL);
+	pthread_mutex_init(&mutex_pkmetadata, NULL);
 	//pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
