@@ -1,19 +1,25 @@
 #include "gamecard.h"
 
 void config_init(){
-	TIEMPO_DE_REINTENTO_CONEXION = atoi(config_get_string_value(config, "TIEMPO_DE_REINTENTO_CONEXION"));
-	TIEMPO_DE_REINTENTO_OPERACION = atoi(config_get_string_value(config, "TIEMPO_DE_REINTENTO_OPERACION"));
-	TIEMPO_RETARDO_OPERACION = atoi(config_get_string_value(config, "TIEMPO_RETARDO_OPERACION"));
+	TIEMPO_DE_REINTENTO_CONEXION = config_get_int_value(config, "TIEMPO_DE_REINTENTO_CONEXION");
+	TIEMPO_DE_REINTENTO_OPERACION = config_get_int_value(config, "TIEMPO_DE_REINTENTO_OPERACION");
+	TIEMPO_RETARDO_OPERACION = config_get_int_value(config, "TIEMPO_RETARDO_OPERACION");
 	PUNTO_MONTAJE_TALLGRASS = config_get_string_value(config, "PUNTO_MONTAJE_TALLGRASS");
 	IP_BROKER = config_get_string_value(config, "IP_BROKER");
 	PUERTO_BROKER = config_get_string_value(config, "PUERTO_BROKER");
 	IP_GAMECARD = config_get_string_value(config, "IP_GAMECARD");
 	PUERTO_GAMECARD = config_get_string_value(config, "PUERTO_GAMECARD");
-	MY_ID = atoi(config_get_string_value(config, "MY_ID"));
+	MY_ID = config_get_int_value(config, "MY_ID");
 
 	bitmap_path = string_new();
 	string_append(&bitmap_path, PUNTO_MONTAJE_TALLGRASS);
 	string_append(&bitmap_path, "/Metadata/Bitmap.bin");
+	metadata_path = string_new();
+	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&files_metadata_path, "/Metadata/Metadata.bin");
+	files_metadata_path = string_new();
+	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&files_metadata_path, "/Files/Metadata.bin");
 }
 
 int main(void) {
@@ -33,9 +39,9 @@ int main(void) {
 	location->position->y = 9;
 	location->amount = 2;
 	create_pokemon_directory("Snorlax",location);
-	semaphores = dictionary_create();
+	//semaphores = dictionary_create();
 	pthread_mutex_init(&mutex_bitmap, NULL);
-	pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
+	//pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);
@@ -52,7 +58,11 @@ int main(void) {
 }
 
 void terminate_gamecard() {
+	free(bitmap_path);
+	free(files_metadata_path);
+	free(metadata_path);
+	config_destroy(config);
 
 	pthread_mutex_destroy(&mutex_bitmap);
-	dictionary_destroy_and_destroy_elements(semaphores, pthread_mutex_destroy);
+	//dictionary_destroy_and_destroy_elements(semaphores, pthread_mutex_destroy);
 }

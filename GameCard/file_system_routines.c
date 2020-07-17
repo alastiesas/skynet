@@ -8,13 +8,6 @@
 #define BIT_NUMBERING LSB_FIRST
 
 void init_fs(){
-	printf("ACA LLEGA LASTI \n");
-	char* metadata_path = (char*) malloc(strlen(PUNTO_MONTAJE_TALLGRASS) + 24);	//22?
-	strcpy(metadata_path, PUNTO_MONTAJE_TALLGRASS);
-	strcat(metadata_path, "/Metadata/Metadata.bin");
-	char* files_metadata_path = string_new();
-	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
-	string_append(&files_metadata_path, "/Files/Metadata.bin");
 	//mirar si el filesystem ya existia
 	t_config* metaconfig;
 	if((metaconfig = config_create(metadata_path)) == NULL){
@@ -26,8 +19,7 @@ void init_fs(){
 		char* block_size_char;
 		blocks_char = config_get_string_value(config, "DEFAULT_BLOCKS");
 		block_size_char = config_get_string_value(config, "DEFAULT_BLOCK_SIZE");
-		//crear archivo metadata
-		FILE* file;
+		//crear carpetas		//TODO remover harcodeo de filesystem adentro de la carpeta del tp
 		char s[100];
 		printf("%s\n", getcwd(s, 100));
 		chdir("..");
@@ -43,9 +35,11 @@ void init_fs(){
 		chdir("GameCard");
 		chdir("Debug");
 		printf("%s\n", getcwd(s, 100));
+		//crear archivo metadata
+		FILE* file;
 		file = fopen(metadata_path, "w");
 		if(file == NULL){
-			log_error(logger, "dio n ull la afile");
+			log_error(logger, "no se pudo crear archivo en /Metadata/Metadata.bin");
 		    printf("fopen failed, errno = %d\n", errno);
 		}
 		fclose(file);
@@ -146,15 +140,6 @@ void create_bitarray(){
 
 	close(fd);
 	msync(bmap, blocks/8, MS_SYNC);
-
-
-
-	/*
-	//TODO setear los bits del bitarray en 0, con memset()
-
-	//pedir aca mutex del bitmap para que no rompa save_bitarray()
-	pthread_mutex_lock(&mutex_bitmap);
-*/
 
 }
 

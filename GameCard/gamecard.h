@@ -30,13 +30,16 @@ char* PUERTO_GAMECARD;
 uint32_t MY_ID;
 void* bmap;
 t_bitarray* bitmap;
+
+char* metadata_path;
+char* files_metadata_path;
 char* bitmap_path;
 
 uint32_t blocks;
 uint32_t block_size;
 
-t_dictionary* semaphores;
-pthread_mutex_t semaforo_del_diccionario_de_semaforos_JAJAJA;
+
+pthread_mutex_t mutex_pkmetadata;
 pthread_mutex_t mutex_bitmap;
 
 struct gamecard_thread_args {
