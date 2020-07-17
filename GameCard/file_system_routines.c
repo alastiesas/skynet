@@ -19,22 +19,11 @@ void init_fs(){
 		char* block_size_char;
 		blocks_char = config_get_string_value(config, "DEFAULT_BLOCKS");
 		block_size_char = config_get_string_value(config, "DEFAULT_BLOCK_SIZE");
-		//crear carpetas		//TODO remover harcodeo de filesystem adentro de la carpeta del tp
-		char s[100];
-		printf("%s\n", getcwd(s, 100));
-		chdir("..");
-		printf("%s\n", getcwd(s, 100));
-		chdir("..");	//TODO desde eclipse hay un .. de mas
-		printf("%s\n", getcwd(s, 100));
-		mkdir("tall_grass", 0777);
-		chdir("tall_grass");
-		mkdir("Metadata", 0777);
-		mkdir("Files", 0777);
-		mkdir("Blocks", 0777);
-		chdir("..");
-		chdir("GameCard");
-		chdir("Debug");
-		printf("%s\n", getcwd(s, 100));
+		//crear carpetas
+		mkdir(PUNTO_MONTAJE_TALLGRASS, 0777);
+		mkdir(metadata_directory, 0777);
+		mkdir(files_directory, 0777);
+		mkdir(blocks_directory, 0777);
 		//crear archivo metadata
 		FILE* file;
 		file = fopen(metadata_path, "w");
@@ -164,6 +153,13 @@ void load_bitarray(){
 	}
 
 	bitmap = bitarray_create_with_mode((char*) bmap, blocks/8, LSB_FIRST);
+
+	/*
+	bitarray_set_bit(bitmap, 511);
+	msync(bmap, blocks/8, MS_SYNC);
+	*/
+
+	close(fd);
 
 }
 

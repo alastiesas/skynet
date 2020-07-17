@@ -35,6 +35,8 @@ char* metadata_path;
 char* files_metadata_path;
 char* bitmap_path;
 char* blocks_directory;
+char* metadata_directory;
+char* files_directory;
 
 uint32_t blocks;
 uint32_t block_size;

@@ -11,15 +11,23 @@ void config_init(){
 	PUERTO_GAMECARD = config_get_string_value(config, "PUERTO_GAMECARD");
 	MY_ID = config_get_int_value(config, "MY_ID");
 
-	bitmap_path = string_new();
-	string_append(&bitmap_path, PUNTO_MONTAJE_TALLGRASS);
-	string_append(&bitmap_path, "/Metadata/Bitmap.bin");
+	metadata_directory = string_new();
+	string_append(&metadata_directory, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&metadata_directory, "/Metadata/");
 	metadata_path = string_new();
-	string_append(&metadata_path, PUNTO_MONTAJE_TALLGRASS);
-	string_append(&metadata_path, "/Metadata/Metadata.bin");
+	string_append(&metadata_path, metadata_directory);
+	string_append(&metadata_path, "Metadata.bin");
+	bitmap_path = string_new();
+	string_append(&bitmap_path, metadata_directory);
+	string_append(&bitmap_path, "Bitmap.bin");
+
+	files_directory = string_new();
+	string_append(&files_directory, PUNTO_MONTAJE_TALLGRASS);
+	string_append(&files_directory, "/Files/");
 	files_metadata_path = string_new();
-	string_append(&files_metadata_path, PUNTO_MONTAJE_TALLGRASS);
-	string_append(&files_metadata_path, "/Files/Metadata.bin");
+	string_append(&files_metadata_path, files_directory);
+	string_append(&files_metadata_path, "Metadata.bin");
+
 	blocks_directory = string_new();
 	string_append(&blocks_directory, PUNTO_MONTAJE_TALLGRASS);
 	string_append(&blocks_directory,"/Blocks/");
