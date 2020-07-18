@@ -58,7 +58,7 @@ int main(void) {
 	pthread_mutex_init(&mutex_pkmetadata, NULL);
 	//pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
-	create_pokemon_directory("Snorlax",location);
+	create_file_directory("Snorlax",location);
 
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);

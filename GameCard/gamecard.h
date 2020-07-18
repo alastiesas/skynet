@@ -81,7 +81,7 @@ void serve_get(void* input);
 void send_to_broker(t_package* package);
 void initiliaze_file_system();
 
-void create_pokemon_directory(char*,t_location*);
+void create_file_directory(char*,t_location*);
 char* location_to_string(t_location* location);
 
 void new_pokemon_routine();

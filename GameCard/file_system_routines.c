@@ -346,7 +346,7 @@ void* dictionary_to_void(t_dictionary* pokemon_file_dictionary){
 	return pokemon_file;
 }
 
-void create_pokemon_directory(char* pokemon,t_location* location){
+void create_file_directory(char* pokemon,t_location* location){
 	//
 
 	//CREAR DIRECTORIO
