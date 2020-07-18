@@ -58,7 +58,7 @@ t_message_appeared* process_new(t_message_new* message_new){
 	}
 	else{
 		//TODO crear metadata y setear en open antes de soltar el mutex
-		create_pokemon_directory(message_new->pokemon_name, message_new->location);
+		create_file_directory(message_new->pokemon_name, message_new->location);
 		sleep(TIEMPO_RETARDO_OPERACION);
 	}
 

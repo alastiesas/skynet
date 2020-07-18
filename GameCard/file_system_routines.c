@@ -373,7 +373,7 @@ void* dictionary_to_void(t_dictionary* pokemon_file_dictionary){
 	return pokemon_file;
 }
 
-void create_pokemon_directory(char* pokemon,t_location* location){
+void create_file_directory(char* pokemon,t_location* location){
 	//
 
 	//CREAR DIRECTORIO
@@ -436,5 +436,102 @@ char* location_to_string(t_location* location){
 	return location_string;
 }
 
+void new_pokemon_routine() {
 
+	char* pokemon_name = "Example"; //delete
+	if (!exists_pokemon(pokemon_name)) {
 
+		create_pokemon(pokemon_name);
+	}
+
+	open_file();
+
+	update_file();
+
+	send_appeared_pokemon();
+}
+
+bool exists_pokemon(char* pokemon_name) {
+
+	char* pokemon_file = get_pokemon_file(pokemon_name);
+
+	bool exists = exists_file(pokemon_file);
+
+	free(pokemon_file);
+
+	return exists;
+}
+
+char* get_pokemon_directory(char* pokemon_name) {
+
+	char* pokemon_directory = (char*) malloc(strlen(files_directory) + strlen(pokemon_name));
+	strcpy(pokemon_directory, files_directory);
+	strcat(pokemon_directory, pokemon_name);
+
+	return pokemon_directory;
+}
+
+char* get_pokemon_file(char* pokemon_name) {
+
+	char* pokemon_directory = get_pokemon_directory(pokemon_name);
+	char* pokemon_file = (char*) malloc(strlen(pokemon_directory) + 13);
+	strcpy(pokemon_file, pokemon_directory);
+	strcat(pokemon_file, "/Metadata.bin");
+
+	free(pokemon_directory);
+
+	return pokemon_file;
+}
+
+bool exists_file(char* file_name) {
+
+	bool exists = false;
+
+	FILE* file;
+	if ((file = fopen(file_name, "r"))) {
+		fclose(file);
+		exists = true;
+	}
+
+	return exists;
+}
+
+void create_pokemon(char* pokemon_name) {
+
+	create_pokemon_directory(pokemon_name);
+	create_pokemon_file(pokemon_name);
+}
+
+void create_pokemon_directory(char* pokemon_name) {
+
+	char* pokemon_directory = get_pokemon_directory(pokemon_name);
+
+	mkdir(pokemon_directory, 0777); // not working
+
+	free(pokemon_directory);
+}
+
+void create_pokemon_file(char* pokemon_name) {
+
+	char* pokemon_file = get_pokemon_file(pokemon_name);
+
+	FILE* file;
+	file = fopen(pokemon_file, "w");
+	fclose(file);
+	free(file);
+
+	free(pokemon_file);
+	/*file content pending*/
+}
+
+void open_file() {
+
+}
+
+void update_file() {
+
+}
+
+void send_appeared_pokemon() {
+
+}
