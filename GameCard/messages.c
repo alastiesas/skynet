@@ -89,6 +89,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		pthread_mutex_unlock(&mutex_pkmetadata);
 		sleep(TIEMPO_RETARDO_OPERACION); //TODO ver donde va
 		//message_caught = generate_caught();
+		caught_result =0;
 	}
 	else{
 		char* open;
@@ -99,7 +100,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			open = config_get_string_value(file, "OPEN");
 			if(strcmp(open, "N") == 0){
 				//editar el metada.bin -> OPEN=Y
-				//config_set_value(file, "OPEN", "Y");
+				config_set_value(file, "OPEN", "Y");
 				printf("aca estamos bien5\n");
 				config_save(file);
 				//pthread_mutex_unlock(&mutex_pkmetadata);
@@ -121,14 +122,18 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		//convertir char** en t_list*
 		printf("aca estamos bien6\n");
 		t_list* blocks_list = list_create();
-		uint32_t j = 0;
-		while(blocks_array[j]!=NULL){
-			printf("any block is %s \n",blocks_array[j]);
-			list_add(blocks_list,blocks_array[j]);
-			j++;
+		t_list* blocks_list_int = list_create();
+		uint32_t blocks_count = 0;
+		while(blocks_array[blocks_count]!=NULL){
+			printf("any block is %s \n",blocks_array[blocks_count]);
+			list_add(blocks_list,blocks_array[blocks_count]);
+			list_add(blocks_list_int,atoi(blocks_array[blocks_count]));
+			blocks_count++;
 		}
+
 		printf("cargamos bien los blockes\n");
 		//el 24 cambiarlo por lectura de config
+
 		void* pokemon_file = open_file_blocks(blocks_list, 24);
 		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
 		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file);
@@ -144,10 +149,6 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		OPEN=Y
 		*/
 		//1-9=23-2=55-5=28-6=5 -> ESTO PASAR A DICCIONARIO
-		//1-
-		//message_catch->position->x;
-		//-
-		//message_catch->position->y;
 		char* key = string_new();
 		char* x = string_itoa(message_catch->position->x);
 		char* y = string_itoa(message_catch->position->y);
@@ -166,15 +167,73 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				free(value_str);
 				char* new_value_str = string_itoa(value);
 				dictionary_put(pokemon_dictionary,key,new_value_str);
+				//misma cantidad de bloques
 			}
 			else
 			{
 				char* new_value_str = dictionary_remove(pokemon_dictionary, key);
 				free(new_value_str);
+				//aca puede ser  que sea 1 bloque menos o mas
 			}
+			caught_result = 1;
 			//PISA LA LISTA DE BLOQUES DEL FILE SYSTEM CON LOS DATOS DEL DICCIONARIO
 			//MAPEA EN DISCO DE NUEVO CON LOS CAMBIOS Y HACE EL CAUGHT TRUE.
-			caught_result = 1;
+			uint32_t new_size;
+			void* new_pokemon_file = dictionary_to_void(pokemon_dictionary, &new_size);
+
+			double aux = ((double)new_size/(double)block_size);
+			uint32_t new_blocks_count = (uint32_t) ceil(aux);
+			printf("a ver el numero%d\n",new_blocks_count);
+
+			//RECORRER LISTA DE BLOQUES Y CREAR ARCHIVOS
+			if(new_blocks_count != blocks_count){
+				//sacar algun bloque al azar de la lista y actualizar el bitmap y el metadabata.bin
+				uint32_t diff = blocks_count - new_blocks_count;
+				for(uint32_t c = 0; c< diff; c++){
+					uint32_t block_number = list_remove(blocks_list_int, 0);
+					//ACTUALIZO BIRMAP
+					//ACA VA UN MUTEX NO? TODO
+					bitarray_clean_bit(bitmap, block_number);
+					msync(bmap, blocks/8, MS_SYNC);
+				}
+			}
+			printf("tamaño de lista %d\n",list_size(blocks_list_int));
+			void imprimir(uint32_t elemt){
+				printf("elemento de los blocks son %d\n", elemt);
+			}
+			list_iterate(blocks_list_int,&imprimir);
+			if(list_size(blocks_list_int)>0)
+				write_file_blocks((void*)new_pokemon_file, blocks_list_int, new_size, message_catch->pokemon_name);
+
+
+			printf("ACA ESTAMOS FUERA DEL WRITE \n");
+			//ACTUALIZAR EL METADATA.BIN DEL POKEMON, BLOCKS_LIST Y SIZE Y OPEN EN N.
+			//BLOCKS=[40,21,82,12]
+			//SIZE=250
+			char* blocks_to_write = string_new();
+			uint32_t current_block = 1;
+			string_append(&blocks_to_write,"[");
+
+			void list_to_string(uint32_t element){
+				char * element_str = string_itoa(element);
+				string_append(&blocks_to_write,element_str);
+				if(new_blocks_count != current_block)
+					string_append(&blocks_to_write,",");
+				current_block++;
+				free(element_str);
+			}
+			list_iterate(blocks_list_int,&list_to_string);
+			string_append(&blocks_to_write,"]");
+			char* new_size_to_metadata = string_itoa(new_size);
+			printf("ACA VEMOS SI FUNCIONA %s\n",blocks_to_write);
+			config_set_value(file, "BLOCKS", blocks_to_write);
+			config_set_value(file, "SIZE", new_size_to_metadata);
+			config_set_value(file, "OPEN","N");
+			printf("aca estamos bien5\n");
+			config_save(file);
+
+			free(new_size_to_metadata);
+
 		}
 		else
 		{
@@ -186,20 +245,14 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 
 
-	if(exists != -1){
-	//pasar los bloques del archivo a memoria
-	//crear diccionario con el archivo
-	//verificar si existe en el archivo la posicion recibida
-	//si existe la posicion, entonces tiene al menos un pokemon. Restarle 1 y responder que se pudo atrapar
-		//si no existe, responder que no se pudo atrapar
-	//si la cantidad queda en 0 para esa posicion, eliminar linea
-	//convertir el diccionario a void*
-	//grabar el void* en los bloques
-	//esperar el tiempo de retardo operacion
-	release_pokemon_file(message_catch->pokemon_name);
-	}
-
 	//generar mensaje caught y destruir el mensaje catch
+
+	//Generar mensaje CAUGHT
+	message_caught = create_message_caught(message_catch->id, caught_result);
+	log_info(logger, "Se genero el mensaje caught");
+	destroy_message_catch(message_catch);
+
+
 	return message_caught;
 }
 
@@ -264,15 +317,9 @@ void serve_catch(void* input){
 	t_message_catch* message_catch = (t_message_catch*) message;
 
 	t_message_caught* message_caught;
-	//message_caught = process_catch(message_catch); TODO
+	message_caught = process_catch(message_catch);
 
-//-----------------------------------------------------//TODO remover harcodeo, se hace esto en la funcion de arriba
-	//Generar mensaje CAUGHT
-	message_caught = create_message_caught(message_catch->id, 1);
-	log_info(logger, "Se genero el mensaje caught");
-	destroy_message_catch(message_catch);
 
-//-----------------------------------------------------
 
 	t_package* package = serialize_caught(message_caught);
 	destroy_message_caught(message_caught);

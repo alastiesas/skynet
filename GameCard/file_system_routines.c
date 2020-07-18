@@ -3,9 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
-#include <math.h>
-#include <sys/mman.h>
-#include <fcntl.h>
+
 #define BIT_NUMBERING LSB_FIRST
 
 void init_fs(){
@@ -262,10 +260,15 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 	void* pos_init = pokemon_file;
 	//uint32_t pos_finish = block_size;
 	//"hosaldkasldasldkasldkasldksald"
+	uint32_t counter = 0;
+
+	uint32_t size_list = list_size(my_blocks);
+	uint32_t last_block = (size_list - 1) * block_size;
+	uint32_t size;
 	void write_block(uint32_t number_block){
 		//string a copiar va de pos_init a pos_finish
 		//fopen
-
+		printf("ASFASJFIKOASJGOIASMFLPAM\n");
 		char* block_path = string_new();
 		string_append(&block_path, blocks_directory);
 		char* number_block_str = string_itoa(number_block);
@@ -279,20 +282,26 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 		}
 		//TODO si es el ultimo bloque, escribir lo restante
 				//si no, escribir el tamano de un bloque completo
+		if(counter == last_block)
+			size = total_size - last_block;
+		else
+			size = block_size;
 
-		fwrite(pos_init, total_size, 1, file);
+		fwrite(pos_init, size, 1, file);
+		counter+= size;
 		fclose(file);
 
 		pos_init += block_size;
 		free(block_path);
 		//pos_finish =+ block_size;
+		printf("SALIMOS DEL WRITE\n");
 
 
 	}
 	list_iterate(my_blocks, (void*)write_block);
 	//al abrir un archivo en modo "w", ya borra t0do el contenido, no preocuparse si ahora el contenido es menos
 
-	list_destroy(my_blocks);
+	//list_destroy(my_blocks);
 }
 
 //retorna una lista con n cantidad bloques pedidos que esten disponibles en el bitmap
@@ -362,15 +371,22 @@ t_dictionary* void_to_dictionary(void* pokemon_file){
 	return dictionary;
 }
 
-void* dictionary_to_void(t_dictionary* pokemon_file_dictionary){
+void* dictionary_to_void(t_dictionary* pokemon_file_dictionary, uint32_t* size){
 
 	void* pokemon_file;
 
-	//escribir el diccionario en un void*, similar a config_save_in_file() de config.c
+	char* lines = string_new();
+	void add_line(char* key, void* value) {
+		string_append_with_format(&lines, "%s=%s\n", key, value);
+	}
 
-	//destruir el diccionario
+	dictionary_iterator(pokemon_file_dictionary, add_line);
 
-	return pokemon_file;
+	*size = strlen(lines);
+	//pokemon_file = string_to_void(lines, *size);
+
+	//TODO destruir diccionarIo
+	return (void*)lines;
 }
 
 void create_file_directory(char* pokemon,t_location* location){

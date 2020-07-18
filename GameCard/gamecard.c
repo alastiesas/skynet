@@ -58,12 +58,13 @@ int main(void) {
 	pthread_mutex_init(&mutex_pkmetadata, NULL);
 	//pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
-	create_pokemon_directory("Snorlax",location);
+	create_pokemon_directory("Snorlax");
 	printf("aca estamos bien3\n");
 	t_message_catch* msg_catch = create_message_catch_long("Snorlax", 3,2);
 	process_catch(msg_catch);
 
 
+	/*
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);
 	pthread_create(&catch_thread, NULL, (void*) catch_function, NULL);
@@ -74,7 +75,7 @@ int main(void) {
 	pthread_join(new_thread, NULL);
 	pthread_join(catch_thread, NULL);
 	pthread_join(get_thread, NULL);
-
+*/
 	return EXIT_SUCCESS;
 }
 

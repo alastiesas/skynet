@@ -15,6 +15,8 @@
 #include <conexion.h>
 #include <mensajes.h>
 #include <math.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 
 t_log* logger;
 t_config* config;
