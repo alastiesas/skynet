@@ -5,7 +5,7 @@
  *      Author: utnso
  */
 #include "gamecard.h"
-
+#include <errno.h>
 
 
 int32_t wait_available_file_new(char* pokemon_name){
@@ -71,8 +71,77 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 	t_message_caught* message_caught;
 	int32_t exists;
 
-	exists = wait_available_file(message_catch->pokemon_name);
 		//si no existia el archivo metadata, saltar directamente a generar la respuesta que no se pudo atrapar
+
+	//esperar mutex del pokemon metadata
+	pthread_mutex_lock(&mutex_pkmetadata);	//TODO unlock
+	//aca hay que hacer un fopen y ver que retorna
+	char* pokemon_metadata = string_new();
+	string_append(&pokemon_metadata, files_directory);
+	string_append(&pokemon_metadata, message_catch->pokemon_name);
+	string_append(&pokemon_metadata, "/Metadata.bin");
+	t_config* file;
+
+	if((file = config_create(pokemon_metadata)) == NULL){
+		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_catch->pokemon_name);
+		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
+		pthread_mutex_unlock(&mutex_pkmetadata);
+		sleep(TIEMPO_RETARDO_OPERACION); //TODO ver donde va
+		//message_caught = generate_caught();
+	}
+	else{
+		char* open;
+		//CANTINDAD DE REINTENTOS
+		uint32_t retry = 1;
+		while(retry){
+			open = config_get_string_value(file, "OPEN");
+			if(strcmp(open, "N") == 0){
+				//editar el metada.bin -> OPEN=Y
+				config_set_value(file, "OPEN", "Y");
+				config_save(file);
+				pthread_mutex_unlock(&mutex_pkmetadata);
+				retry = 0;
+			}
+			else{
+				pthread_mutex_unlock(&mutex_pkmetadata);
+				config_destroy(file);
+				sleep(TIEMPO_DE_REINTENTO_OPERACION);
+				pthread_mutex_lock(&mutex_pkmetadata);
+			}
+		}
+
+		//ARMAR LISTA DE BLOQUES
+		char* blocks_string = config_get_string_value(file,"BLOCKS");
+		char** blocks_array = string_get_string_as_array(blocks_string);
+
+		//convertir char** en t_list*
+		t_list* blocks_list = list_create();
+		uint32_t j = 0;
+		while(blocks_array[j]!=NULL){
+			list_add(blocks_list,blocks_array[j]);
+		}
+		/*
+		DIRECTORY=N
+		SIZE=250
+		BLOCKS=[40,21,82,3]
+		OPEN=Y
+		*/
+
+		//1-
+		//ACA TODO LO DEL SNOLAX EN MEMORIA, VAMOS A CARGARLO EN DICCIONARIO Y DESPUES ENTRAMOS CON LA POSITION AL DICCIONARIO.
+		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
+
+		//SI ENCUENTRA EN EL DICCIONARIO, MODIFICA EL VALUE Y MAPEA EN DISCO DE NUEVO LOS CAMBIOS.
+		//SI NO LO ENCUENTRA ES QUE NO HAY POKEMON EN ESA POSICION.
+
+	}
+
+
+
+
+
+
+
 	if(exists != -1){
 	//pasar los bloques del archivo a memoria
 	//crear diccionario con el archivo

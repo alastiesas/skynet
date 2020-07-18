@@ -187,7 +187,7 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 	void* pokemon_file = malloc(total_size);
 	FILE *p;
 	uint32_t block_number;
-	char* number;
+	//char* number;
 	char* block_path;
 	uint32_t blocks_amount = list_size(file_blocks);
 	uint32_t size;
@@ -196,11 +196,10 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 	while(!list_is_empty(file_blocks)){
 		block_number = (uint32_t) list_remove(file_blocks, 0);
 		//obtener path del archivo
-		number = string_itoa(block_number);
-		block_path = string_new();
-		string_append(&block_path, number);
+
+		string_append(&block_path, block_number);
 		string_append(&block_path, ".bin");
-		free(number);
+		free(block_number);
 		//abrir el archivo
 		p=fopen(block_path,"r");
 		//leer el tamano del bloque, o el tamano restante si es el ultimo bloque
@@ -212,7 +211,6 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 		fread(pokemon_file + (block_size * i), size, 1, p);
 		fclose(p);
 
-		free(block_path);
 		i++;
 	}
 
