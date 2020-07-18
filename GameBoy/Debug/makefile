@@ -25,13 +25,13 @@ endif
 all: gameboy
 
 dependents:
-	-cd /home/utnso/tp-2020-1c-Skynet/utils/Debug && $(MAKE) all
+	-cd /home/utnso/apps/tp-2020-1c-Skynet/utils/Debug && $(MAKE) clean all
 
 # Tool invocations
-gameboy: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so
+gameboy: $(OBJS) $(USER_OBJS) /home/utnso/apps/tp-2020-1c-Skynet/utils/Debug/libutils.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2020-1c-Skynet/utils/Debug" -o "gameboy" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/apps/tp-2020-1c-Skynet/utils/Debug" -o "gameboy" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -41,6 +41,6 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
-/home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so:
+/home/utnso/apps/tp-2020-1c-Skynet/utils/Debug/libutils.so:
 
 -include ../makefile.targets

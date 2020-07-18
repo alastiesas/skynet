@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include <math.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -176,10 +177,9 @@ void get_bitarray(){
 
 //guardo el bitarray en el bitmap cuando lo termino de usar
 void save_bitarray(t_bitarray* bitarray){
-	printf("aca rompioooo");
 	msync(bmap, blocks/8, MS_SYNC);
 
-	pthread_mutex_unlock(&mutex_bitmap);
+	//pthread_mutex_unlock(&mutex_bitmap);
 }
 
 //convierte una lista de numeros de bloque a un void* con el archivo pokemon
@@ -226,19 +226,23 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 
 	//chequear si ahora el archivo ocupa mas o menos bloques
 	//double blocks_amount = ceil(total_size/block_size); //?? esta bien?
-	uint32_t blocks_amount = 1;
+	printf("elementos de la lista: %d\n", list_size(my_blocks));
+	//uint32_t blocks_amount = 1;
 	//aca iria tipo de dato float o double y 6.2 y funcion en c math (float y devuelve int)
+	/*
 	if(list_size(my_blocks) < blocks_amount){
 		//calcular cuantos bloques mas necesita
 		//encontrar esa cantidad de bloques libres
 		//agregar los bloques encontrados a my_blocks
 	//TODO modificar los bloques en el metadata (con su mutex) del pokemon
 	}
+
 	else if(list_size(my_blocks) > blocks_amount){
 		//calcular cuantos bloques de menos
 		//borrar de la lista esta cantidad de bloques ??? puede ser cualquier bloque?
 	//TODO modificar los bloques en el metadata (con su mutex) del pokemon
 	}
+	*/
 
 	//TODO modificar el size en el metadata (con su mutex) del pokemon, segun lo que ocupe el nuevo void* pokemon_file
 
@@ -286,16 +290,20 @@ t_list* find_available_blocks(uint32_t amount){
 
 	t_list* available_blocks = list_create();
 
-	list_add(available_blocks,5);
-
-	/*	//TODO se estaban agregando 5 elementos a la lista en vez de 1
+	//list_add(available_blocks,5);
+	//TODO se estaban agregando 5 elementos a la lista en vez de 1
 	uint32_t until = 0;
 	for(uint32_t i = 0; i<blocks;i++){
 		//pthread_mutex_lock(&mutex_bitmap);
 		bool result = bitarray_test_bit(bitmap, i);
-		if(result){
-			if(until<amount)
+		printf("valor del bit %d\n",result);
+		if(result == 0){
+			if(until<amount){
 				list_add(available_blocks,i);
+				until++;
+			}
+			if(until==amount)
+				break;
 		}
 		else{
 			//printf("bloque no disponible o ocupado\n");
@@ -309,13 +317,13 @@ t_list* find_available_blocks(uint32_t amount){
 	else
 	{
 		void bitarray_set_bit_iterate(int32_t index){
-			bitarray_test_bit(bitmap, index);
+			bitarray_set_bit(bitmap, index);
 		}
-
+		printf("si llego aca\n");
 		list_iterate(available_blocks, (void*)bitarray_set_bit_iterate);
 	}
 	save_bitarray(bitmap);
-	*/
+
 
 	return available_blocks;
 }
@@ -360,11 +368,17 @@ void create_pokemon_directory(char* pokemon,t_location* location){
 	//pasar location a string
 	char* location_string = location_to_string(location);
 
+
 	uint32_t total_size = strlen(location_string);
 
-	//double blocks_amount = ceil(total_size/block_size);
-	t_list* available_blocks = find_available_blocks(1);
-
+	//double aux = total_size/block_size;
+	printf("total_size %d\n",total_size);
+	printf("block_size %d\n",block_size);
+	//0.093
+	double aux = ((double)total_size/(double)block_size);
+	uint32_t blocks_amount = (uint32_t) ceil(aux);
+	printf("a ver el numero%d\n",blocks_amount);
+	t_list* available_blocks = find_available_blocks(blocks_amount);
 	//RECORRER LISTA DE BLOQUES Y CREAR ARCHIVOS
 	write_file_blocks((void*)location_string, available_blocks, total_size, pokemon);
 	//Crear cada bloque y escribirlo. Esto es por va en carpeta Blockes -> 1.bin (1-1=10 ...)
@@ -396,4 +410,6 @@ char* location_to_string(t_location* location){
 	free(posy);
 	return location_string;
 }
+
+
 
