@@ -186,34 +186,46 @@ void save_bitarray(t_bitarray* bitarray){
 void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 	void* pokemon_file = malloc(total_size);
 	FILE *p;
-	uint32_t block_number;
+	char* block_number;
 	//char* number;
-	char* block_path;
+
 	uint32_t blocks_amount = list_size(file_blocks);
 	uint32_t size;
 	uint32_t i = 0;
 
 	while(!list_is_empty(file_blocks)){
-		block_number = (uint32_t) list_remove(file_blocks, 0);
+		char* block_path = string_new();
+		block_number = (char*) list_remove(file_blocks, 0);
 		//obtener path del archivo
 
+		string_append(&block_path, blocks_directory);
 		string_append(&block_path, block_number);
 		string_append(&block_path, ".bin");
-		free(block_number);
+		printf("estamos en el while1\n");
+
 		//abrir el archivo
+		printf("el path es %s \n", block_path);
 		p=fopen(block_path,"r");
+		if(p == NULL){
+		    printf("fopen failed, errno = %d\n", errno);
+		}
 		//leer el tamano del bloque, o el tamano restante si es el ultimo bloque
 		if(list_is_empty(file_blocks))
 			size = total_size - (block_size * (blocks_amount - 1));
 		else
 			size = block_size;
 
+		log_info(logger, "Se van a leer %d bytes del bloque %s\n", size, block_number);
 		fread(pokemon_file + (block_size * i), size, 1, p);
 		fclose(p);
 
 		i++;
+		free(block_path);
+		free(block_number);
+		printf("estamos en el while2\n");
 	}
-
+	char* test = void_to_string(pokemon_file, total_size);
+	printf("el file tiene %s\n",test);
 	list_destroy(file_blocks);
 	return pokemon_file;	//este es mi void* del string del archivo pokemon, sin el '\0' del string
 }
@@ -330,8 +342,23 @@ t_dictionary* void_to_dictionary(void* pokemon_file){
 
 	t_dictionary* dictionary = dictionary_create();
 
-	//pasar el void* a un diccionario como hace config_create() de config.c
 
+	char** lines = string_split(pokemon_file, "\n");
+
+	void add_cofiguration(char *line) {
+		if (!string_starts_with(line, "#")) {
+			char** keyAndValue = string_n_split(line, 2, "=");
+			dictionary_put(dictionary, keyAndValue[0], keyAndValue[1]);
+			free(keyAndValue[0]);
+			free(keyAndValue);
+		}
+	}
+	string_iterate_lines(lines, add_cofiguration);
+	string_iterate_lines(lines, (void*) free);
+
+	free(lines);
+	free(pokemon_file);
+	//pasar el void* a un diccionario como hace config_create() de config.c
 	return dictionary;
 }
 
@@ -350,12 +377,12 @@ void create_pokemon_directory(char* pokemon,t_location* location){
 	//
 
 	//CREAR DIRECTORIO
-	chdir("..");
-	//chdir("..");
-	chdir("tall_grass");
-	chdir("Files");
+	char* pokemon_path = string_new();
+	string_append(&pokemon_path, files_directory);
+	string_append(&pokemon_path, pokemon);
 	//buscar mkdir pasandole todo el path
-	mkdir(pokemon, 0777);
+	mkdir(pokemon_path, 0777);
+	free(pokemon_path);
 	//	//1-1=10
 		//bitmap con todos los bloques
 		//tendriamos que tener la cantidad de bloques que necesitamos

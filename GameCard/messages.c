@@ -23,7 +23,7 @@ int32_t wait_available_file(char* pokemon_name){
 	//esperar mutex del pokemon metadata
 	pthread_mutex_lock(&mutex_pkmetadata);	//TODO unlock
 	//abrir metadata del pokemon dado, si no existe, soltar el mutex y retornar directamente que no existe (-1)
-										//si no existe, esperar en este punto el tiempo de retardo operacion (mirar si aplica en este caso ese tiempo)
+	//si no existe, esperar en este punto el tiempo de retardo operacion (mirar si aplica en este caso ese tiempo)
 	//chequear en el metadata si esta ocupado, en ese caso, soltar el mutex y reintentar en TIEMPO_DE_REINTENTO_OPERACION
 	//si esta disponible, actualizarlo como en uso, soltar mutex y listo, (retornar 0)
 }
@@ -70,18 +70,19 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 	t_message_caught* message_caught;
 	int32_t exists;
+	uint32_t caught_result;
 
 		//si no existia el archivo metadata, saltar directamente a generar la respuesta que no se pudo atrapar
 
 	//esperar mutex del pokemon metadata
-	pthread_mutex_lock(&mutex_pkmetadata);	//TODO unlock
+	//pthread_mutex_lock(&mutex_pkmetadata);	//TODO unlock
 	//aca hay que hacer un fopen y ver que retorna
 	char* pokemon_metadata = string_new();
 	string_append(&pokemon_metadata, files_directory);
 	string_append(&pokemon_metadata, message_catch->pokemon_name);
 	string_append(&pokemon_metadata, "/Metadata.bin");
 	t_config* file;
-
+	printf("aca estamos bien1\n");
 	if((file = config_create(pokemon_metadata)) == NULL){
 		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_catch->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
@@ -94,19 +95,22 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		//CANTINDAD DE REINTENTOS
 		uint32_t retry = 1;
 		while(retry){
+			printf("aca estamos bien4\n");
 			open = config_get_string_value(file, "OPEN");
 			if(strcmp(open, "N") == 0){
 				//editar el metada.bin -> OPEN=Y
-				config_set_value(file, "OPEN", "Y");
+				//config_set_value(file, "OPEN", "Y");
+				printf("aca estamos bien5\n");
 				config_save(file);
-				pthread_mutex_unlock(&mutex_pkmetadata);
+				//pthread_mutex_unlock(&mutex_pkmetadata);
 				retry = 0;
 			}
 			else{
-				pthread_mutex_unlock(&mutex_pkmetadata);
+				//pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
+				printf("SLEEP\n");
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
-				pthread_mutex_lock(&mutex_pkmetadata);
+				//pthread_mutex_lock(&mutex_pkmetadata);
 			}
 		}
 
@@ -115,29 +119,69 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		char** blocks_array = string_get_string_as_array(blocks_string);
 
 		//convertir char** en t_list*
+		printf("aca estamos bien6\n");
 		t_list* blocks_list = list_create();
 		uint32_t j = 0;
 		while(blocks_array[j]!=NULL){
+			printf("any block is %s \n",blocks_array[j]);
 			list_add(blocks_list,blocks_array[j]);
+			j++;
 		}
+		printf("cargamos bien los blockes\n");
+		//el 24 cambiarlo por lectura de config
+		void* pokemon_file = open_file_blocks(blocks_list, 24);
+		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
+		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file);
+
+		printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
+		printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
+		printf("dictionary get en posicion 3-2 value: %s \n",dictionary_get(pokemon_dictionary, "3-2"));
+		printf("dictionary get en posicion 1-9 value: %s \n",dictionary_get(pokemon_dictionary, "1-9"));
 		/*
 		DIRECTORY=N
 		SIZE=250
 		BLOCKS=[40,21,82,3]
 		OPEN=Y
 		*/
-
+		//1-9=23-2=55-5=28-6=5 -> ESTO PASAR A DICCIONARIO
 		//1-
-		//ACA TODO LO DEL SNOLAX EN MEMORIA, VAMOS A CARGARLO EN DICCIONARIO Y DESPUES ENTRAMOS CON LA POSITION AL DICCIONARIO.
-		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
-
-		//SI ENCUENTRA EN EL DICCIONARIO, MODIFICA EL VALUE Y MAPEA EN DISCO DE NUEVO LOS CAMBIOS.
-		//SI NO LO ENCUENTRA ES QUE NO HAY POKEMON EN ESA POSICION.
-
+		//message_catch->position->x;
+		//-
+		//message_catch->position->y;
+		char* key = string_new();
+		char* x = string_itoa(message_catch->position->x);
+		char* y = string_itoa(message_catch->position->y);
+		string_append(&key, x);
+		string_append(&key, "-");
+		string_append(&key, y);
+		free(x);
+		free(y);
+		printf("the key for pokemon map is %s\n",key);
+		if(dictionary_has_key(pokemon_dictionary,key)){
+			//MODIFICA VALUE EN EL MAPA
+			char * value_str = dictionary_get(pokemon_dictionary,key);
+			uint32_t value = atoi(value_str);
+			if(value>1){
+				value--;
+				free(value_str);
+				char* new_value_str = string_itoa(value);
+				dictionary_put(pokemon_dictionary,key,new_value_str);
+			}
+			else
+			{
+				char* new_value_str = dictionary_remove(pokemon_dictionary, key);
+				free(new_value_str);
+			}
+			//PISA LA LISTA DE BLOQUES DEL FILE SYSTEM CON LOS DATOS DEL DICCIONARIO
+			//MAPEA EN DISCO DE NUEVO CON LOS CAMBIOS Y HACE EL CAUGHT TRUE.
+			caught_result = 1;
+		}
+		else
+		{
+			caught_result = 0;
+			//SI NO LO ENCUENTRA ES QUE NO HAY POKEMON EN ESA POSICION CAUGHT FALSE.
+		}
 	}
-
-
-
 
 
 
