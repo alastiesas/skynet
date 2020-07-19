@@ -19,6 +19,7 @@ int main(void)
 
 	config = config_create("team.config");
 	initialize_global_config();
+	initialize_semaphores();
 
 
 	pthread_t sender_tid;
@@ -64,9 +65,9 @@ int main(void)
 	//*/
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
-	subscribe(OPERATION_APPEARED);
-	subscribe(OPERATION_LOCALIZED);
-	subscribe(OPERATION_CAUGHT);
+//	subscribe(OPERATION_APPEARED);
+//	subscribe(OPERATION_LOCALIZED);
+//	subscribe(OPERATION_CAUGHT);
 //	sleep(5);
 
 

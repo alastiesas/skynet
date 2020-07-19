@@ -21,42 +21,44 @@ bool probando = true;
 //configuracion
 t_config* config;
 t_log* log;
-uint32_t time_delay = 1; // TIENE QUE LEVANTAR DATO DEL CONFIG
-uint32_t quantum = 0;
-uint32_t initial_estimate = 0;
-double alpha = 0.5;
-bool new_trainer_in_ready = false;
-t_algorithm algorithm = FIFO;
-uint32_t retry_time = 15; // TIENE QUE LEVANTAR DATO DEL CONFIG
-t_list* objectives_list;
+uint32_t time_delay = 1;//READ_ONLY
+uint32_t quantum = 2;//READ_ONLY
+uint32_t initial_estimate = 0;//READ_ONLY
+double alpha = 0.5;//READ_ONLY
+bool new_trainer_in_ready = false;//READ_ONLY
+t_algorithm algorithm = FIFO;//READ_ONLY
+uint32_t retry_time = 15;//READ_ONLY
 
 
 //de aca para abajo, revisar condiciones de carrera
-t_dictionary* poke_map;
+
+//team
+t_dictionary* poke_map;//MUTEX = sem_poke_map
+sem_t sem_poke_map;
+t_list* objectives_list;//MUTEX = sem_objectives_list
+sem_t sem_objectives_list;
+
 //planificación
 t_list* new_list;
 t_list* ready_list;
 t_list* block_list;
 t_list* exec_list;
 t_list* exit_list;
-
-
-//planificacion
-uint32_t cpu_cycles = 0;
-uint32_t context_changes = 0;
-uint32_t deadlock_priority;
-uint32_t deadlocks = 0;
-uint32_t solved_deadlocks = 0;
-
-//comunicacion
-t_list* messages_list;
-t_dictionary* message_response;
-
-//semaforos
-sem_t sem_scheduler;
+sem_t sem_state_lists;//todas usan el mismo semáforo
+sem_t sem_scheduler;//short y long no se ejecutan a la vez
 sem_t sem_short;
 sem_t sem_long;
 
+//informes
+uint32_t cpu_cycles = 0;//Preguntar
+uint32_t context_changes = 0;//Preguntar
+uint32_t deadlock_priority;//Exclusivo de long_term
+uint32_t deadlocks = 0;//Exclusivo de long_term -> deadlock_handler
+uint32_t solved_deadlocks = 0;//Exclusivo de long_term -> deadlock_handler
+
+//comunicacion
+t_list* messages_list;//MUTEX = sem_messages_list | CONTADOR = sem_messages
+t_dictionary* message_response;//MUTEX = sem_messages_recieve_list
 sem_t sem_messages_list;
 sem_t sem_messages;
 sem_t sem_messages_recieve_list;
@@ -65,6 +67,7 @@ sem_t sem_messages_recieve_list;
 
 
 void initialize_global_config();
+void initialize_semaphores();
 //entrenadores y objertivos
 t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
 void initialize_trainers();//inicializa todos los entrenadores del conig
@@ -79,13 +82,11 @@ t_trainer* find_trainer_for_catch(t_position* position);
 void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer2, char* pokemon2);
 void trainer_assign_move(t_trainer* trainer, char* pokemon, t_position* position, bool catching, uint32_t target_id);
 void trainer_assign_trade(t_trainer* trainer, char* pokemon, uint32_t target_id);
-t_list* trainer_actual_list(t_trainer* trainer);
-t_list* trainer_actual_list_by_id(uint32_t id);
 //FIN funciones de entrenadores
 
 //objetivos
 void add_caught(t_list* list, char* pokemon);
-bool success_global_objective(t_list* global_objectives);
+bool success_global_objective();
 bool pokemon_is_needed(char* pokemon,char* channel);
 bool pokemon_is_needed_on_pokemap(char* pokemon);
 bool pokemon_is_needed_on_trainer(char* pokemon);
@@ -118,7 +119,7 @@ void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
 void sjfc_algorithm();
-void exit_cpu(t_trainer* trainer);
+void exit_cpu();
 void trainer_update_burst_estimate(t_trainer* trainer);
 t_trainer* shortest_job_trainer_from_ready();
 //callbacks segun algoritmo
@@ -170,6 +171,12 @@ void initialize_global_config() {
 		alpha = config_get_double_value(config, "ALPHA");
 	}
 	printf("CONFIG-> algoritmo: %s\tretardo: %d\tquantum: %d\testimacion inicial: %d\n", config_algorithm, time_delay, quantum, initial_estimate);
+}
+
+void initialize_semaphores() {
+	sem_init(&sem_state_lists, 0, 1);
+	sem_init(&sem_poke_map, 0, 1);
+	sem_init(&sem_objectives_list, 0, 1);
 }
 
 void callback_fifo(t_trainer* trainer){
@@ -311,7 +318,7 @@ void callback_sjfc(t_trainer* trainer) {
 		trainer_test->burst_estimate = 2;
 		new_trainer_in_ready = true;
 		probando = false;
-	}
+	}//TODO BORAR
 
 	switch(trainer->action) {
 		case FREE:
@@ -415,12 +422,15 @@ void initialize_trainers()
 	int i = 0;
 	while(positions_config[i] != NULL){
 		t_trainer* trainer = initialize_trainer(i+1, positions_config[i], objectives_config[i], pokemons_config[i]);
+		sem_wait(&sem_state_lists);
 		if(trainer_success_objective(trainer))
 			list_add(exit_list, trainer);
 		else if(trainer_full(trainer)) {
 			list_add(block_list, trainer);
 		} else
 			list_add(new_list, trainer);
+		sem_post(&sem_state_lists);
+
 		i++;
 	}
 	//liberar memoria (todos los char**)
@@ -431,8 +441,8 @@ void initialize_trainers()
 	printf("TODOS LOS ENTRENADORES HAN SIDO CONFIGURADOS\n");
 
 	//*
-	t_trainer* trainer = list_get(block_list, 0);
-	trainer->burst_estimate = 5;
+	t_trainer* trainer = list_get(block_list, 0);//TODO BORRAR
+	trainer->burst_estimate = 5;//TODO BORRAR
 	//*/
 }
 
@@ -495,7 +505,9 @@ bool pokemon_is_needed(char* pokemon,char* channel)
 	//t_objective* test = (t_objective*) list_get(objectives_list,0);
 	//printf("LN 301 the pokemon OBJECTIVE is %s\n", test->pokemon);
 	bool needed = 0;
+	sem_wait(&sem_objectives_list);
 	t_objective* objective = find_key(objectives_list, pokemon);
+	sem_post(&sem_objectives_list);
 
 	if(objective == NULL)
 		printf("no necesitamos un %s\n", pokemon);
@@ -546,16 +558,30 @@ t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* train
 void initialize_global_objectives()
 {
 	t_list* list_global_objectives = list_create();
-	objectives_list = (t_list*) list_fold( new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
+
+	sem_wait(&sem_objectives_list);
+	sem_wait(&sem_state_lists);
+	objectives_list = (t_list*) list_fold(new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
+	sem_post(&sem_state_lists);
+	sem_post(&sem_objectives_list);
+
 }
 
-bool success_global_objective(t_list* global_objectives)
+bool success_global_objective()
 {
 	bool success = false;
-	 if(list_all_satisfy(global_objectives,&success_objective)) {
+
+	sem_wait(&sem_objectives_list);
+	bool all_pokemon_catch = list_all_satisfy(objectives_list,&success_objective);
+	sem_post(&sem_objectives_list);
+
+	 if(all_pokemon_catch) {
+
+		sem_wait(&sem_state_lists);
 		 if(list_size(block_list) == 0 && list_size(new_list) == 0 && list_size(ready_list) == 0 && list_size(exec_list) == 0){
 			 success = true;
 		 }
+		sem_post(&sem_state_lists);
 
 	 }
 	return success;
@@ -678,7 +704,8 @@ void* short_thread()
 void long_term_scheduler(){
 
 	//PRUEBAAAAA
-	if(success_global_objective(objectives_list)) {
+
+	if(success_global_objective()) {
 		printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
 		printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
 		sleep(999);
@@ -689,19 +716,25 @@ void long_term_scheduler(){
 	}
 
 	//revisar size ready
+	sem_wait(&sem_state_lists);
 	uint32_t size_ready = list_size(ready_list);
 
+	sem_wait(&sem_poke_map);
 	dictionary_iterator(poke_map, &trainer_assign_catch);
-
-	//aumento el size del ready? SINO CORRO DEAD LOCK
-
+	sem_post(&sem_poke_map);
 
 	if(size_ready == list_size(ready_list)) {
+		//aumento el size del ready? SINO CORRO DEAD LOCK
 		deadlock_priority++;
 	}
-	//PONERLE DEFINE
+
+	bool idle_cpu = list_size(ready_list) == 0 && list_size(exec_list) == 0;
+	sem_post(&sem_state_lists);
+
 	debug_colas();
-	if((list_size(ready_list) == 0 && list_size(exec_list) == 0) || deadlock_priority == DEADLOCK_PRIORITY) {
+
+
+	if(idle_cpu || deadlock_priority == DEADLOCK_PRIORITY) {
 		if(possible_deadlock()) {
 			printf("ALERTA HAY DEADLOCK ALERTAAAAAAAAAAAAAAAAAAAA\n");
 			deadlock_handler();
@@ -711,13 +744,14 @@ void long_term_scheduler(){
 	} else {
 		printf("NO HAY RAZON PARA EVALUAR DEADLOCKS\n");
 	}
-	//RAZONES PARA CORRER DETECTOR DE DL
-	//loop SHORT LONG -> EXEC = 0 READY = 0
 	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
 }
 
 bool possible_deadlock(){
+
+	sem_wait(&sem_state_lists);
 	int32_t locked = list_count_satisfying(block_list, &trainer_locked);
+	sem_post(&sem_state_lists);
 	printf("\t\tlocked trainers: %d\n", locked);
 	bool deadlock = locked > 1;
 	return deadlock;
@@ -754,6 +788,7 @@ void deadlock_handler(){
 	waiting_table = dictionary_create();
 	held_table = dictionary_create();
 	debug_colas();
+
 	deadlock_detector(waiting_table,held_table);
 
 	printf("TABLA DE WAITING:\n");
@@ -766,7 +801,10 @@ void deadlock_handler(){
 //printf("ROMPE EN ");//DEBUG TODO sacar
 void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 	//tomo los entrenadores que esten interbloqueados
+	sem_wait(&sem_state_lists);
 	t_list* locked_trainers = list_filter(block_list, &trainer_locked);
+	sem_post(&sem_state_lists);
+
 	printf("ENTRENADORES BLOQUEADOS: %d\n", list_size(locked_trainers));
 	list_iterate(locked_trainers, &debug_trainer);
 
@@ -949,13 +987,12 @@ void fifo_algorithm()
 {
 	printf("fifo_algorithm\n");
 
-	if(list_size(exec_list) > 0){
-		//trainer debe volver a ready o pasar a block
-		t_trainer* trainer = list_get(exec_list, 0);
-		exit_cpu(trainer);
-	}
+	exit_cpu();
 
-	if(list_size(ready_list) > 0){
+	sem_wait(&sem_state_lists);
+	uint32_t ready_size =  list_size(ready_list);
+	sem_post(&sem_state_lists);
+	if(ready_size > 0){
 		transition_ready_to_exec(0);//toma el primero de la cola ready
 	}
 	else{
@@ -968,15 +1005,13 @@ void fifo_algorithm()
 void rr_algorithm()
 {
 	printf("rr_algorithm\n");
-	if(list_size(exec_list) > 0){
-		//trainer debe volver a ready o pasar a block
-		t_trainer* trainer = list_get(exec_list, 0);
-		if(trainer!=NULL) {
-			exit_cpu(trainer);
-		}
-	}
 
-	if(list_size(ready_list) > 0){
+	exit_cpu();
+
+	sem_wait(&sem_state_lists);
+	uint32_t ready_size =  list_size(ready_list);
+	sem_post(&sem_state_lists);
+	if(ready_size > 0){
 		transition_ready_to_exec(0);//toma el primero de la cola ready
 	}
 	else{
@@ -988,15 +1023,13 @@ void rr_algorithm()
 void sjfs_algorithm()
 {
 	printf("sjfs_algorithm\n");
-	if(list_size(exec_list) > 0){
-		//trainer debe volver a ready o pasar a block
-		t_trainer* trainer = list_get(exec_list, 0);
-		if(trainer!=NULL) {
-			exit_cpu(trainer);
-		}
-	}
 
-	if(list_size(ready_list) > 0){
+	exit_cpu();
+
+	sem_wait(&sem_state_lists);
+	uint32_t ready_size =  list_size(ready_list);
+	sem_post(&sem_state_lists);
+	if(ready_size > 0){
 		t_trainer* trainer = shortest_job_trainer_from_ready();
 		if(trainer != NULL) {
 			transition_by_id(trainer->id, ready_list, exec_list);
@@ -1011,18 +1044,15 @@ void sjfs_algorithm()
 
 void sjfc_algorithm()
 {
-	new_trainer_in_ready = false;
 	printf("sjfc_algorithm\n");
-	//TODO FALTA DESALOJO
-	if(list_size(exec_list) > 0){
-		//trainer debe volver a ready o pasar a block
-		t_trainer* trainer = list_get(exec_list, 0);
-		if(trainer!=NULL) {
-			exit_cpu(trainer);
-		}
-	}
+	new_trainer_in_ready = false;
 
-	if(list_size(ready_list) > 0){
+	exit_cpu();
+
+	sem_wait(&sem_state_lists);
+	uint32_t ready_size =  list_size(ready_list);
+	sem_post(&sem_state_lists);
+	if(ready_size > 0){
 		t_trainer* trainer = shortest_job_trainer_from_ready();
 		if(trainer != NULL) {
 			transition_by_id(trainer->id, ready_list, exec_list);
@@ -1035,28 +1065,38 @@ void sjfc_algorithm()
 	}
 }
 
-void exit_cpu(t_trainer* trainer) {
-	switch(trainer->action) {
-		case FREE://pasa a block
-			transition_exec_to_block();
-			break;
-		case MOVE://no terminó, vuelve a ready
-			transition_exec_to_ready();
-			break;
-		case CATCH://no terminó, vuelve a ready
-			transition_exec_to_ready();
-			break;
-		case CATCHING://pasa a block
-			transition_exec_to_block();
-			break;
-		case TRADE://pasa a block
-			transition_exec_to_block();
-			break;
-		case FINISH://pasa a exit
-			transition_exec_to_exit();
-			break;
+void exit_cpu() {
 
+	sem_wait(&sem_state_lists);
+	t_trainer* trainer = NULL;
+	if(list_size(exec_list) > 0) {
+		trainer = list_get(exec_list, 0);
 	}
+	sem_post(&sem_state_lists);
+
+	if(trainer != NULL) {
+		switch(trainer->action) {
+			case FREE://pasa a block
+				transition_exec_to_block();
+				break;
+			case MOVE://no terminó, vuelve a ready
+				transition_exec_to_ready();
+				break;
+			case CATCH://no terminó, vuelve a ready
+				transition_exec_to_ready();
+				break;
+			case CATCHING://pasa a block
+				transition_exec_to_block();
+				break;
+			case TRADE://pasa a block
+				transition_exec_to_block();
+				break;
+			case FINISH://pasa a exit
+				transition_exec_to_exit();
+				break;
+		}//fin switch
+	}//fin if
+
 }
 
 void trainer_update_burst_estimate(t_trainer* trainer) {
@@ -1073,7 +1113,9 @@ t_trainer* shortest_job_trainer_from_ready() {
 			shortest_estimate = trainer->burst_estimate;
 		}
 	}
+	sem_wait(&sem_state_lists);
 	list_iterate(ready_list, &shortest_estimate_trainer);
+	sem_post(&sem_state_lists);
 	return shortest_job_trainer;
 }
 
@@ -1128,16 +1170,24 @@ t_trainer* find_trainer_for_catch(t_position* position) {
 	t_trainer* trainer_new = NULL;
 	t_trainer* trainer_block = NULL;
 	printf("\n---Buscar entrenador más cercano a (%d, %d) en la cola NEW---\n", position->x, position->y);
+	sem_wait(&sem_state_lists);
 	int32_t closest_from_new = closest_free_trainer_job(new_list, position);
+	sem_post(&sem_state_lists);
 
 	printf("\n---Buscar entrenador más cercano a (%d. %d) en la cola BLOCKED---\n", position->x, position->y);
+	sem_wait(&sem_state_lists);
 	int32_t closest_from_block = closest_free_trainer_job(block_list, position);
+	sem_post(&sem_state_lists);
 
 	if(closest_from_new >= 0){
+		sem_wait(&sem_state_lists);
 		trainer_new = list_get(new_list,closest_from_new);
+		sem_post(&sem_state_lists);
 	}
 	if(closest_from_block >= 0){
+		sem_wait(&sem_state_lists);
 		trainer_block = list_get(block_list,closest_from_block);
+		sem_post(&sem_state_lists);
 	}
 
 	if(trainer_new != NULL && (trainer_block == NULL || first_closer(trainer_new, trainer_block, position))){
@@ -1152,33 +1202,10 @@ t_trainer* find_trainer_for_catch(t_position* position) {
 	return selected_trainer;
 }
 
-t_list* trainer_actual_list(t_trainer* trainer) {
-	return trainer_actual_list_by_id(trainer->id);
-}//TODO revisar si se usa o no
-
-t_list* trainer_actual_list_by_id(uint32_t id) {
-
-	t_list* actual_list = NULL;
-	bool condition(void* trainer) {
-		return (((t_trainer*)trainer)->id == id);
-	}
-	if(list_any_satisfy(new_list, &condition))
-		actual_list = new_list;
-	else if(list_any_satisfy(ready_list, &condition))
-		actual_list = ready_list;
-	else if(list_any_satisfy(block_list, &condition))
-		actual_list = block_list;
-	else if(list_any_satisfy(exec_list, &condition))
-		actual_list = exec_list;
-	else if(list_any_satisfy(exit_list, &condition))
-		actual_list = exit_list;
-
-	return actual_list;
-}//TODO revisar si se usa o no
-
 void add_to_poke_map(char* pokemon, t_position* position)
 {
 	//CASO DE QUE NO ESTE EL POKEMON EN EL MAP
+	sem_wait(&sem_poke_map);
 	if(!dictionary_has_key(poke_map, pokemon)){
 		t_list* positions = list_create();
 		list_add(positions, position);
@@ -1189,7 +1216,7 @@ void add_to_poke_map(char* pokemon, t_position* position)
 		t_list* positions = (t_list*) dictionary_get(poke_map,pokemon);
 		list_add(positions, position);
 	}
-
+	sem_post(&sem_poke_map);
 	//EL CASO DE QUE ESTE EL POKEMON EN EL MAPA
 	//buscar el pokemon en la lista y retornar el indice
 
@@ -1200,8 +1227,10 @@ void add_to_poke_map(char* pokemon, t_position* position)
 //transiciones
 void state_change(uint32_t index, t_list* from,t_list* to)
 {
+	sem_wait(&sem_state_lists);
 	void* element = list_remove(from, index);
 	list_add(to, element);
+	sem_post(&sem_state_lists);
 	context_changes++;
 }
 
@@ -1213,9 +1242,10 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 		printf("SE PASO ALGO A READY\n");
 		new_trainer_in_ready = true;
 	}
-	debug_colas();
+
 	void* trainer = NULL;
 
+	sem_wait(&sem_state_lists);
 	if(list_size(from)>1)
 		trainer = list_remove_by_condition(from, &condition);
 	else
@@ -1225,10 +1255,11 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 		list_add(to, trainer);
 		context_changes++;
 	}
-	else
+	else {
 		printf("*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*\n");
+	}
+	sem_post(&sem_state_lists);
 	
-	debug_colas();
 }
 
 void transition_from_id_to_ready(uint32_t id) {
@@ -1236,6 +1267,8 @@ void transition_from_id_to_ready(uint32_t id) {
 		return (((t_trainer*)trainer)->id == id);
 	}
 
+
+	sem_wait(&sem_state_lists);
 	t_trainer* trainer = list_remove_by_condition(new_list, &condition);
 	if(trainer != NULL) {
 		list_add(ready_list, trainer);
@@ -1254,7 +1287,7 @@ void transition_from_id_to_ready(uint32_t id) {
 
 		}
 	}
-	//FALTA SEM POST
+	sem_post(&sem_state_lists);
 }
 
 void transition_new_to_ready(uint32_t index)
@@ -1266,14 +1299,16 @@ void transition_new_to_ready(uint32_t index)
 void transition_ready_to_exec(uint32_t index)
 {
 	state_change(index,ready_list,exec_list);
+	sem_wait(&sem_state_lists);
 	t_trainer* trainer = list_get(exec_list,0);
+	sem_post(&sem_state_lists);
 	sem_post(&trainer->sem_thread);
 }
 
 void transition_exec_to_ready()
 {
 	state_change(0,exec_list,ready_list);
-	new_trainer_in_ready = true;
+	//new_trainer_in_ready = true;//Si pasa de EXEC a READY es porque fue desalojado
 }
 
 void transition_exec_to_block()
@@ -1485,10 +1520,9 @@ void process_message(serve_thread_args* args) {
 //TODO nos falta poder identificarlo dentro de la lista de blocked! (agregar ID y nombre (opcional) al trainer)
 //TODO DEBE pasar a EXIT
 					transition_by_id(trainer->id, block_list, exit_list);
-					printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
 					//EL MENSAJE DEBE ELIMINARSE, HACER FREE O ALGO,
 //TODO como paso a exit tambient enemos verificar los objetivos globales para saber si el team termino
-					if(success_global_objective(objectives_list)) {
+					if(success_global_objective()) {
 						printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
 					} else {
 						printf("SEGUI PARTICIPANDO\n");
@@ -1606,8 +1640,9 @@ void trade_trainer(t_trainer* trainer1){
 	bool condition(void* trainer) {
 		return (((t_trainer*)trainer)->id == trainer1->target->trainer_id);
 	}
-
+	sem_wait(&sem_state_lists);
 	t_trainer* trainer2 = list_get(list_filter(block_list, &condition),0);
+	sem_post(&sem_state_lists);
 
 	printf("\tBEFORE TRADE:\n");
 	debug_trainer(trainer1);
@@ -1655,8 +1690,7 @@ void trade_trainer(t_trainer* trainer1){
 		trainer1->action = FINISH;
 		free(trainer1->target);
 		transition_by_id(trainer1->id, exec_list, exit_list);
-		printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
-		if(success_global_objective(objectives_list)) {
+		if(success_global_objective()) {
 			printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
 		} else {
 			printf("SEGUI PARTICIPANDO\n");
@@ -1671,8 +1705,7 @@ void trade_trainer(t_trainer* trainer1){
 		trainer2->action = FINISH;
 		free(trainer2->target);
 		transition_by_id(trainer2->id, block_list, exit_list);
-		printf("---->TAMAÑO DE EXIT: %d\n", list_size(exit_list));
-		if(success_global_objective(objectives_list)) {
+		if(success_global_objective()) {
 			printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
 		} else {
 			printf("SEGUI PARTICIPANDO\n");
@@ -1720,6 +1753,6 @@ void debug_message_list() {
 		//agregar a que entrenador pertenece
 	};
 	printf("The IDs on message list response are these: \n");
-	dictionary_iterator(message_response, &printf_function);
+	dictionary_iterator(message_response, &printf_function);//TODO BORRAR
 }
 #endif /* TEAM_H_ */
