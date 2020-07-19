@@ -86,7 +86,7 @@ void initiliaze_file_system();
 void create_file_directory(char*,t_location*);
 char* location_to_string(t_location* location);
 
-void new_pokemon_routine();
+t_message_appeared* new_pokemon_routine();
 bool exists_pokemon(char* pokemon_name);
 char* get_pokemon_directory(char* pokemon_name);
 char* get_pokemon_file(char* pokemon_name);
@@ -94,8 +94,8 @@ bool exists_file(char* file_name);
 void create_pokemon(char* pokemon_name);
 void create_pokemon_directory(char* pokemon_name);
 void create_pokemon_file(char* pokemon_name);
-void open_file();
-void update_file();
+void open_pokemon_file();
+void update_pokemon_file();
 void send_appeared_pokemon();
 
 #endif /* GAMECARD_H_ */
