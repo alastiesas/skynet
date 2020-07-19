@@ -72,8 +72,13 @@ t_message_localized* create_message_localized(uint32_t correlative_id, char* pok
 	localized->pokemon_name = malloc(localized->size_pokemon_name + 1);
 	strcpy(localized->pokemon_name, pokemon_name);
 	localized->position_amount = position_amount;
-	localized->positions = malloc(position_amount * sizeof(t_position));	//TODO ya te pasan la estructura t_position, hace  falta hacer malloc de otra?
-	localized->positions = positions;
+	if(position_amount != 0){
+		localized->positions = malloc(position_amount * sizeof(t_position));	//TODO ya te pasan la estructura t_position, hace  falta hacer malloc de otra?
+		localized->positions = positions;
+	}
+	else{
+		localized->positions = NULL;
+	}
 	return localized;
 
 }

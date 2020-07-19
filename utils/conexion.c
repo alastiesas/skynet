@@ -268,17 +268,21 @@ void* process_request(operation_code cod_op, int32_t socket, t_log* logger) {
 
 
 
-int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, t_log* logger)
+int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_t retry_amount, t_log* logger)
 {
 	int32_t socket_cliente;
 	//char modulo[16];
 	//int tid = pthread_self();
 	//pthread_getname_np(tid, modulo, 16);
 	int conexion = -2;
-
+	uint32_t i = 0;
 	while (conexion < 0){
 
 		if (conexion == -1){
+			i++;
+			if(i == retry_amount){
+				return -1;
+			}
 			log_info(logger, "Reintentando en %d segundos\n", retry_time);
 				sleep(retry_time);
 		}
