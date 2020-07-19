@@ -61,7 +61,13 @@ int main(void) {
 	create_pokemon_directory("Snorlax");
 	printf("aca estamos bien3\n");
 	t_message_catch* msg_catch = create_message_catch_long("Snorlax", 3,2);
-	process_catch(msg_catch);
+	//process_catch(msg_catch);
+
+
+	t_message_get* message_get = create_message_get("Snorlax");
+	t_message_localized* message_localized = process_get(message_get);
+
+
 
 
 	/*
