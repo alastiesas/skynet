@@ -10,7 +10,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	ip = config_get_string_value(gameboy_config, "IP_BROKER");
 	port = config_get_string_value(gameboy_config, "PUERTO_BROKER");
 
-	int32_t socket = connect_to_server(ip, port, 4, gameboy_log); //TODO el gameboy no tiene tiempo de reintento?
+	int32_t socket = connect_to_server(ip, port, 4, 4, gameboy_log); //TODO el gameboy no tiene tiempo de reintento?
 
 
 	strcpy(log_line, " 1. connected to process broker (ip:");
@@ -82,7 +82,7 @@ void send_message(int process_code, char* ip, char* port, t_package* package) {
 	log_info(gameboy_behavior_log, " 3. message instruction");
 
 
-	int32_t socket = connect_to_server(ip, port, 4, gameboy_log);
+	int32_t socket = connect_to_server(ip, port, 4, 4, gameboy_log);
 
 
 	char* process_name;

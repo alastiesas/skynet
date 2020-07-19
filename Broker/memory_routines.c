@@ -84,7 +84,9 @@ void delete_buddy_partition(t_list** deleted_messages) {
 
 	victim_partition->available = true;
 
-	compact_buddy_to_right(victim_partition_number);
+	if (victim_partition_number < list_size(partitions))
+		compact_buddy_to_right(victim_partition_number);
+
 
 	if (victim_partition_number > 0)
 		compact_buddy_to_left(victim_partition_number);
@@ -484,8 +486,7 @@ void memory_init() {
 	mem = malloc(memory_size);
 	partitions = list_create();
 	//create_dynamic_partition(memory_size);
-	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
-		create_first_partition(mem, memory_size);
+	create_first_partition(mem, memory_size);
 }
 
 void create_first_partition(void* memory_initial_position, uint32_t memory_size){
