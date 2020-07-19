@@ -5,33 +5,27 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 	void* message_data;
 	t_partition* partition;
 
-	if(strcmp(memory_algorithm, "PARTICIONES") == 0){
-		bool _soy_ID_buscado(void* p){
-			return ((t_partition*) p)->ID_message == (uint32_t) ID_encontrar;
-		}
-		pthread_mutex_lock(&mutex_cache);
-		partition = list_find(partitions, _soy_ID_buscado);
-		if(partition != NULL){
-			*bytes = partition->size;
-			message_data = malloc(*bytes);
-			memcpy(message_data, partition->initial_position, *bytes);
-			update_LRU(partition);
-		}
-		pthread_mutex_unlock(&mutex_cache);
-
-		if(partition == NULL){
-			message_data = NULL;
-			log_warning(logger, "El mensaje ya no se encuentra en la cache");
-			//borrar el mensaje de la cola en este punto para que no haya loop infinito
-			t_list* element_to_delete = list_create();
-			list_add(element_to_delete, ID_encontrar);
-			list_add(element_to_delete, (void*)queue_cod);
-			delete_messages_from_queue(element_to_delete);
-		}
-
+	bool _soy_ID_buscado(void* p){
+		return ((t_partition*) p)->ID_message == (uint32_t) ID_encontrar;
 	}
-	else if(strcmp(memory_algorithm, "BS") == 0){
+	pthread_mutex_lock(&mutex_cache);
+	partition = list_find(partitions, _soy_ID_buscado);
+	if(partition != NULL){
+		*bytes = partition->size;
+		message_data = malloc(*bytes);
+		memcpy(message_data, partition->initial_position, *bytes);
+		update_LRU(partition);
+	}
+	pthread_mutex_unlock(&mutex_cache);
 
+	if(partition == NULL){
+		message_data = NULL;
+		log_warning(logger, "El mensaje ya no se encuentra en la cache");
+		//borrar el mensaje de la cola en este punto para que no haya loop infinito
+		t_list* element_to_delete = list_create();
+		list_add(element_to_delete, ID_encontrar);
+		list_add(element_to_delete, (void*)queue_cod);
+		delete_messages_from_queue(element_to_delete);
 	}
 
 	return message_data;
@@ -126,8 +120,8 @@ void dump_cache(void){
 		string_append(&dump, num);
 		free(num);
 		string_append(&dump, ": ");
-		char* initial = string_from_format("%p", partition->initial_position - mem);
-		char* final = string_from_format("%p", partition->final_position - mem);
+		char* initial = string_from_format("%p", partition->initial_position);
+		char* final = string_from_format("%p", partition->final_position);
 		string_append(&dump, initial);
 		string_append(&dump, " - ");
 		string_append(&dump, final);
@@ -185,7 +179,7 @@ void dump_cache(void){
 	txt_close_file(file_dump);
 
 	free(dump);
-	log_info(logger, "dump.txt creado\n");
+	printf("dump.txt creado\n");
 	log_info(obligatorio, "Dump creado");
 }
 

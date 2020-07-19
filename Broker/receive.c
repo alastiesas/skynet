@@ -292,18 +292,54 @@ pthread_mutex_t* get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue,
 
 void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
 
-	//Primero crear la t_partition nueva, no se necesita mutex hasta tocar la lista de particiones
-	//t0do el resto necesita el mismo mutex
+	t_partition* new_partition = malloc(sizeof(t_partition));
+	new_partition->ID_message = message_id;
+	new_partition->available = false;
+	new_partition->size = size_message;
+	new_partition->queue_code = queue_code;
+	new_partition->lru = 0; //para que no quede sin inicializar, pero en update lru se setea
+	t_list* deleted_messages = list_create();
 
-pthread_mutex_lock(&(mutex_cache));
+	pthread_mutex_lock(&(mutex_cache));
 
 	//buscar la posicion para la particion nueva (eliminar mensajes si corresponde)
-	//actualizar la posicion de la particion nueva y del resto si corresponde
-	//guardar el message_data en la particion
+	uint32_t free_partition_index;
+	if(size_message < min_partition_size)
+		free_partition_index = find_available_buddy_partition(min_partition_size, &deleted_messages);
+	else
+		free_partition_index = find_available_buddy_partition(size_message, &deleted_messages);
+	if(free_partition_index != -1){
+
+		//actualizar la posicion de la particion nueva, y agregar a la lista
+		t_partition* free_partition = (t_partition*)list_get(partitions, free_partition_index);
+		new_partition->initial_position = free_partition->initial_position;
+
+		if(size_message < min_partition_size){
+			new_partition->final_position = new_partition->initial_position + min_partition_size;
+			free_partition->size = free_partition->size - min_partition_size;
+		}else{
+			new_partition->final_position = new_partition->initial_position + new_partition->size;
+			free_partition->size = free_partition->size - new_partition->size;
+		}
+
+		free_partition->initial_position = new_partition->final_position;
+
+		//TODO actualizar lru's antes de agregar a la lista
+		list_add_in_index(partitions, free_partition_index, new_partition);
+
+		//guardar el message_data en la particion
+		memmove(new_partition->initial_position, message_data, size_message);
+
+		update_LRU(new_partition);
+		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", new_partition->initial_position - mem, new_partition->final_position - mem);
+	}
+	else{
+		log_error(logger, "No hay particion disponible");
+		free(new_partition);
+	}
 
 
-
-pthread_mutex_unlock(&(mutex_cache));
+	pthread_mutex_unlock(&(mutex_cache));
 	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 
 	//TODO indicar por log obligatorio cuando se realiza asociacion de bloques
