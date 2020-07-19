@@ -58,10 +58,10 @@ int main(void) {
 	pthread_mutex_init(&mutex_pkmetadata, NULL);
 	//pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
-	create_pokemon_directory("Snorlax");
+	//create_pokemon_directory("Snorlax");
 	printf("aca estamos bien3\n");
 	t_message_catch* msg_catch = create_message_catch_long("Snorlax", 3,2);
-	//process_catch(msg_catch);
+	process_catch(msg_catch);
 
 
 	t_message_get* message_get = create_message_get("Snorlax");

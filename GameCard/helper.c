@@ -48,7 +48,9 @@ void get_function(void){
 
 int32_t suscribe_to_broker(queue_code queue_code) {
 
-	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, logger);
+	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, logger);
+	if(socket == -1)
+		log_error(logger, "No se pudo conectar al broker");
 
 	t_package* suscription_package = serialize_suscripcion(MY_ID, queue_code);
 
@@ -62,14 +64,18 @@ int32_t suscribe_to_broker(queue_code queue_code) {
 
 void send_to_broker(t_package* package){
 
-	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, logger);
+	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, logger);
+	if(socket != -1){
 	send_paquete(socket, package);
 	//TODO reintentar envio si falla con la variable global TIEMPO_DE_REINTENTO_CONEXION
 
 	receive_ID(socket, logger);
 	send_ACK(socket, logger);
 	close(socket);
-
+	}
+	else{
+		log_info(logger, "No se envia nada al broker");
+	}
 }
 
 //--------------------------------------------------Aqui abajo server para el gameboy--------------------------------------------------------------------------------------------------------------
