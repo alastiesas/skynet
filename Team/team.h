@@ -28,6 +28,7 @@ double alpha = 0.5;//READ_ONLY
 bool new_trainer_in_ready = false;//READ_ONLY
 t_algorithm algorithm = FIFO;//READ_ONLY
 uint32_t retry_time = 15;//READ_ONLY
+uint32_t retry_count = 5;
 
 
 //de aca para abajo, revisar condiciones de carrera
@@ -1563,7 +1564,7 @@ void subscribe(queue_code queue_code) {
 
 
 
-	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time,log);
+	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time, retry_count, log);
 
 	t_package* package = serialize_suscripcion(id, queue_code);
 
@@ -1589,7 +1590,7 @@ void subscribe(queue_code queue_code) {
 
 int32_t send_message(char* ip, char* port, t_package* package) {
 
-	int32_t socket = connect_to_server(ip, port,retry_time, log);
+	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);
 	send_paquete(socket, package);
 
 	int32_t correlative_id = receive_ID(socket, log);
