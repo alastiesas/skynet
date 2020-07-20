@@ -70,6 +70,82 @@ void delete_dynamic_partition(t_list** deleted_messages) {
 	//eliminar la particion implica convertirla en disponible (no se hacen frees)
 }
 
+void delete_buddy_partition(t_list** deleted_messages) {
+	uint32_t message_id;
+
+	uint32_t victim_partition_number = get_partition_number_to_delete(&message_id);
+
+
+	t_partition* victim_partition = list_get(partitions, victim_partition_number);
+	list_add(*deleted_messages, (void*)message_id);
+	list_add(*deleted_messages, (void*)(victim_partition->queue_code));
+	uint32_t log_initial = victim_partition->initial_position - mem;
+	uint32_t log_final = victim_partition->final_position - mem;
+
+	victim_partition->available = true;
+
+	if (victim_partition_number < list_size(partitions))
+		compact_buddy_to_right(victim_partition_number);
+
+
+	if (victim_partition_number > 0)
+		compact_buddy_to_left(victim_partition_number);
+
+
+	if(min_partition_size > victim_partition->size)
+		victim_partition->size = min_partition_size;
+
+	log_info(obligatorio, "Se elimina la particion en posicion %d - %d", log_initial, log_final);
+	//eliminar la particion implica convertirla en disponible (no se hacen frees)
+}
+
+void compact_buddy_to_right(uint32_t partition_index){
+	uint32_t next_partition_index;
+	next_partition_index = partition_index;
+			while (next_partition_index + 1 <= list_size(partitions) && is_free_partition_by_index(next_partition_index + 1) && is_buddy(next_partition_index, next_partition_index + 1 )) {
+
+				merge_partitions(next_partition_index, next_partition_index + 1);
+
+			}
+
+}
+
+void compact_buddy_to_left(uint32_t partition_index){
+	uint32_t previous_partition_index;
+	previous_partition_index = partition_index;
+			while (previous_partition_index - 1 >= 0 && is_free_partition_by_index(previous_partition_index - 1) && is_buddy(previous_partition_index, previous_partition_index - 1 )) {
+
+				merge_partitions(previous_partition_index - 1, previous_partition_index - 1);
+
+				previous_partition_index --;
+
+			}
+
+}
+
+bool is_free_partition_by_index(uint32_t partition_index){
+	bool is_free = false;
+	t_partition* partition = list_get(partitions, partition_index);
+	is_free = partition->available;
+	return is_free;
+}
+
+bool is_buddy (uint32_t partition_index, uint32_t buddy_index){
+
+	t_partition* partition;
+	t_partition* buddy;
+	bool is_buddy = false;
+
+	partition = list_get(partitions, partition_index);
+	buddy = list_get(partitions, buddy_index);
+
+	if (partition->size == buddy->size && (int32_t)partition->initial_position == ((int32_t)buddy->initial_position ^ (int32_t)partition->size) && (int32_t)buddy->initial_position == ((int32_t)partition->initial_position ^ (int32_t)buddy->size)) {
+		is_buddy = true;
+	}
+
+	return is_buddy;
+}
+
 void delete_fixed_partition() {
 
 }
@@ -124,6 +200,21 @@ int32_t find_available_dynamic_partition(uint32_t size, t_list** deleted_message
 			}
 		}
 	} while (available_partition_number == -1);
+
+	return available_partition_number;
+}
+
+int32_t find_available_buddy_partition(uint32_t size, t_list** deleted_messages) {
+
+	int32_t available_partition_number;
+
+	do {
+
+		available_partition_number = get_available_partition_number_buddy(size);
+		if (available_partition_number == -2) {
+			delete_buddy_partition(deleted_messages);
+		}
+	} while (available_partition_number == -2);
 
 	return available_partition_number;
 }
@@ -241,7 +332,7 @@ uint32_t get_available_partition_number_buddy(uint32_t size) {
 			if (available_space) {
 				partition_number = create_and_search_partition_buddy(partition_size, -1);
 			}else {
-				// TODO liberar
+				partition_number = -2; //Codigo para indicar que debe liberar
 			}
 		}
 
@@ -260,7 +351,7 @@ uint32_t get_available_partition_number_buddy(uint32_t size) {
 				}
 
 			}else {
-				//TODO liberar
+				partition_number = -2; //Codigo para indicar que debe liberar
 			}
 		}
 	}
@@ -287,13 +378,14 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 					partition->size = new_size;
 					partition->final_position = partition->final_position - new_size;
 
-					t_partition* new_buddy_partition;
+					t_partition* new_buddy_partition = malloc(sizeof(t_partition));
 					new_buddy_partition->available = true;
 					new_buddy_partition->size = new_size;
 					new_buddy_partition->initial_position = partition->final_position;
 					new_buddy_partition->final_position = new_buddy_partition->initial_position + new_size;
 
 					list_add_in_index(partitions, i + 1, new_buddy_partition);
+
 				}
 				partition_number = i;
 			}
@@ -309,7 +401,7 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 				partition->size = new_size;
 				partition->final_position = partition->final_position - new_size;
 
-				t_partition* new_buddy_partition;
+				t_partition* new_buddy_partition = malloc(sizeof(t_partition));
 				new_buddy_partition->available = true;
 				new_buddy_partition->size = new_size;
 				new_buddy_partition->initial_position = partition->final_position;
@@ -388,13 +480,13 @@ uint32_t get_partition_number_to_delete(uint32_t* message_id) {
 	return partition_number;
 }
 
+
 void memory_init() {
 
 	mem = malloc(memory_size);
 	partitions = list_create();
 	//create_dynamic_partition(memory_size);
-	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
-		create_first_partition(mem, memory_size);
+	create_first_partition(mem, memory_size);
 }
 
 void create_first_partition(void* memory_initial_position, uint32_t memory_size){
