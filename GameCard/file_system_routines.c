@@ -347,12 +347,16 @@ t_list* find_available_blocks(uint32_t amount){
 	return available_blocks;
 }
 
-t_dictionary* void_to_dictionary(void* pokemon_file){
+t_dictionary* void_to_dictionary(void* pokemon_file, uint32_t total_size){
 
 	t_dictionary* dictionary = dictionary_create();
 
 
-	char** lines = string_split(pokemon_file, "\n");
+	char* test = string_new();
+	string_append(&test, void_to_string(pokemon_file, total_size));
+	string_append(&test, "\0");
+
+	char** lines = string_split(test, "\n");
 
 	void add_cofiguration(char *line) {
 		if (!string_starts_with(line, "#")) {
@@ -487,7 +491,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 			blocks_count++;
 		}
 		void* pokemon_void = open_file_blocks(blocks_list, size);
-		pokemon_dictionary = void_to_dictionary(pokemon_void); //pending understanding
+		pokemon_dictionary = void_to_dictionary(pokemon_void, size); //pending understanding
 	}
 
 	/*----------*/

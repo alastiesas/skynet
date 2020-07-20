@@ -150,7 +150,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		void* pokemon_file = open_file_blocks(blocks_list, size_metadata);
 		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
 		//CREAR DICCIONARIO DEL POKEMON_FILE
-		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file);
+		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file, size_metadata);
 
 		printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
 		printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
@@ -387,7 +387,7 @@ t_message_localized* process_get(t_message_get* message_get){
 			//abrir los bloques y crear diccionario
 			void* pokemon_file = open_file_blocks(blocks_list, size_metadata);
 			//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
-			t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file);
+			t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file, size_metadata);
 
 			printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
 			printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
