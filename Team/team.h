@@ -542,7 +542,9 @@ bool pokemon_is_needed_on_trainer(char* pokemon)
 
 bool pokemon_is_needed_on_pokemap(char* pokemon)
 {
+	sem_wait(&sem_poke_map);
 	return pokemon_is_needed(pokemon,"pokemap");
+	sem_post(&sem_poke_map);
 }
 
 void add_trainer_to_objective(t_trainer* trainer)
@@ -565,11 +567,9 @@ void initialize_global_objectives()
 	objectives_list = list_create();
 	sem_post(&sem_objectives_list);
 
-	//sem_wait(&sem_objectives_list);
 	sem_wait(&sem_state_lists);
 	list_iterate(new_list, &add_trainer_to_objective);
 	sem_post(&sem_state_lists);
-	//sem_post(&sem_objectives_list);
 
 }
 
