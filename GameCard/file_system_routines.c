@@ -452,81 +452,56 @@ char* location_to_string(t_location* location){
 	return location_string;
 }
 
-t_message_appeared* new_pokemon_routine(t_message_new* message_new) {
+t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
-	t_message_appeared* message_appeared;
+	char* pokemon_name = new_pokemon->pokemon_name;
 
-	if (!exists_pokemon(message_new->pokemon_name)) {
+	if (!exists_pokemon(pokemon_name)) {
 
-		create_pokemon(message_new->pokemon_name);
+		create_pokemon(pokemon_name);
 	}
 
-	char* pokemon_file = get_pokemon_file(message_new->pokemon_name);
-	t_config* pokemon_config = config_create(pokemon_file); //change object?
-	char* open;
+	t_config* pokemon_config = open_pokemon_file(pokemon_name);
 
-	do {
-		open = config_get_string_value(pokemon_config, "OPEN");
-		if (strcmp(open, "Y") == 0) {
-			config_destroy(pokemon_config);
-			sleep(TIEMPO_RETARDO_OPERACION); //change name?
-		}
-	} while (strcmp(open, "Y") == 0);
+	/*----------*/
 
-	config_set_value(pokemon_config, "OPEN", "Y");
-	config_save(pokemon_config);
+	/*pending definition*/
 
-	/*contemplar si no hay bloques*/
-	/*-----------------------------------*/
-
-	char* blocks = config_get_string_value(pokemon_config, "BLOCKS");
+	char* pokemon_blocks = config_get_string_value(pokemon_config, "BLOCKS");
 	uint32_t size = config_get_int_value(pokemon_config, "SIZE");
-	char** blocks_array = string_get_string_as_array(blocks);
 
-	config_destroy(pokemon_config);
 
 	t_list* blocks_list = list_create();
 	t_list* blocks_list_int = list_create();
 	uint32_t blocks_count = 0;
-	while (blocks_array[blocks_count] != NULL) {
-		list_add(blocks_list, blocks_array[blocks_count]);
-		list_add(blocks_list_int, atoi(blocks_array[blocks_count]));
-		blocks_count++;
-	}
+	char** blocks_array;
 
-	void* pokemon_void = open_file_blocks(blocks_list, size);
-	t_dictionary* pokemon_dictionary = void_to_dictionary(pokemon_file); //pending understanding
-
-	/*-----------------------------------*/
-
-	char* key = string_new();
-	char* x = string_itoa(message_new->location->position->x);
-	char* y = string_itoa(message_new->location->position->y);
-
-	char* key = (char*) malloc(strlen(x) + 1 + strlen(y));
-	strcpy(key, x);
-	strcat(key, "-");
-	strcpy(key, y);
-	free(x);
-	free(y);
-
-	char* new_value_str;
-	if (dictionary_has_key(pokemon_dictionary, key)) {
-		char * value_str = dictionary_get(pokemon_dictionary, key);
-		uint32_t value = atoi(value_str);
-		value += message_new->location->amount;
-		new_value_str = string_itoa(value);
-		free(value_str);
+	t_dictionary* pokemon_dictionary;
+	if (size == 0) {
+		pokemon_dictionary = dictionary_create();
 	} else {
-		new_value_str = (char*) malloc(
-				strlen(key) + 1 + strlen(message_new->location->amount));
-		strcpy(new_value_str, key);
-		strcat(new_value_str, "=");
-		strcat(new_value_str, message_new->location->amount);
+		char** blocks_array = string_get_string_as_array(pokemon_blocks);
+		while (blocks_array[blocks_count] != NULL) {
+			list_add(blocks_list, blocks_array[blocks_count]);
+			list_add(blocks_list_int, atoi(blocks_array[blocks_count]));
+			blocks_count++;
+		}
+		void* pokemon_void = open_file_blocks(blocks_list, size);
+		pokemon_dictionary = void_to_dictionary(pokemon_void); //pending understanding
 	}
 
-	dictionary_put(pokemon_dictionary, key, new_value_str);
-	free(new_value_str);
+	/*----------*/
+
+	char* key = get_key(new_pokemon->location->position->x, new_pokemon->location->position->y);
+	char* previous_value = get_value(pokemon_dictionary, key);
+	uint32_t amount = atoi(previous_value) + new_pokemon->location->amount;
+	char* value = string_itoa(amount);
+
+	dictionary_put(pokemon_dictionary, key, value);
+
+	free(key);
+
+	/*----------*/
 
 	uint32_t new_size;
 	void* new_pokemon_file = dictionary_to_void(pokemon_dictionary, &new_size);
@@ -537,14 +512,13 @@ t_message_appeared* new_pokemon_routine(t_message_new* message_new) {
 	/*tomar bloques disponibles del bitmap */
 	/*-----------------------------------*/
 
-	if (new_blocks_count != blocks_count) {
-		//sacar algun bloque al azar de la lista y actualizar el bitmap y el metadabata.bin
-		uint32_t diff = blocks_count - new_blocks_count;
-		for (uint32_t c = 0; c < diff; c++) {
-			uint32_t block_number = list_remove(blocks_list_int, 0);
-			//ACTUALIZO BITMAP
-			//ACA VA UN MUTEX-- TODO
-			bitarray_clean_bit(bitmap, block_number);
+	if (new_blocks_count > blocks_count) {
+		uint32_t diff = new_blocks_count - blocks_count;
+		t_list* available_blocks = find_available_blocks(diff);
+		for(int i = 0; i < list_size(available_blocks); i++) {
+			uint32_t block_number = list_get(available_blocks, i);
+			bitarray_set_bit(bitmap, block_number);
+			list_add(blocks_list_int, block_number);
 			msync(bmap, blocks / 8, MS_SYNC);
 		}
 	}
@@ -553,7 +527,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* message_new) {
 	/*-----------------------------------*/
 
 	write_file_blocks((void*) new_pokemon_file, blocks_list_int, new_size,
-			message_new->pokemon_name);
+			new_pokemon->pokemon_name);
 
 	char* blocks_to_write = string_new();
 	uint32_t current_block = 1;
@@ -570,18 +544,22 @@ t_message_appeared* new_pokemon_routine(t_message_new* message_new) {
 	list_iterate(blocks_list_int, &list_to_string);
 	string_append(&blocks_to_write, "]");
 
-	sleep(TIEMPO_RETARDO_OPERACION);
+	//sleep(TIEMPO_DE_REINTENTO_OPERACION);
 	config_set_value(pokemon_config, "BLOCKS", blocks_to_write);
 	config_set_value(pokemon_config, "SIZE", new_size_to_metadata);
 	config_set_value(pokemon_config, "OPEN", "N");
 
 	config_save(pokemon_config);
-	fclose(pokemon_config);
+	//fclose(pokemon_config);
+
+	config_destroy(pokemon_config);
 
 	free(new_size_to_metadata);
 	free(blocks_to_write);
 
-	destroy_message_new(message_new);
+	t_message_appeared* message_appeared = create_message_appeared_long(new_pokemon->id, new_pokemon->pokemon_name, new_pokemon->location->position->x, new_pokemon->location->position->y);
+
+	destroy_message_new(new_pokemon);
 
 	return message_appeared;
 }
@@ -654,18 +632,63 @@ void create_pokemon_file(char* pokemon_name) {
 	file = fopen(pokemon_file, "w");
 
 	fprintf(file, "DIRECTORY=N\n");
-	fprintf(file, "SIZE=\n");
-	fprintf(file, "BLOCKS=\n");
+	fprintf(file, "SIZE=0\n");
+	fprintf(file, "BLOCKS=[]\n");
 	fprintf(file, "OPEN=N\n");
 
-	fclose(file);
-	free(file);
-
+	fclose(file); //implicit free(file)
 	free(pokemon_file);
 }
 
-void open_pokemon_file() {
+t_config* open_pokemon_file(char* pokemon_name) {
 
+	char* pokemon_file = get_pokemon_file(pokemon_name);
+	t_config* pokemon_config; //change object?
+	char* open;
+
+	do {
+		pokemon_config = config_create(pokemon_file);
+		open = config_get_string_value(pokemon_config, "OPEN");
+		if (strcmp(open, "Y") == 0) {
+			config_destroy(pokemon_config);
+			//not working sleep(TIEMPO_DE_REINTENTO_OPERACION); //change name?
+		}
+	} while (strcmp(open, "Y") == 0);
+
+	config_set_value(pokemon_config, "OPEN", "Y");
+	config_save(pokemon_config);
+
+	free(pokemon_file);
+
+	return pokemon_config;
+}
+
+char* get_key(uint32_t position_x, uint32_t position_y) {
+
+	char* x = string_itoa(position_x);
+	char* y = string_itoa(position_y);
+	char* key = (char*) malloc(strlen(x) + 1 + strlen(y));
+	strcpy(key, x);
+	strcat(key, "-");
+	strcat(key, y);
+
+	free(x);
+	free(y);
+
+	return key;
+}
+
+char* get_value(t_dictionary* dictionary, char* key) {
+
+	char* value;
+
+	if (dictionary_has_key(dictionary, key)) {
+		value = dictionary_get(dictionary, key);
+	} else {
+		value = "0";
+	}
+
+	return value;
 }
 
 void update_pokemon_file() {
