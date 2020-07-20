@@ -46,7 +46,7 @@ int main(void) {
 	config_init();
 
 	init_fs();
-
+/*
 	t_message_new* message_new_1 = create_message_new_long("example1", 10, 10,
 			15);
 	new_pokemon_routine(message_new_1);
@@ -66,26 +66,26 @@ int main(void) {
 	t_message_new* message_new_5 = create_message_new_long("example2", 15, 84,
 			2);
 	new_pokemon_routine(message_new_5);
-	t_message_new* message_new_1 = create_message_new_long("example1", 10, 7,
+	t_message_new* message_new_11 = create_message_new_long("example1", 10, 7,
 				15);
-		new_pokemon_routine(message_new_1);
+		new_pokemon_routine(message_new_11);
 
-		t_message_new* message_new_2 = create_message_new_long("example1", 10, 10,
+		t_message_new* message_new_21 = create_message_new_long("example1", 10, 10,
 				15);
-		new_pokemon_routine(message_new_2);
+		new_pokemon_routine(message_new_21);
 
-		t_message_new* message_new_3 = create_message_new_long("example2", 8, 95,
+		t_message_new* message_new_31 = create_message_new_long("example2", 8, 95,
 					15);
-			new_pokemon_routine(message_new_3);
+			new_pokemon_routine(message_new_31);
 
-		t_message_new* message_new_4 = create_message_new_long("example3", 73, 20,
+		t_message_new* message_new_41 = create_message_new_long("example3", 73, 20,
 				30);
-		new_pokemon_routine(message_new_4);
+		new_pokemon_routine(message_new_41);
 
-		t_message_new* message_new_5 = create_message_new_long("example2", 68, 84,
+		t_message_new* message_new_51 = create_message_new_long("example2", 68, 84,
 				2);
-		new_pokemon_routine(message_new_5);
-
+		new_pokemon_routine(message_new_51);
+*/
 	// initiliaze_file_system();
 	t_location* location = malloc(sizeof(t_location));
 	location->position = malloc(sizeof(t_position));
@@ -98,6 +98,8 @@ int main(void) {
 	pthread_mutex_init(&mutex_pkmetadata, NULL);
 	//pthread_mutex_init(&semaforo_del_diccionario_de_semaforos_JAJAJA, NULL);
 
+
+	/*
 	//create_pokemon_directory("Snorlax");
 	printf("aca estamos bien3\n");
 	t_message_catch* msg_catch = create_message_catch_long("Snorlax", 3,2);
@@ -106,11 +108,11 @@ int main(void) {
 
 	t_message_get* message_get = create_message_get("Snorlax");
 	t_message_localized* message_localized = process_get(message_get);
+*/
 
 
 
 
-	/*
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);
 	pthread_create(&catch_thread, NULL, (void*) catch_function, NULL);
@@ -121,7 +123,7 @@ int main(void) {
 	pthread_join(new_thread, NULL);
 	pthread_join(catch_thread, NULL);
 	pthread_join(get_thread, NULL);
-*/
+
 	return EXIT_SUCCESS;
 }
 
