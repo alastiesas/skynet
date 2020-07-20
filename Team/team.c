@@ -40,35 +40,40 @@ int main(void)
 	initialize_global_objectives();
 
 	t_trainer* trainersjf = list_get(block_list, 0);
-	trainersjf->burst_estimate = 20;
+	if(trainersjf != NULL)
+		trainersjf->burst_estimate = 20;
 
 	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
 
 	//FIN DEBUG DEADLOCKS
 
-/*
+//*
 	t_position* test_position_1 = malloc(sizeof(t_position));
-	test_position_1->x = 10;
-	test_position_1->y = 10;
-	add_to_poke_map("Slackoth",(void*) test_position_1);
+	test_position_1->x = 1;
+	test_position_1->y = 1;
+	add_to_poke_map("uno",(void*) test_position_1);
 
 	t_position* test_position_2 = malloc(sizeof(t_position));
-	test_position_2->x = 3;
-	test_position_2->y = 8;
-	add_to_poke_map("Bulbasaur",(void*) test_position_2);
+	test_position_2->x = 2;
+	test_position_2->y = 2;
+	add_to_poke_map("dos",(void*) test_position_2);
 
 	t_position* test_position_3 = malloc(sizeof(t_position));
 	test_position_3->x = 6;
-	test_position_3->y = 6;
-	add_to_poke_map("Bulbasaur",(void*) test_position_3);
+	test_position_3->y = 7;
+	add_to_poke_map("tres",(void*) test_position_3);
 
+	t_position* test_position_4 = malloc(sizeof(t_position));
+	test_position_4->x = 13;
+	test_position_4->y = 13;
+	add_to_poke_map("cuatro",(void*) test_position_4);
 	//*/
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
-//	subscribe(OPERATION_APPEARED);
-//	subscribe(OPERATION_LOCALIZED);
-//	subscribe(OPERATION_CAUGHT);
-//	sleep(5);
+	subscribe(OPERATION_APPEARED);
+	subscribe(OPERATION_LOCALIZED);
+	subscribe(OPERATION_CAUGHT);
+	sleep(5);
 
 
 	pthread_t long_tid;

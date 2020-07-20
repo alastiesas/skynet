@@ -21,6 +21,10 @@ bool probando = true;
 //configuracion
 t_config* config;
 t_log* log;
+uint32_t team_id;
+char* ip_broker;
+char* port_broker;
+
 uint32_t time_delay = 1;//READ_ONLY
 uint32_t quantum = 2;//READ_ONLY
 uint32_t initial_estimate = 0;//READ_ONLY
@@ -71,12 +75,12 @@ void initialize_global_config();
 void initialize_semaphores();
 //entrenadores y objertivos
 t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_objectives, char* config_pokemons);//inicializa un entrenador (pthread) en new_list
-void initialize_trainers();//inicializa todos los entrenadores del conig
+void initialize_trainers();//inicializa los entrenadores del conig
 void initialize_global_objectives();
 //FIN funciones iniciales
 
 //funciones de entrenadores
-t_list* add_trainer_to_objective(t_list* list_global_objectives, t_trainer* trainer);
+void add_trainer_to_objective(t_trainer* trainer);
 void* trainer_thread(t_callback* callback_thread);
 void trainer_assign_catch(char* pokemon, t_list* positions);
 t_trainer* find_trainer_for_catch(t_position* position);
@@ -86,14 +90,15 @@ void trainer_assign_trade(t_trainer* trainer, char* pokemon, uint32_t target_id)
 //FIN funciones de entrenadores
 
 //objetivos
-void add_caught(t_list* list, char* pokemon);
 bool success_global_objective();
 bool pokemon_is_needed(char* pokemon,char* channel);
 bool pokemon_is_needed_on_pokemap(char* pokemon);
 bool pokemon_is_needed_on_trainer(char* pokemon);
 //Pasar a diccionario ?
-void add_catching(t_list* list, char* pokemon);
-void sub_catching(t_list* list, char* pokemon);
+void add_objective(char* pokemon);
+void add_caught(char* pokemon);
+void add_catching(char* pokemon);
+void sub_catching(char* pokemon);
 //FIN objetivos
 
 //transiciones
@@ -162,6 +167,11 @@ void debug_message_list();
 
 
 void initialize_global_config() {
+
+	team_id = config_get_int_value(config, "ID");
+
+	ip_broker = config_get_string_value(config, "IP_BROKER");
+	port_broker = config_get_string_value(config, "PUERTO_BROKER");
 
 	char* config_algorithm = config_get_string_value(config, "ALGORITMO_PLANIFICACION");
 	algorithm = read_algorithm(config_algorithm);
@@ -313,13 +323,6 @@ void callback_sjfs(t_trainer* trainer) {
 }
 void callback_sjfc(t_trainer* trainer) {
 	printf("callback SJF-CD[%d], estimado: %d, posible desalojo: %d\n", algorithm, trainer_burst_estimate(trainer), new_trainer_in_ready);
-	//TODO FALTA DESALOJO
-	if(probando) {
-		t_trainer* trainer_test = list_get(ready_list, 0);
-		trainer_test->burst_estimate = 2;
-		new_trainer_in_ready = true;
-		probando = false;
-	}//TODO BORAR
 
 	switch(trainer->action) {
 		case FREE:
@@ -407,7 +410,6 @@ t_trainer* initialize_trainer(uint32_t id, char* config_position, char* onfig_ob
 			callback_thread->callback = &callback_fifo;
 			break;
 	}
-	//TODO ACA LEER DEL CONFIG!
 	pthread_create(&(trainer->tid), NULL, trainer_thread, callback_thread);
 
 	return trainer;
@@ -434,25 +436,22 @@ void initialize_trainers()
 
 		i++;
 	}
-	//liberar memoria (todos los char**)
+	//liberar memoria (los char**)
 	//free_string_list(positions_config);
 	//free_string_list(objectives_config);
 	//free_string_list(pokemons_config);
 
 	printf("TODOS LOS ENTRENADORES HAN SIDO CONFIGURADOS\n");
 
-	//*
-	t_trainer* trainer = list_get(block_list, 0);//TODO BORRAR
-	trainer->burst_estimate = 5;//TODO BORRAR
-	//*/
 }
 
 
 
 
-void add_objective(t_list* list, char* pokemon)
+void add_objective(char* pokemon)
 {
-	t_objective* objective = find_key(list, pokemon);
+	sem_wait(&sem_objectives_list);
+	t_objective* objective = find_key(objectives_list, pokemon);
 	if(objective != NULL)
 		objective->count++;
 	else{
@@ -461,42 +460,48 @@ void add_objective(t_list* list, char* pokemon)
 		objective->count = 1;
 		objective->caught = 0;
 		objective->catching = 0;
-		list_add(list,(void*)objective);
+		list_add(objectives_list,(void*)objective);
 	}
+	sem_post(&sem_objectives_list);
 }
 
-void add_caught(t_list* list, char* pokemon)
+void add_caught(char* pokemon)
 {
-	t_objective* objective = find_key(list, pokemon);
+	sem_wait(&sem_objectives_list);
+	t_objective* objective = find_key(objectives_list, pokemon);
 	if(objective != NULL){
 		objective->caught++;
 		if(objective->catching>0)
 			objective->catching--;
 	}
 	else
-		printf("Lo rompiste todo, maldito idiota\n");
+		printf("Lo rompiste todo, maldito idiota add_caught\n");
+	sem_post(&sem_objectives_list);
 }
 
-void add_catching(t_list* list, char* pokemon)
+void add_catching(char* pokemon)
 {
-	t_objective* objective = find_key(list, pokemon);
+	t_objective* objective = find_key(objectives_list, pokemon);
 	if(objective != NULL){
 		objective->catching++;
 	}
 	else
-		printf("Lo rompiste todo, maldito idiota\n");
+		printf("Lo rompiste todo, maldito idiota add_catching\n");
 }
 
-void sub_catching(t_list* list, char* pokemon)
+void sub_catching(char* pokemon)
 {
-	t_objective* objective = find_key(list, pokemon);
+	sem_wait(&sem_objectives_list);
+	t_objective* objective = find_key(objectives_list, pokemon);
 	printf("ENTRO EN EL SUB CATCHING\n");
 	if(objective != NULL){
 		if(objective->catching>0)
 			objective->catching--;
 	}
 	else
-		printf("Lo rompiste todo, maldito idiota\n");
+		printf("Lo rompiste todo, maldito idiota sub_catching\n");
+
+	sem_post(&sem_objectives_list);
 }
 
 
@@ -540,31 +545,31 @@ bool pokemon_is_needed_on_pokemap(char* pokemon)
 	return pokemon_is_needed(pokemon,"pokemap");
 }
 
-t_list* add_trainer_to_objective(t_list* list_global_objectives,t_trainer* trainer)
+void add_trainer_to_objective(t_trainer* trainer)
 {
 	int i = 0;
 	while(trainer->objectives[i]!= NULL){
-		add_objective(list_global_objectives, trainer->objectives[i]);
+		add_objective(trainer->objectives[i]);
 		i++;
 	}
 	i = 0;
 	while(trainer->pokemons[i]!= NULL){
-		add_caught(list_global_objectives, trainer->pokemons[i]);
+		add_caught(trainer->pokemons[i]);
 		i++;
 	}
-	return list_global_objectives;
 }
-
 
 void initialize_global_objectives()
 {
-	t_list* list_global_objectives = list_create();
-
 	sem_wait(&sem_objectives_list);
-	sem_wait(&sem_state_lists);
-	objectives_list = (t_list*) list_fold(new_list,(void*)list_global_objectives,(void*)&add_trainer_to_objective);
-	sem_post(&sem_state_lists);
+	objectives_list = list_create();
 	sem_post(&sem_objectives_list);
+
+	//sem_wait(&sem_objectives_list);
+	sem_wait(&sem_state_lists);
+	list_iterate(new_list, &add_trainer_to_objective);
+	sem_post(&sem_state_lists);
+	//sem_post(&sem_objectives_list);
 
 }
 
@@ -719,11 +724,13 @@ void long_term_scheduler(){
 	//revisar size ready
 	sem_wait(&sem_state_lists);
 	uint32_t size_ready = list_size(ready_list);
+	sem_post(&sem_state_lists);
 
 	sem_wait(&sem_poke_map);
 	dictionary_iterator(poke_map, &trainer_assign_catch);
 	sem_post(&sem_poke_map);
 
+	sem_wait(&sem_state_lists);
 	if(size_ready == list_size(ready_list)) {
 		//aumento el size del ready? SINO CORRO DEAD LOCK
 		deadlock_priority++;
@@ -799,7 +806,7 @@ void deadlock_handler(){
 	assign_trade_couples(waiting_table,held_table, false);
 
 }
-//printf("ROMPE EN ");//DEBUG TODO sacar
+
 void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 	//tomo los entrenadores que esten interbloqueados
 	sem_wait(&sem_state_lists);
@@ -1124,7 +1131,6 @@ void trainer_assign_move(t_trainer* trainer, char* pokemon, t_position* position
 {
 	//trainer_assign_move asigna el target y envía el trainer a ready
 	printf("\nse asignara al entrenador[%d] a atrapar al pokemon %s, en la posicion (%d, %d)\n", trainer->id, pokemon, position->x, position->y);
-	//liberar target?! TODO
 	trainer->action = MOVE;
 	trainer_set_target(trainer, create_target(pokemon, position, target_id, catching));
 	debug_trainer(trainer);
@@ -1150,7 +1156,7 @@ void trainer_assign_catch(char* pokemon, t_list* positions)
 		t_trainer* selected_trainer = find_trainer_for_catch(position);
 
 		if(selected_trainer != NULL) {
-			add_catching(objectives_list, pokemon);
+			add_catching(pokemon);
 
 
 
@@ -1406,19 +1412,21 @@ void* sender_thread()
 		t_package* package = serialize_catch(catch);
 		destroy_message_catch(catch);
 		//TODO ESTO DEBE IR EN OTRO HILO, CREAR NUEVO HILO PARA CADA SEND_MESSAGE
-		int32_t correlative_id = send_message("127.0.0.1", "6001", package);
+		int32_t correlative_id = send_message(ip_broker, port_broker, package);//send_message ya libera el paquete
+		printf("ENVIAMOS MENSAJE AL BROKER ID %d\n",correlative_id);
 
 		printf("salio para el broker\n");
 
-		//printf("limpiando message team \n");
-		//destroy_message_team(message);
-		//printf("ya se limpio message team \n");
-		//char str_correlative_id = malloc(6);
 		char str_correlative_id[6];
 		sprintf(str_correlative_id,"%d",correlative_id);
 		sem_wait(&sem_messages_recieve_list);
 		dictionary_put(message_response,str_correlative_id,message->trainer);
 		sem_post(&sem_messages_recieve_list);
+
+		//Liberar el mensaje removido de la lista de mensajes
+		printf("limpiando message team \n");
+		destroy_message_team(message);
+		printf("ya se limpio message team \n");
 
 	}
 
@@ -1505,24 +1513,14 @@ void process_message(serve_thread_args* args) {
 			t_trainer* trainer = (t_trainer*) dictionary_remove(message_response, str_correlative_id);
 			debug_trainer(trainer);
 			if(((t_message_caught*)(message))->result){
-				//ACA ROMPE NOSE POR QUE?? REVISAR ADD_POKEMON QUIZAS
-				printf("ROMPE ANTES DE ADD_POKEMON\n");
 				add_pokemon(trainer, trainer->target->pokemon);
-				printf("ROMPE ANTES DE ADD_CAUGHT\n");
-				add_caught(objectives_list, trainer->target->pokemon);
-				//OBJETVIO DEL ENTRANDOR ?
-				//OBJETIVO GLOBAL??
-				// SI SE CUMPLE ENTRENADOR PASA A EXIT
-				// SINO QUEDA EN FREE
+				add_caught(trainer->target->pokemon);
 				debug_trainer(trainer);
 				if(trainer_success_objective(trainer) == 1){
 					printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 					trainer->action = FINISH;
-//TODO nos falta poder identificarlo dentro de la lista de blocked! (agregar ID y nombre (opcional) al trainer)
-//TODO DEBE pasar a EXIT
 					transition_by_id(trainer->id, block_list, exit_list);
-					//EL MENSAJE DEBE ELIMINARSE, HACER FREE O ALGO,
-//TODO como paso a exit tambient enemos verificar los objetivos globales para saber si el team termino
+					//TODO EL MENSAJE DEBE ELIMINARSE, HACER FREE O ALGO,
 					if(success_global_objective()) {
 						printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
 					} else {
@@ -1536,7 +1534,7 @@ void process_message(serve_thread_args* args) {
 			} else {
 				trainer->action = FREE;
 			}
-			sub_catching(objectives_list, trainer->target->pokemon);
+			sub_catching(trainer->target->pokemon);
 			trainer->target->catching = 0;
 			//free(trainer->target->position);
 			//trainer->target->position = NULL;
@@ -1558,15 +1556,12 @@ void process_message(serve_thread_args* args) {
 
 void subscribe(queue_code queue_code) {
 	printf("COD OPERATION %d\n", queue_code);
-	char* ip_broker = config_get_string_value(config, "IP_BROKER");
-	char* port_broker = config_get_string_value(config, "PUERTO_BROKER");
-	uint32_t id = config_get_int_value(config, "ID");
 
 
 
 	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time, retry_count, log);
 
-	t_package* package = serialize_suscripcion(id, queue_code);
+	t_package* package = serialize_suscripcion(team_id, queue_code);
 
 	send_paquete(socket, package);
 	if (receive_ACK(socket, log) == -1) {
@@ -1591,10 +1586,9 @@ void subscribe(queue_code queue_code) {
 int32_t send_message(char* ip, char* port, t_package* package) {
 
 	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);
-	send_paquete(socket, package);
+	send_paquete(socket, package);//ya libera el paquete
 
 	int32_t correlative_id = receive_ID(socket, log);
-	printf("ENVIAMOS MENSAJE AL BROKER ID %d\n",correlative_id);
 	send_ACK(socket, log);
 	return correlative_id;
 }
@@ -1608,7 +1602,6 @@ void destroy_message_team(t_message_team* message){
 void catch(t_trainer* trainer){
 	pthread_t tid;
 	sleep(time_delay);
-	printf("acallego y dspues rompio\n"); //TODO ACA ROMPE
 	pthread_create(&tid, NULL, &message_list_add_catch, trainer);
 	trainer->action = CATCHING;
 	trainer->burst++;
