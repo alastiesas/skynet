@@ -84,12 +84,32 @@ void delete_buddy_partition(t_list** deleted_messages) {
 
 	victim_partition->available = true;
 
-	if (victim_partition_number < list_size(partitions))
-		compact_buddy_to_right(victim_partition_number);
+	int32_t times_compacted_right;
+	int32_t times_compacted_left;
+	bool result = false;
+
+	do {
+		times_compacted_right = 0;
+		times_compacted_left = 0;
+
+		if (victim_partition_number < list_size(partitions) - 1){
+			times_compacted_right = compact_buddy_to_right(victim_partition_number);
+		}
 
 
-	if (victim_partition_number > 0)
-		compact_buddy_to_left(victim_partition_number);
+		if (victim_partition_number > 0){
+			times_compacted_left = compact_buddy_to_left(victim_partition_number);
+			victim_partition_number -= times_compacted_left;
+		}
+
+		if (times_compacted_right > 0 || times_compacted_left > 0) {
+			result = true;
+		}else {
+			result = false;
+		}
+
+	} while (result);
+
 
 
 	if(min_partition_size > victim_partition->size)
@@ -99,38 +119,42 @@ void delete_buddy_partition(t_list** deleted_messages) {
 	//eliminar la particion implica convertirla en disponible (no se hacen frees)
 }
 
-void compact_buddy_to_right(uint32_t partition_index){
-	uint32_t next_partition_index;
+int32_t compact_buddy_to_right(int32_t partition_index){
+	int32_t next_partition_index;
 	next_partition_index = partition_index;
+	int32_t times_compacted = 0;
 			while (next_partition_index + 1 <= list_size(partitions) && is_free_partition_by_index(next_partition_index + 1) && is_buddy(next_partition_index, next_partition_index + 1 )) {
 
 				merge_partitions(next_partition_index, next_partition_index + 1);
 
+				times_compacted ++;
 			}
-
+	return times_compacted;
 }
 
-void compact_buddy_to_left(uint32_t partition_index){
-	uint32_t previous_partition_index;
+int32_t compact_buddy_to_left(int32_t partition_index){
+	int32_t previous_partition_index;
 	previous_partition_index = partition_index;
+	int32_t times_compacted = 0;
 			while (previous_partition_index - 1 >= 0 && is_free_partition_by_index(previous_partition_index - 1) && is_buddy(previous_partition_index, previous_partition_index - 1 )) {
 
-				merge_partitions(previous_partition_index - 1, previous_partition_index - 1);
+				merge_partitions(previous_partition_index -1, previous_partition_index);
 
 				previous_partition_index --;
 
+				times_compacted ++;
 			}
-
+	return times_compacted;
 }
 
-bool is_free_partition_by_index(uint32_t partition_index){
+bool is_free_partition_by_index(int32_t partition_index){
 	bool is_free = false;
 	t_partition* partition = list_get(partitions, partition_index);
 	is_free = partition->available;
 	return is_free;
 }
 
-bool is_buddy (uint32_t partition_index, uint32_t buddy_index){
+bool is_buddy (int32_t partition_index, int32_t buddy_index){
 
 	t_partition* partition;
 	t_partition* buddy;
@@ -139,7 +163,7 @@ bool is_buddy (uint32_t partition_index, uint32_t buddy_index){
 	partition = list_get(partitions, partition_index);
 	buddy = list_get(partitions, buddy_index);
 
-	if (partition->size == buddy->size && (int32_t)partition->initial_position == ((int32_t)buddy->initial_position ^ (int32_t)partition->size) && (int32_t)buddy->initial_position == ((int32_t)partition->initial_position ^ (int32_t)buddy->size)) {
+	if (get_size_partition_by_index(partition_index) == get_size_partition_by_index(buddy_index) && (int32_t)(partition->initial_position - mem) == ((int32_t)(buddy->initial_position - mem) ^ (int32_t)get_size_partition_by_index(partition_index)) && (int32_t)(buddy->initial_position - mem) == ((int32_t)(partition->initial_position - mem)^ (int32_t)get_size_partition_by_index(buddy_index))) {
 		is_buddy = true;
 	}
 
@@ -318,9 +342,9 @@ uint32_t get_available_partition_number_buddy(uint32_t size) {
 
 			partition = list_get(partitions, i);
 			if (partition->available == true){
-				if (partition->size >= partition_size) {
+				if (get_size_partition_by_index(i) >= partition_size) {
 					available_space = true;
-					if (partition->size == partition_size) {
+					if (get_size_partition_by_index(i) == partition_size) {
 						partition_finded = true;
 						partition_number = i;
 					}
@@ -338,13 +362,13 @@ uint32_t get_available_partition_number_buddy(uint32_t size) {
 
 	} else if (strcmp(free_partition_algorithm, "FF") == 0) {
 
-		for (int i = 0; partition_number == -1 && i < list_size(partitions);
+		for (int i = 0; (partition_number == -2 || partition_number == -1) && i < list_size(partitions);
 				i++) {
 
 			partition = list_get(partitions, i);
-			if (partition->available == true && partition->size >= size) {
+			if (partition->available == true && get_size_partition_by_index(i) >= size) {
 
-				if (partition->size == partition_size) {
+				if (get_size_partition_by_index(i) == partition_size) {
 					partition_number = i;
 				}else {
 					partition_number = create_and_search_partition_buddy(partition_size, i);
@@ -359,6 +383,12 @@ uint32_t get_available_partition_number_buddy(uint32_t size) {
 	return partition_number;
 }
 
+int32_t get_size_partition_by_index(int32_t index_partition){
+	t_partition* partition = list_get(partitions, index_partition);
+
+	return partition->final_position - partition->initial_position;
+}
+
 int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partition_location){
 
 	t_partition* partition;
@@ -370,11 +400,11 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 		for (int i = 0;i < list_size(partitions); i++) {
 			partition = list_get(partitions, i);
 
-			if (partition->size >= searched_size) {
-				new_size = partition->size;
-				while (new_size > searched_size) {
+			if (get_size_partition_by_index(i) >= searched_size) {
+				new_size = get_size_partition_by_index(i);
+				while (new_size > searched_size && new_size >= min_partition_size) {
 					partition = list_get(partitions, i);
-					new_size = partition->size/2;
+					new_size = get_size_partition_by_index(i)/2;
 					partition->size = new_size;
 					partition->final_position = partition->final_position - new_size;
 
@@ -393,9 +423,9 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 	}else {
 		partition = list_get(partitions, partition_location);
 
-		if (partition->size >= searched_size) {
+		if (get_size_partition_by_index(partition_location) >= searched_size) {
 			new_size = partition->size;
-			while (new_size > searched_size) {
+			while (new_size > searched_size && new_size >= min_partition_size) {
 				partition = list_get(partitions, partition_location);
 				new_size = partition->size/2;
 				partition->size = new_size;

@@ -308,30 +308,38 @@ void store_message_buddy(uint32_t message_id, uint32_t size_message, void* messa
 		free_partition_index = find_available_buddy_partition(min_partition_size, &deleted_messages);
 	else
 		free_partition_index = find_available_buddy_partition(size_message, &deleted_messages);
-	if(free_partition_index != -1){
+	if(free_partition_index != -2){
 
 		//actualizar la posicion de la particion nueva, y agregar a la lista
 		t_partition* free_partition = (t_partition*)list_get(partitions, free_partition_index);
 		new_partition->initial_position = free_partition->initial_position;
 
-		if(size_message < min_partition_size){
-			new_partition->final_position = new_partition->initial_position + min_partition_size;
-			free_partition->size = free_partition->size - min_partition_size;
-		}else{
-			new_partition->final_position = new_partition->initial_position + new_partition->size;
-			free_partition->size = free_partition->size - new_partition->size;
-		}
+		new_partition->final_position = free_partition->final_position;
 
-		free_partition->initial_position = new_partition->final_position;
+		free_partition->ID_message = message_id;
+		free_partition->available = false;
+		free_partition->size = size_message;
+		free_partition->queue_code = queue_code;
+		free_partition->lru = 0; //para que no quede sin inicializar, pero en update lru se setea
+
+//		if(size_message < min_partition_size){
+//			new_partition->final_position = new_partition->initial_position + min_partition_size;
+//			free_partition->size = free_partition->size - min_partition_size;
+//		}else{
+//			new_partition->final_position = new_partition->initial_position + new_partition->size;
+//			free_partition->size = free_partition->size - new_partition->size;
+//		}
+//
+//		free_partition->initial_position = new_partition->final_position;
 
 		//TODO actualizar lru's antes de agregar a la lista
-		list_add_in_index(partitions, free_partition_index, new_partition);
+//		list_add_in_index(partitions, free_partition_index, new_partition);
 
 		//guardar el message_data en la particion
-		memmove(new_partition->initial_position, message_data, size_message);
+		memmove(free_partition->initial_position, message_data, size_message);
 
-		update_LRU(new_partition);
-		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", new_partition->initial_position - mem, new_partition->final_position - mem);
+		update_LRU(free_partition);
+		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", free_partition->initial_position - mem, free_partition->final_position - mem);
 	}
 	else{
 		log_error(logger, "No hay particion disponible");

@@ -120,8 +120,8 @@ void dump_cache(void){
 		string_append(&dump, num);
 		free(num);
 		string_append(&dump, ": ");
-		char* initial = string_from_format("%p", partition->initial_position);
-		char* final = string_from_format("%p", partition->final_position);
+		char* initial = string_from_format("%p", partition->initial_position - mem);
+		char* final = string_from_format("%p", partition->final_position - mem);
 		string_append(&dump, initial);
 		string_append(&dump, " - ");
 		string_append(&dump, final);
@@ -179,7 +179,7 @@ void dump_cache(void){
 	txt_close_file(file_dump);
 
 	free(dump);
-	printf("dump.txt creado\n");
+	log_info(logger, "dump.txt creado\n");
 	log_info(obligatorio, "Dump creado");
 }
 
