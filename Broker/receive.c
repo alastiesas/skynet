@@ -348,6 +348,8 @@ void store_message_buddy(uint32_t message_id, uint32_t size_message, void* messa
 
 
 	pthread_mutex_unlock(&(mutex_cache));
+
+	delete_messages_from_queue(deleted_messages);
 	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 
 	//TODO indicar por log obligatorio cuando se realiza asociacion de bloques
