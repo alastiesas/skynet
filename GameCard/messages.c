@@ -6,58 +6,25 @@
  */
 #include "gamecard.h"
 #include <errno.h>
-//FIXME
-/*
- * meter mutex en todos los config_create y config_save
- * ver donde van los TIEMPO_RETARDO_OPERACION
- *
- */
 
-int32_t wait_available_file_new(char* pokemon_name){
-
-	//esperar mutex del pokemon metadata
-	pthread_mutex_lock(&mutex_pkmetadata);	//TODO unlock
-	//abrir metadata del pokemon dado, si no existe, crearlo, setear metadata en ocupado (soltar el mutex y retornar -1)
-
-	//chequear en el metadata si esta ocupado, en ese caso, soltar el mutex y reintentar en TIEMPO_DE_REINTENTO_OPERACION
-	//si esta disponible, actualizarlo como en uso, soltar mutex y listo
-}
-
-int32_t wait_available_file(char* pokemon_name){
-
-	//esperar mutex del pokemon metadata
-	pthread_mutex_lock(&mutex_pkmetadata);	//TODO unlock
-	//abrir metadata del pokemon dado, si no existe, soltar el mutex y retornar directamente que no existe (-1)
-	//si no existe, esperar en este punto el tiempo de retardo operacion (mirar si aplica en este caso ese tiempo)
-	//chequear en el metadata si esta ocupado, en ese caso, soltar el mutex y reintentar en TIEMPO_DE_REINTENTO_OPERACION
-	//si esta disponible, actualizarlo como en uso, soltar mutex y listo, (retornar 0)
-}
-
-void release_pokemon_file(char* pokemon_name){
-	//esperar mutex del pokemon metadata
-	pthread_mutex_lock(&mutex_pkmetadata);
-	//abrir metadata del pokemon dado
-	//actualizar el metadata del pokemon a libre
-	//soltar el mutex
-	pthread_mutex_unlock(&mutex_pkmetadata);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
 	char* pokemon_name = new_pokemon->pokemon_name;
 
+	pthread_mutex_lock(&mutex_pkmetadata);
 	if (!exists_pokemon(pokemon_name)) {
 
 		create_pokemon(pokemon_name);
 	}
+	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	t_config* pokemon_config = open_pokemon_file(pokemon_name);
+	log_info(logger, "TIEMPO_RETARDO_OPERACION %d\n", TIEMPO_RETARDO_OPERACION);
+	sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 
 	/*----------*/
 
-	/*pending definition*/
 
 	char* pokemon_blocks = config_get_string_value(pokemon_config, "BLOCKS");
 	uint32_t size = config_get_int_value(pokemon_config, "SIZE");
@@ -70,19 +37,22 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
 	t_dictionary* pokemon_dictionary;
 	if (size == 0) {
+		//si no tenia bloques se crea un diccionario vacio
 		pokemon_dictionary = dictionary_create();
 	} else {
+		//si tenia bloques, se cargan al diccionario
 		char** blocks_array = string_get_string_as_array(pokemon_blocks);
 		while (blocks_array[blocks_count] != NULL) {
 			list_add(blocks_list, blocks_array[blocks_count]);
-			list_add(blocks_list_int, atoi(blocks_array[blocks_count]));
+			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
 		}
 		void* pokemon_void = open_file_blocks(blocks_list, size);
-		pokemon_dictionary = void_to_dictionary(pokemon_void, size); //pending understanding
+		pokemon_dictionary = void_to_dictionary(pokemon_void, size);
 	}
 
 	/*----------*/
+	//actualizar diccionario
 
 	char* key = get_key(new_pokemon->location->position->x, new_pokemon->location->position->y);
 	char* previous_value = get_value(pokemon_dictionary, key);
@@ -94,33 +64,37 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	free(key);
 
 	/*----------*/
+	//calcular nueva cantidad de bloques
 
 	uint32_t new_size;
 	void* new_pokemon_file = dictionary_to_void(pokemon_dictionary, &new_size);
-	char* new_size_to_metadata = string_itoa(new_size); //pending understanding
+	char* new_size_to_metadata = string_itoa(new_size);
 	double aux = ((double) new_size / (double) block_size);
 	uint32_t new_blocks_count = (uint32_t) ceil(aux);
 
-	/*tomar bloques disponibles del bitmap */
 	/*-----------------------------------*/
+	/*si necesita mas bloques, tomar bloques disponibles del bitmap */
 
 	if (new_blocks_count > blocks_count) {
 		uint32_t diff = new_blocks_count - blocks_count;
+
+		pthread_mutex_lock(&mutex_bitmap);
 		t_list* available_blocks = find_available_blocks(diff);
 		for(int i = 0; i < list_size(available_blocks); i++) {
-			uint32_t block_number = list_get(available_blocks, i);
+			uint32_t block_number = (uint32_t)list_get(available_blocks, i);
 			bitarray_set_bit(bitmap, block_number);
-			list_add(blocks_list_int, block_number);
+			list_add(blocks_list_int, (void*)block_number);
 			msync(bmap, blocks / 8, MS_SYNC);
 		}
+		pthread_mutex_unlock(&mutex_bitmap);
 	}
 
-	/* funciona? */
 	/*-----------------------------------*/
+	//escribir bloques
 
-	write_file_blocks((void*) new_pokemon_file, blocks_list_int, new_size,
-			new_pokemon->pokemon_name);
+	write_file_blocks(new_pokemon_file, blocks_list_int, new_size, new_pokemon->pokemon_name);
 
+	//generar string de bloques
 	char* blocks_to_write = string_new();
 	uint32_t current_block = 1;
 	string_append(&blocks_to_write, "[");
@@ -133,16 +107,17 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 		current_block++;
 		free(element_str);
 	}
-	list_iterate(blocks_list_int, &list_to_string);
+	list_iterate(blocks_list_int, (void*)list_to_string);
 	string_append(&blocks_to_write, "]");
 
-	//sleep(TIEMPO_DE_REINTENTO_OPERACION);
+	//actualizar metadata
 	config_set_value(pokemon_config, "BLOCKS", blocks_to_write);
 	config_set_value(pokemon_config, "SIZE", new_size_to_metadata);
 	config_set_value(pokemon_config, "OPEN", "N");
 
+	pthread_mutex_lock(&mutex_pkmetadata);
 	config_save(pokemon_config);
-	//fclose(pokemon_config);
+	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	config_destroy(pokemon_config);
 
@@ -159,7 +134,6 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 t_message_caught* process_catch(t_message_catch* message_catch){
 
 	t_message_caught* message_caught;
-	int32_t exists;
 	uint32_t caught_result;
 
 		//si no existia el archivo metadata, saltar directamente a generar la respuesta que no se pudo atrapar
@@ -172,12 +146,14 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 	string_append(&pokemon_metadata, message_catch->pokemon_name);
 	string_append(&pokemon_metadata, "/Metadata.bin");
 	t_config* file;
+
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
 		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_catch->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
+		//xxx si no puede apropiarse del metadata en Y, entonces tampoco tiene sentido que haga sleep(TIEMPO_RETARDO_OPERACION)
 		caught_result =0;
 	}
 	else{
@@ -187,24 +163,23 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		char* open;
 		uint32_t retry = 1;
 		while(retry){
-			printf("aca estamos bien4\n");
 			open = config_get_string_value(file, "OPEN");
 			if(strcmp(open, "N") == 0){
 				//editar el metada.bin -> OPEN=Y
 				config_set_value(file, "OPEN", "Y");
-
 				config_save(file);
 				pthread_mutex_unlock(&mutex_pkmetadata);
-				printf("TIEMPO_RETARDO_OPERACION\n");
-				sleep(TIEMPO_RETARDO_OPERACION); //TODO ver donde va, y tambien en el otro caso
 
+				log_info(logger, "TIEMPO_RETARDO_OPERACION %d\n", TIEMPO_RETARDO_OPERACION);
+				sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 				retry = 0;
 			}
 			else{
 				pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
-				printf("SLEEP\n");
+				log_info(logger, "TIEMPO_DE_REINTENTO_OPERACION %d\n", TIEMPO_DE_REINTENTO_OPERACION);
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
+
 				pthread_mutex_lock(&mutex_pkmetadata);
 				file = config_create(pokemon_metadata);
 			}
@@ -222,24 +197,26 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		uint32_t blocks_count = 0;
 		while(blocks_array[blocks_count]!=NULL){
 			printf("any block is %s \n",blocks_array[blocks_count]);
-			list_add(blocks_list,blocks_array[blocks_count]);
-			list_add(blocks_list_int,atoi(blocks_array[blocks_count]));
+			list_add(blocks_list, blocks_array[blocks_count]);
+			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
 		}
 
-		printf("cargamos bien los blockes\n");
+		log_debug(logger, "Se cargaron %d bloques en memoria\n", list_size(blocks_list_int));
 
 		//PASAR LOS BLOQUES A MEMORIA
+			//chequear primero que tenga bloques
 		if(list_size(blocks_list_int)>0){
 		void* pokemon_file = open_file_blocks(blocks_list, size_metadata);
 		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
 		//CREAR DICCIONARIO DEL POKEMON_FILE
-		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file, size_metadata);
+		t_dictionary* pokemon_dictionary;
+		pokemon_dictionary = void_to_dictionary(pokemon_file, size_metadata);
 
-		printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
-		printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
-		printf("dictionary get en posicion 3-2 value: %s \n",dictionary_get(pokemon_dictionary, "3-2"));
-		printf("dictionary get en posicion 1-9 value: %s \n",dictionary_get(pokemon_dictionary, "1-9"));
+		log_trace(logger, "dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
+		log_trace(logger, "dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
+		log_trace(logger, "dictionary get en posicion 3-2 value: %s \n",dictionary_get(pokemon_dictionary, "3-2"));
+		log_trace(logger, "dictionary get en posicion 1-9 value: %s \n",dictionary_get(pokemon_dictionary, "1-9"));
 		/*
 		DIRECTORY=N
 		SIZE=250
@@ -259,13 +236,13 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		//MIRAR EN EL DICCIONARIO SI EXISTE LA KEY
 		if(dictionary_has_key(pokemon_dictionary,key)){
 			//MODIFICA VALUE EN EL diccionario
-			char * value_str = dictionary_get(pokemon_dictionary,key);
+			char* value_str = dictionary_get(pokemon_dictionary,key);
 			uint32_t value = atoi(value_str);
 			if(value>1){
 				value--;
 				char* new_value_str = string_itoa(value); //no se free() porque la meto en el diccionario
 				dictionary_put(pokemon_dictionary,key,new_value_str);
-				//misma cantidad de bloques
+				//misma cantidad de bloques, salvo que se reduzca un digito
 			}
 			else
 			{
@@ -292,11 +269,13 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				//sacar algun bloque al azar de la lista y actualizar el bitmap y el metadabata.bin
 				uint32_t diff = blocks_count - new_blocks_count;
 				for(uint32_t c = 0; c< diff; c++){
-					uint32_t block_number = list_remove(blocks_list_int, 0);
+					uint32_t block_number = (uint32_t)list_remove(blocks_list_int, 0);
 					//ACTUALIZO BITMAP
-					//ACA VA UN MUTEX-- TODO
+					//ACA VA UN MUTEX--
+					pthread_mutex_lock(&mutex_bitmap);
 					bitarray_clean_bit(bitmap, block_number);
 					msync(bmap, blocks/8, MS_SYNC);
+					pthread_mutex_unlock(&mutex_bitmap);
 				}
 				//se actualizan los bloques en el metadata mas adelante
 			}
@@ -304,14 +283,14 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			void imprimir(uint32_t elemt){
 				printf("elemento de la lista de bloques: %d\n", elemt);
 			}
-			list_iterate(blocks_list_int, &imprimir);
+			list_iterate(blocks_list_int, (void*)imprimir);
 
 			//RECORRER LISTA DE BLOQUES Y ESCRIBIR BLOQUES EN DISCO
 			if(list_size(blocks_list_int)>0)
 				write_file_blocks((void*)new_pokemon_file, blocks_list_int, new_size, message_catch->pokemon_name);
 
 
-			printf("Ya se escribieron los bloques \n");
+			printf("Ya se escribieron los bloques, si tenia mas de 0 \n");
 			//ACTUALIZAR EL METADATA.BIN, nueva lista de blocks, el nuevo SIZE, y cambiar OPEN a N
 			//BLOCKS=[40,21,82,12]
 			//SIZE=250
@@ -328,7 +307,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				current_block++;
 				free(element_str);
 			}
-			list_iterate(blocks_list_int, &list_to_string);
+			list_iterate(blocks_list_int, (void*)list_to_string);
 			string_append(&blocks_to_write,"]");
 
 
@@ -342,24 +321,27 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 			free(new_size_to_metadata);
 			free(blocks_to_write);
-
-
-
+			//destruir diccionario y actualizar a open = N
 
 		}
 		else
 		{
+			//caso archivo sin la posicion, diccionario ya creado
 			caught_result = 0;
 			//SI NO LO ENCUENTRA ES QUE NO HAY POKEMON EN ESA POSICION CAUGHT FALSE.
 			//NO SE ENCONTRO LA POSICION BUSCADA EN EL FILESYSTEM
-			//TODO destruir diccionario
-			//TODO actualizar el metadata que lo deje de usar
-
-
+			//destruir diccionario y actualizar a open = N
 		}
 
 		dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
+
+		}
+		else{
+			//caso archivo sin bloques, diccionario no creado
+			caught_result = 0;
+
+		}
 
 		config_set_value(file, "OPEN","N");
 
@@ -369,19 +351,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 		config_destroy(file);
 
-
-		}
-		else{
-			caught_result = 0;
-		}
-
-
-
-
-
 	}
-
-
 
 
 	//generar mensaje caught y destruir el mensaje catch
@@ -405,13 +375,14 @@ t_message_localized* process_get(t_message_get* message_get){
 	string_append(&pokemon_metadata, message_get->pokemon_name);
 	string_append(&pokemon_metadata, "/Metadata.bin");
 	t_config* file;
+
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
 		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_get->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
 		pthread_mutex_unlock(&mutex_pkmetadata);
-		//sleep(TIEMPO_RETARDO_OPERACION); //TODO ver donde va, y tambien en el otro caso
-		//caught_result =0;
+
+		//xxx si no puede apropiarse del metadata en Y, entonces tampoco tiene sentido que haga sleep(TIEMPO_RETARDO_OPERACION)
 		//retorna aca un localized sin posiciones
 		message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 0, NULL);
 	}
@@ -421,23 +392,23 @@ t_message_localized* process_get(t_message_get* message_get){
 		char* open;
 		uint32_t retry = 1;
 		while(retry){
-			printf("aca estamos bien4\n");
 			open = config_get_string_value(file, "OPEN");
 			if(strcmp(open, "N") == 0){
 				//editar el metada.bin -> OPEN=Y
 				config_set_value(file, "OPEN", "Y");
 				config_save(file);
 				pthread_mutex_unlock(&mutex_pkmetadata);
-				printf("TIEMPO_RETARDO_OPERACION\n");
-				sleep(TIEMPO_RETARDO_OPERACION); //TODO ver donde va, y tambien en el otro caso
 
+				log_info(logger, "TIEMPO_RETARDO_OPERACION %d\n", TIEMPO_RETARDO_OPERACION);
+				sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 				retry = 0;
 			}
 			else{
 				pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
-				printf("SLEEP\n");
+				log_info(logger, "TIEMPO_DE_REINTENTO_OPERACION %d\n", TIEMPO_DE_REINTENTO_OPERACION);
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
+
 				pthread_mutex_lock(&mutex_pkmetadata);
 				file = config_create(pokemon_metadata);
 			}
@@ -453,30 +424,31 @@ t_message_localized* process_get(t_message_get* message_get){
 		char** blocks_array = string_get_string_as_array(blocks_string);
 
 		//convertir char** en t_list*
-		printf("aca estamos bien6\n");
+
 		t_list* blocks_list = list_create();
 		t_list* blocks_list_int = list_create();
 		uint32_t blocks_count = 0;
 		while(blocks_array[blocks_count]!=NULL){
 			printf("any block is %s \n",blocks_array[blocks_count]);
 			list_add(blocks_list,blocks_array[blocks_count]);
-			list_add(blocks_list_int,atoi(blocks_array[blocks_count]));
+			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
 		}
 
-		printf("cargamos bien los blockes\n");
+		log_debug(logger, "Se cargaron %d bloques en memoria\n", list_size(blocks_list_int));
 
 		//verificar que el archivo contenga al menos un bloque
 		if(list_size(blocks_list_int)>0){
+			//tiene bloques, entonces existe al menos una posicion para generar el localized
 			//abrir los bloques y crear diccionario
 			void* pokemon_file = open_file_blocks(blocks_list, size_metadata);
 			//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
-			t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file, size_metadata);
+			t_dictionary* pokemon_dictionary = void_to_dictionary(pokemon_file, size_metadata);
 
-			printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
-			printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
-			printf("dictionary get en posicion 3-2 value: %s \n",dictionary_get(pokemon_dictionary, "3-2"));
-			printf("dictionary get en posicion 1-9 value: %s \n",dictionary_get(pokemon_dictionary, "1-9"));
+			log_trace(logger, "dictionary get en posicion 8-6 value: %s \n", dictionary_get(pokemon_dictionary, "8-6"));
+			log_trace(logger, "dictionary get en posicion 5-5 value: %s \n", dictionary_get(pokemon_dictionary, "5-5"));
+			log_trace(logger, "dictionary get en posicion 3-2 value: %s \n", dictionary_get(pokemon_dictionary, "3-2"));
+			log_trace(logger, "dictionary get en posicion 1-9 value: %s \n", dictionary_get(pokemon_dictionary, "1-9"));
 
 			//Obtener todas las posiciones y cantidades de Pokemon pedido.
 
@@ -499,7 +471,6 @@ t_message_localized* process_get(t_message_get* message_get){
 			message_localized = create_message_localized(message_get->id, message_get->pokemon_name, size_dictionary, positions);
 
 			//no se modifica el archivo, entonces con destruir el diccionario alcanza
-			//esperar el tiempo de retardo operacion
 
 			dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 		}
@@ -521,14 +492,8 @@ t_message_localized* process_get(t_message_get* message_get){
 	}
 
 
-
 	log_info(logger, "Se genero el mensaje localized");
 	destroy_message_get(message_get);
-
-
-
-	//destruir el diccionario
-	//esperar el tiempo de retardo operacion
 
 
 	//generar mensaje localized y destruir el mensaje get

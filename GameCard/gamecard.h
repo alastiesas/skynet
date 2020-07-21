@@ -101,4 +101,6 @@ void send_appeared_pokemon();
 char* get_key(uint32_t position_x, uint32_t position_y);
 char* get_value(t_dictionary* dictionary, char* key);
 
+void terminate_gamecard();
+
 #endif /* GAMECARD_H_ */
