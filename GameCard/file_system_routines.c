@@ -28,7 +28,9 @@ void init_fs(){
 		file = fopen(metadata_path, "w");
 		if(file == NULL){
 			log_error(logger, "no se pudo crear archivo en /Metadata/Metadata.bin");
+			log_warning(logger, "no se pudo crear filesystem en el path dado por config %s", PUNTO_MONTAJE_TALLGRASS);
 		    printf("fopen failed, errno = %d\n", errno);
+		    exit(-1);
 		}
 		fclose(file);
 		metaconfig = config_create(metadata_path);
@@ -59,36 +61,6 @@ void init_fs(){
 	config_destroy(metaconfig);
 }
 
-void initiliaze_file_system() {
-
-	char* tall_grass_mount_point = config_get_string_value(config, "PUNTO_MONTAJE_TALLGRASS");
-	char* metadata_path = (char*) malloc(strlen(tall_grass_mount_point) + 24);	//22?
-	strcpy(metadata_path, tall_grass_mount_point);
-	strcat(metadata_path, "/Metadata/Metadata.bin");
-
-	t_config* metadata = config_create(metadata_path);
-	blocks = config_get_int_value(metadata, "DEFAULT_BLOCKS");
-	block_size = config_get_int_value(metadata, "DEFAULT_BLOCK_SIZE");
-
-	char* blocks_directory = (char*) malloc(strlen(tall_grass_mount_point) + 8);
-	strcpy(blocks_directory, tall_grass_mount_point);
-	strcat(blocks_directory, "/Blocks/");
-
-	FILE* file;
-	char* file_name = (char*) malloc(strlen(blocks_directory) + strlen(string_itoa(blocks) + 4));
-	for (int block = 1; block <= blocks; block++) {
-
-		strcpy(file_name, blocks_directory);
-		strcat(file_name, string_itoa(block));
-		strcat(file_name, ".bin");
-		file = fopen(file_name, "w");
-		free(file);
-	}
-}
-
-void terminate_file_system() {
-
-}
 
 //se crea un bitmap en el caso de crear el FS de 0, devuelve el bitarray para usar
 //requiere llamar a save_bitarray luego
@@ -390,6 +362,8 @@ void* dictionary_to_void(t_dictionary* pokemon_file_dictionary, uint32_t* size){
 	//pokemon_file = string_to_void(lines, *size);
 
 	//TODO destruir diccionarIo
+	//FIXME destruir diccionarIo
+	//XXX destruir diccionarIo
 	return (void*)lines;
 }
 
@@ -540,16 +514,20 @@ t_config* open_pokemon_file(char* pokemon_name) {
 	char* open;
 
 	do {
+		pthread_mutex_lock(&mutex_pkmetadata);
 		pokemon_config = config_create(pokemon_file);
 		open = config_get_string_value(pokemon_config, "OPEN");
 		if (strcmp(open, "Y") == 0) {
+			pthread_mutex_unlock(&mutex_pkmetadata);
 			config_destroy(pokemon_config);
-			//not working sleep(TIEMPO_DE_REINTENTO_OPERACION); //change name?
+			log_info(logger, "TIEMPO_DE_REINTENTO_OPERACION %d\n", TIEMPO_DE_REINTENTO_OPERACION);
+			sleep(TIEMPO_DE_REINTENTO_OPERACION);
 		}
 	} while (strcmp(open, "Y") == 0);
 
 	config_set_value(pokemon_config, "OPEN", "Y");
 	config_save(pokemon_config);
+	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	free(pokemon_file);
 
@@ -589,5 +567,36 @@ void update_pokemon_file() {
 }
 
 void send_appeared_pokemon() {
+
+}
+
+void initiliaze_file_system() {
+
+	char* tall_grass_mount_point = config_get_string_value(config, "PUNTO_MONTAJE_TALLGRASS");
+	char* metadata_path = (char*) malloc(strlen(tall_grass_mount_point) + 24);	//22?
+	strcpy(metadata_path, tall_grass_mount_point);
+	strcat(metadata_path, "/Metadata/Metadata.bin");
+
+	t_config* metadata = config_create(metadata_path);
+	blocks = config_get_int_value(metadata, "DEFAULT_BLOCKS");
+	block_size = config_get_int_value(metadata, "DEFAULT_BLOCK_SIZE");
+
+	char* blocks_directory = (char*) malloc(strlen(tall_grass_mount_point) + 8);
+	strcpy(blocks_directory, tall_grass_mount_point);
+	strcat(blocks_directory, "/Blocks/");
+
+	FILE* file;
+	char* file_name = (char*) malloc(strlen(blocks_directory) + strlen(string_itoa(blocks) + 4));
+	for (int block = 1; block <= blocks; block++) {
+
+		strcpy(file_name, blocks_directory);
+		strcat(file_name, string_itoa(block));
+		strcat(file_name, ".bin");
+		file = fopen(file_name, "w");
+		free(file);
+	}
+}
+
+void terminate_file_system() {
 
 }

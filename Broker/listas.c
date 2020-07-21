@@ -119,9 +119,9 @@ void dump_cache(void){
 		char* num = string_itoa(i);
 		string_append(&dump, num);
 		free(num);
-		string_append(&dump, ": ");
-		char* initial = string_from_format("%p", partition->initial_position - mem);
-		char* final = string_from_format("%p", partition->final_position - mem);
+		string_append(&dump, ": [");
+		char* initial = string_from_format("%d", partition->initial_position - mem);
+		char* final = string_from_format("%d", partition->final_position - mem);
 		string_append(&dump, initial);
 		string_append(&dump, " - ");
 		string_append(&dump, final);
@@ -129,7 +129,7 @@ void dump_cache(void){
 		free(final);
 
 		if(partition->available){
-			string_append(&dump, ".\t[L]");
+			string_append(&dump, "].\t[L]");
 			string_append(&dump, "\tSize: ");
 			char* size = string_itoa(partition->size);
 			string_append(&dump, size);
@@ -138,17 +138,19 @@ void dump_cache(void){
 
 		}
 		else{
-			string_append(&dump, ".\t[X]");
+			uint32_t partition_size = (partition->final_position - mem) - (partition->initial_position - mem);
+			uint32_t data_size = partition->size;
+			string_append(&dump, "].\t[X]");
 			string_append(&dump, "\tSize: ");
-			char* size = string_itoa(partition->size);
+			char* size = string_itoa(partition_size);
 			string_append(&dump, size);
 			free(size);
 			string_append(&dump, "b");
-			if(partition->size < min_partition_size){
+			if(data_size < partition_size){
 				string_append(&dump, " (");
-				char* min_size = string_itoa(min_partition_size);
-				string_append(&dump, min_size);
-				free(min_size);
+				char* data_size_char = string_itoa(data_size);
+				string_append(&dump, data_size_char);
+				free(data_size_char);
 				string_append(&dump, "b)");
 			}
 			if(strcmp(replacement_algorithm, "LRU") == 0){

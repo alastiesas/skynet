@@ -32,7 +32,7 @@ int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t fl
 		}
 
 	}
-	printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
+	//printf("Se enviaron %d de %d bytes\n", current_bytes, bytes);
 	return current_bytes;
 }
 
@@ -63,7 +63,7 @@ int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t f
 		}
 
 	}
-	printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
+	//printf("Se recibieron %d de %d bytes\n", current_bytes, bytes);
 	return current_bytes;
 
 

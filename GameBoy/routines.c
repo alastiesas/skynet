@@ -208,12 +208,14 @@ void process_free(void* input){
 		strcat(log_line, " correlative_id:");
 		strcat(log_line, string_itoa(correlative_id));
 	}
+	/*fixme rompe para caught
 	if (pokemon_name_size != -1) {
 		strcat(log_line, " pokemon_name_size:");
 		strcat(log_line, string_itoa(pokemon_name_size));
 		strcat(log_line, " pokemon_name:");
 		strcat(log_line, pokemon_name);
 	}
+	fixme rompe para caught*/
 	// define if (positions_amount != NULL) {
 	//	}
 	// define if (positions != NULL) {

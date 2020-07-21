@@ -84,13 +84,13 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 	log_info(logger, "Esperando recibir tamanio del stream\n");
 
 	if(recv_with_retry(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) < sizeof(uint32_t))
-		log_error(logger, "Error al recibir el tamanio del stream");
+		log_error(helper, "Error al recibir el tamanio del stream");
 	else
 		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
 
 	//recibir id de new. (El cual va a ignorar, porque setea el suyo propio luego)
 	if(recv_with_retry(socket_cliente, &(t_mensaje->ID_mensaje), sizeof(t_mensaje->ID_mensaje), MSG_WAITALL) < sizeof(t_mensaje->ID_mensaje))
-		log_error(logger, "Error al recibir el id del mensaje");
+		log_error(helper, "Error al recibir el id del mensaje");
 	else
 		log_info(logger, "id del mensaje recibido: %d (se va a sobreescribir)", t_mensaje->ID_mensaje);
 
@@ -98,7 +98,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 	//recibir id correlativo, si aplica
 	if(response){
 		if(recv_with_retry(socket_cliente, &(t_mensaje->ID_correlativo), sizeof(t_mensaje->ID_correlativo), MSG_WAITALL) < sizeof(t_mensaje->ID_correlativo))
-			log_error(logger, "Error al recibir el id correlativo del mensaje");
+			log_error(helper, "Error al recibir el id correlativo del mensaje");
 		else
 			log_info(logger, "id correlativo del mensaje recibido: %d (no se toca)", t_mensaje->ID_correlativo);
 		size_co = sizeof(uint32_t);
@@ -114,7 +114,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 	//recibir t0do el resto de datos del mensaje
 	int32_t bytes_received = recv_with_retry(socket_cliente, t_mensaje->datos_mensaje, size_datos, MSG_WAITALL);
 	if(bytes_received < size_datos)
-		log_error(logger, "Error al recibir los datos del mensaje");
+		log_error(helper, "Error al recibir los datos del mensaje");
 	else
 		log_info(logger, "Datos del mensaje recibidos. (%d bytes de un total de %d)", bytes_received, size_datos);
 
@@ -123,7 +123,7 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 	log_debug(logger, "Se guardo un mensaje de %d bytes (+4 bytes ID)", t_mensaje->bytes);
 
 	if(*size != size_ID + size_co + size_datos)
-		log_error(logger, "Tamanio erroneo");
+		log_error(helper, "Tamanio erroneo");
 
 	return t_mensaje;
 }
@@ -210,7 +210,7 @@ void store_message_partition(uint32_t message_id, uint32_t size_message, void* m
 		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", new_partition->initial_position - mem, new_partition->final_position - mem);
 	}
 	else{
-		log_error(logger, "No hay particion disponible");
+		log_error(helper, "No hay particion disponible");
 		free(new_partition);
 	}
 
@@ -342,12 +342,14 @@ void store_message_buddy(uint32_t message_id, uint32_t size_message, void* messa
 		log_info(obligatorio, "Se guarda un mensaje en la posicion %d a %d", free_partition->initial_position - mem, free_partition->final_position - mem);
 	}
 	else{
-		log_error(logger, "No hay particion disponible");
+		log_error(helper, "No hay particion disponible");
 		free(new_partition);
 	}
 
 
 	pthread_mutex_unlock(&(mutex_cache));
+
+	delete_messages_from_queue(deleted_messages);
 	free(message_data); //nadie va a volver a usar los datos en cola en modo con memoria
 
 	//TODO indicar por log obligatorio cuando se realiza asociacion de bloques

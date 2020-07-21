@@ -36,7 +36,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	cola = receive_cola(socket_cliente, logger);
 
 	if(size != sizeof(ID_proceso) + sizeof(cola))
-		log_error(logger, "Tamanio erroneo");
+		log_error(helper, "Tamanio erroneo");
 
 	t_suscriber* suscriber;
 	char* queue_name;
@@ -143,7 +143,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 			break;
 
 		default:
-			log_error(logger, "Aun no puedo suscribir a nadie en ese tipo de cola\n");
+			log_error(helper, "Aun no puedo suscribir a nadie en ese tipo de cola\n");
 			return;
 		}
 
@@ -155,7 +155,7 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 		free(ID_char);
 		char* file = string_duplicate(nombre);
 		string_append(&nombre, ".log");
-		suscriber->log = log_create(nombre, file, LOG_CONSOLE, LOG_LEVEL_TRACE);
+		suscriber->log = log_create(nombre, file, log_debug_console, LOG_LEVEL_TRACE);
 		free(nombre);
 		free(file);
 
@@ -169,13 +169,13 @@ void process_suscripcion(operation_code cod_op, int32_t socket_cliente, t_log* l
 	}
 	else{
 		/*
-		log_error(logger, "Ya esta conectado a la cola %s, el proceso %d. Debe desconectar primero.", queue_name, (uint32_t) ID_proceso);
+		log_error(helper, "Ya esta conectado a la cola %s, el proceso %d. Debe desconectar primero.", queue_name, (uint32_t) ID_proceso);
 	//enviar falla en la confirmacion. (ack de error)
 		send_ACK_failure(socket_cliente, logger);
 		pthread_exit(NULL);
 		*/
 
-		log_warning(logger, "Ya esta conectado a la cola %s, el proceso %d. Se toma el nuevo socket del suscriptor. (El viejo queda inutilizado)", queue_name, (uint32_t) ID_proceso);
+		log_warning(helper, "Ya esta conectado a la cola %s, el proceso %d. Se toma el nuevo socket del suscriptor. (El viejo queda inutilizado)", queue_name, (uint32_t) ID_proceso);
 		suscriber->socket = socket_cliente;
 
 	}
@@ -319,7 +319,7 @@ queue_code receive_cola(uint32_t socket, t_log* logger){
 	queue_code cola;
 	int32_t resultado;
 	if((resultado = recv_with_retry(socket, &cola, sizeof(queue_code), MSG_WAITALL)) == (-1 || 0)){
-		log_error(logger, "Error al recibir la cola a suscribirse\n");
+		log_error(helper, "Error al recibir la cola a suscribirse\n");
 		return -1; //failure
 	}
 	else

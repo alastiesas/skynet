@@ -13,7 +13,7 @@
 int32_t send_paquete(int32_t socket, t_package* paquete){
 	int32_t result;
 	uint32_t bytes = sizeof(int32_t)*2 + paquete->buffer->size;
-	printf("Bytes a enviar: (8 header) + %d de stream\n", (bytes - 8));
+	//printf("Bytes a enviar: (8 header) + %d de stream\n", (bytes - 8));
 
 	//meto el cod_op + size + mensaje t0d0 en un stream de datos
 	void* a_enviar = malloc(bytes);
@@ -26,7 +26,7 @@ int32_t send_paquete(int32_t socket, t_package* paquete){
 	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
 
 
-	printf("Se va a enviar: %s\n", (char *)a_enviar);
+	//printf("Se va a enviar: %s\n", (char *)a_enviar);
 	result = send_with_retry(socket, a_enviar, bytes, MSG_NOSIGNAL);	//El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
 
 	free(a_enviar);

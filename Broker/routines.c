@@ -12,9 +12,17 @@ void initialization() {
 
 void generic_initialization() {
 
-	logger = log_create("broker.log", "broker", LOG_CONSOLE, LOG_LEVEL_TRACE);
-	if((config = config_create("broker.config")) == NULL)
-		log_error(logger, "ERROR DE CONFIG");
+	if((config = config_create("broker.config")) == NULL){
+		printf("ERROR DE CONFIG");
+		exit(-1);
+	}
+	char* log_debug = config_get_string_value(config, "LOG_DEBUG");
+	if(strcmp(log_debug, "FALSE") == 0)
+		log_debug_console = false;
+	else
+		log_debug_console = true;
+	logger = log_create("broker.log", "broker", log_debug_console, LOG_LEVEL_TRACE);
+	helper = log_create("log_basura.log", "broker", LOG_CONSOLE, LOG_LEVEL_INFO);
 	obligatorio = log_create(config_get_string_value(config, "LOG_FILE"), "broker", false, LOG_LEVEL_TRACE);
 	IP = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PUERTO_BROKER");
@@ -69,39 +77,39 @@ void specific_initialization() {
 void config_init(){
 	memory_algorithm = config_get_string_value(config, "ALGORITMO_MEMORIA");
 	if(strcmp(memory_algorithm, "DEFAULT") == 0){
-		log_info(logger, "Algoritmo memoria: %s", memory_algorithm);
+		log_info(helper, "Algoritmo memoria: %s", memory_algorithm);
 	}
 	else{
 		if(strcmp(memory_algorithm, "PARTICIONES") != 0 && strcmp(memory_algorithm, "BS") != 0){
-			log_error(logger, "error ALGORITMO_MEMORIA");
+			log_error(helper, "error ALGORITMO_MEMORIA");
 			exit(-1);
 		}
-		log_info(logger, "Algoritmo memoria: %s", memory_algorithm);
+		log_info(helper, "Algoritmo memoria: %s", memory_algorithm);
 
 		memory_size = atoi(config_get_string_value(config, "TAMANO_MEMORIA"));
-		log_info(logger, "Tamano memoria: %d", memory_size);
+		log_info(helper, "Tamano memoria: %d", memory_size);
 		//TODO comprobar que sea 2^n para buddy
 
 		min_partition_size = atoi(config_get_string_value(config, "TAMANO_MINIMO_PARTICION"));
-		log_info(logger, "Tamano minimo particion: %d", min_partition_size);
+		log_info(helper, "Tamano minimo particion: %d", min_partition_size);
 		compaction_frequency = atoi(config_get_string_value(config, "FRECUENCIA_COMPACTACION"));
-		log_info(logger, "Frecuencia compactacion: %d", compaction_frequency);
+		log_info(helper, "Frecuencia compactacion: %d", compaction_frequency);
 			//if(compaction_frequency == 0)
 				//compaction_frequency = 1;
 
 		free_partition_algorithm = config_get_string_value(config, "ALGORITMO_PARTICION_LIBRE");
 		if(strcmp(free_partition_algorithm, "FF") != 0 && strcmp(free_partition_algorithm, "BF") != 0){
-			log_error(logger, "error ALGORITMO_PARTICION_LIBRE");
+			log_error(helper, "error ALGORITMO_PARTICION_LIBRE");
 			exit(-1);
 		}
-		log_info(logger, "Algoritmo particion libre: %s", free_partition_algorithm);
+		log_info(helper, "Algoritmo particion libre: %s", free_partition_algorithm);
 
 		replacement_algorithm = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
 		if(strcmp(replacement_algorithm, "FIFO") != 0 && strcmp(replacement_algorithm, "LRU") != 0){
-			log_error(logger, "error ALGORITMO_REEMPLAZO");
+			log_error(helper, "error ALGORITMO_REEMPLAZO");
 			exit(-1);
 		}
-		log_info(logger, "Algoritmo reemplazo: %s", replacement_algorithm);
+		log_info(helper, "Algoritmo reemplazo: %s", replacement_algorithm);
 	}
 
 }
@@ -145,7 +153,7 @@ void behavior() {
 
 void listening() {
 
-	iniciar_servidor_broker(); //pending clean
+	iniciar_servidor_broker();
 }
 
 void termination() {
