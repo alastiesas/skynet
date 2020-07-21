@@ -39,40 +39,41 @@ int main(void)
 	initialize_trainers();
 	initialize_global_objectives();
 
-	t_trainer* trainersjf = list_get(block_list, 0);
-	if(trainersjf != NULL)
-		trainersjf->burst_estimate = 20;
+
 
 	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
 
 	//FIN DEBUG DEADLOCKS
-
+	t_position* test_position_0 = malloc(sizeof(t_position));
+	test_position_0->x = 1;
+	test_position_0->y = 0;
+	add_to_poke_map("Raichu",(void*) test_position_0);
 //*
-	t_position* test_position_1 = malloc(sizeof(t_position));
-	test_position_1->x = 1;
-	test_position_1->y = 1;
-	add_to_poke_map("uno",(void*) test_position_1);
-
-	t_position* test_position_2 = malloc(sizeof(t_position));
-	test_position_2->x = 2;
-	test_position_2->y = 2;
-	add_to_poke_map("dos",(void*) test_position_2);
-
-	t_position* test_position_3 = malloc(sizeof(t_position));
-	test_position_3->x = 6;
-	test_position_3->y = 7;
-	add_to_poke_map("tres",(void*) test_position_3);
-
-	t_position* test_position_4 = malloc(sizeof(t_position));
-	test_position_4->x = 13;
-	test_position_4->y = 13;
-	add_to_poke_map("cuatro",(void*) test_position_4);
+//	t_position* test_position_1 = malloc(sizeof(t_position));
+//	test_position_1->x = 1;
+//	test_position_1->y = 1;
+//	add_to_poke_map("uno",(void*) test_position_1);
+//
+//	t_position* test_position_2 = malloc(sizeof(t_position));
+//	test_position_2->x = 2;
+//	test_position_2->y = 2;
+//	add_to_poke_map("dos",(void*) test_position_2);
+//
+//	t_position* test_position_3 = malloc(sizeof(t_position));
+//	test_position_3->x = 6;
+//	test_position_3->y = 7;
+//	add_to_poke_map("tres",(void*) test_position_3);
+//
+//	t_position* test_position_4 = malloc(sizeof(t_position));
+//	test_position_4->x = 13;
+//	test_position_4->y = 13;
+//	add_to_poke_map("cuatro",(void*) test_position_4);
 	//*/
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
 	subscribe(OPERATION_APPEARED);
-//	subscribe(OPERATION_LOCALIZED);
-//	subscribe(OPERATION_CAUGHT);
+	subscribe(OPERATION_LOCALIZED);
+	subscribe(OPERATION_CAUGHT);
 //	sleep(5);
 
 

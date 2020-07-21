@@ -275,8 +275,9 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_
 	//int tid = pthread_self();
 	//pthread_getname_np(tid, modulo, 16);
 	int conexion = -2;
-	uint32_t tries = 1;
+	uint32_t tries = 0;
 	while (conexion < 0){
+		tries++;
 		log_info(logger, "Intento de conexión %d de %d", tries, retry_amount);
 
 		struct addrinfo hints;
@@ -300,7 +301,6 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_
 
 		freeaddrinfo(server_info);
 		if (conexion == -1){
-			tries++;
 			if(tries == retry_amount){
 				return -1;
 			}
