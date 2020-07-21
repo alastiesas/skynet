@@ -19,7 +19,7 @@ void iniciar_servidor_broker()
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
         if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	log_error(logger, "Error de socket()");
+        	log_error(helper, "Error de socket()");
         	continue;
         }
         int reuse = 1;
@@ -33,15 +33,15 @@ void iniciar_servidor_broker()
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
             close(socket_servidor);
-            log_error(logger, "Error de bind (el puerto esta ocupado), reinicie el programa");
-            for(;;);
+            log_error(helper, "Error de bind (el puerto esta ocupado), reinicie el programa");
+            exit(-1);
             continue;
         }
         break;
     }
 
 	listen(socket_servidor, SOMAXCONN);
-	log_info(logger, "Escuchando en el socket %d, en %s:%s", socket_servidor, IP, PORT);
+	log_info(helper, "Escuchando en %s:%s", IP, PORT);
 
     freeaddrinfo(servinfo);
 
@@ -60,8 +60,9 @@ void esperar_clientes(int32_t socket_servidor, t_log* logger, t_queues* colas, t
 
 	int32_t socket_cliente;
 	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1){
-		log_error(logger, "Error al aceptar cliente");
+		log_error(helper, "Error al aceptar cliente");
 		printf("\n%s\n", strerror(errno));
+		printf("sleep 500 segundos\n%s\n");
 		sleep(500);
 	}
 	else{
