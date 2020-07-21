@@ -13,7 +13,6 @@
 
 int main(void)
 {
-
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
 	log_info(log, "STARTING TEAM PROGRAM, GOOD LUCK");
 

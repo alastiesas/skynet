@@ -18,6 +18,15 @@ typedef enum {
 	SJFC = 4,
 } t_algorithm;
 
+typedef enum {
+	NO_CHANGE = 0,
+	BURST = 1,
+	CATCH_PETITION = 2,
+	TRADE_WAITING = 3,
+	FULL_QUANTUM = 4,
+	SJF_PRIORITY = 5,
+	EXIT = 6,
+} t_state_change_reason;
 
 
 typedef enum {
@@ -105,6 +114,10 @@ void destroy_target(t_target* target);
 void trainer_set_target(t_trainer* trainer, t_target* target);
 void add_pokemon(t_trainer* trainer, char*pokemon);
 //FIN constructores
+
+//destructores
+void destroy_trainer(t_trainer* trainer);
+//FIN destructores
 
 //consultas
 bool success_objective(t_objective* objective);
