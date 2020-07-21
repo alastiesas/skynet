@@ -44,31 +44,115 @@ void release_pokemon_file(char* pokemon_name){
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-t_message_appeared* process_new(t_message_new* message_new){
+t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
-	t_message_appeared* message_appeared;
-	int32_t exists;
+	char* pokemon_name = new_pokemon->pokemon_name;
 
-	exists = wait_available_file_new(message_new->pokemon_name);
-	//si no existia el archivo metadata, crear directorio y archivo pokemon manualmente
-	if(exists != -1){
-	//pasar los bloques del archivo a memoria
-	//crear diccionario con el archivo
-	//verificar si existe en el archivo la posicion recibida, si no existe, crearla
-	//sumar la cantidad de pokemonos nuevos
-	//convertir el diccionario a void*
-	//grabar el void* en los bloques
-	//esperar el tiempo de retardo  operacion
-	release_pokemon_file(message_new->pokemon_name);
-	}
-	else{
-		//TODO crear metadata y setear en open antes de soltar el mutex
-		create_file_directory(message_new->pokemon_name, message_new->location);
-		printf("TIEMPO_RETARDO_OPERACION\n");
-		sleep(TIEMPO_RETARDO_OPERACION);
+	if (!exists_pokemon(pokemon_name)) {
+
+		create_pokemon(pokemon_name);
 	}
 
-	//generar mensaje appeared y destruir el mensaje new
+	t_config* pokemon_config = open_pokemon_file(pokemon_name);
+
+	/*----------*/
+
+	/*pending definition*/
+
+	char* pokemon_blocks = config_get_string_value(pokemon_config, "BLOCKS");
+	uint32_t size = config_get_int_value(pokemon_config, "SIZE");
+
+
+	t_list* blocks_list = list_create();
+	t_list* blocks_list_int = list_create();
+	uint32_t blocks_count = 0;
+	char** blocks_array;
+
+	t_dictionary* pokemon_dictionary;
+	if (size == 0) {
+		pokemon_dictionary = dictionary_create();
+	} else {
+		char** blocks_array = string_get_string_as_array(pokemon_blocks);
+		while (blocks_array[blocks_count] != NULL) {
+			list_add(blocks_list, blocks_array[blocks_count]);
+			list_add(blocks_list_int, atoi(blocks_array[blocks_count]));
+			blocks_count++;
+		}
+		void* pokemon_void = open_file_blocks(blocks_list, size);
+		pokemon_dictionary = void_to_dictionary(pokemon_void, size); //pending understanding
+	}
+
+	/*----------*/
+
+	char* key = get_key(new_pokemon->location->position->x, new_pokemon->location->position->y);
+	char* previous_value = get_value(pokemon_dictionary, key);
+	uint32_t amount = atoi(previous_value) + new_pokemon->location->amount;
+	char* value = string_itoa(amount);
+
+	dictionary_put(pokemon_dictionary, key, value);
+
+	free(key);
+
+	/*----------*/
+
+	uint32_t new_size;
+	void* new_pokemon_file = dictionary_to_void(pokemon_dictionary, &new_size);
+	char* new_size_to_metadata = string_itoa(new_size); //pending understanding
+	double aux = ((double) new_size / (double) block_size);
+	uint32_t new_blocks_count = (uint32_t) ceil(aux);
+
+	/*tomar bloques disponibles del bitmap */
+	/*-----------------------------------*/
+
+	if (new_blocks_count > blocks_count) {
+		uint32_t diff = new_blocks_count - blocks_count;
+		t_list* available_blocks = find_available_blocks(diff);
+		for(int i = 0; i < list_size(available_blocks); i++) {
+			uint32_t block_number = list_get(available_blocks, i);
+			bitarray_set_bit(bitmap, block_number);
+			list_add(blocks_list_int, block_number);
+			msync(bmap, blocks / 8, MS_SYNC);
+		}
+	}
+
+	/* funciona? */
+	/*-----------------------------------*/
+
+	write_file_blocks((void*) new_pokemon_file, blocks_list_int, new_size,
+			new_pokemon->pokemon_name);
+
+	char* blocks_to_write = string_new();
+	uint32_t current_block = 1;
+	string_append(&blocks_to_write, "[");
+
+	void list_to_string(uint32_t element) {
+		char * element_str = string_itoa(element);
+		string_append(&blocks_to_write, element_str);
+		if (new_blocks_count != current_block)
+			string_append(&blocks_to_write, ",");
+		current_block++;
+		free(element_str);
+	}
+	list_iterate(blocks_list_int, &list_to_string);
+	string_append(&blocks_to_write, "]");
+
+	//sleep(TIEMPO_DE_REINTENTO_OPERACION);
+	config_set_value(pokemon_config, "BLOCKS", blocks_to_write);
+	config_set_value(pokemon_config, "SIZE", new_size_to_metadata);
+	config_set_value(pokemon_config, "OPEN", "N");
+
+	config_save(pokemon_config);
+	//fclose(pokemon_config);
+
+	config_destroy(pokemon_config);
+
+	free(new_size_to_metadata);
+	free(blocks_to_write);
+
+	t_message_appeared* message_appeared = create_message_appeared_long(new_pokemon->id, new_pokemon->pokemon_name, new_pokemon->location->position->x, new_pokemon->location->position->y);
+
+	destroy_message_new(new_pokemon);
+
 	return message_appeared;
 }
 
@@ -150,7 +234,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		void* pokemon_file = open_file_blocks(blocks_list, size_metadata);
 		//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
 		//CREAR DICCIONARIO DEL POKEMON_FILE
-		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file);
+		t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file, size_metadata);
 
 		printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
 		printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
@@ -387,7 +471,7 @@ t_message_localized* process_get(t_message_get* message_get){
 			//abrir los bloques y crear diccionario
 			void* pokemon_file = open_file_blocks(blocks_list, size_metadata);
 			//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
-			t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file);
+			t_dictionary* pokemon_dictionary =  void_to_dictionary(pokemon_file, size_metadata);
 
 			printf("dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
 			printf("dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
@@ -464,15 +548,11 @@ void serve_new(void* input){
 	t_message_new* message_new = (t_message_new*) message;
 
 	t_message_appeared* message_appeared;
-	//message_appeared =  process_new(message_new); TODO
 
-//-----------------------------------------------------//TODO remover harcodeo, se hace esto en la funcion de arriba
-	//Generar mensaje APPEARED
-	message_appeared = create_message_appeared_long(message_new->id, message_new->pokemon_name, message_new->location->position->x, message_new->location->position->y);
+	message_appeared = new_pokemon_routine(message_new);
+
 	log_info(logger, "Se genero el mensaje appeared");
-	destroy_message_new(message_new);
 
-//------------------------------------------------------
 
 	t_package* package = serialize_appeared(message_appeared);
 	destroy_message_appeared(message_appeared);

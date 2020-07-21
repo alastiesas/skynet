@@ -41,9 +41,6 @@ t_package* serialize_localized(t_message_localized* new);
 t_package* serialize_catch(t_message_catch* new);
 t_package* serialize_caught(t_message_caught* new);
 
-//Recibe un t_catch y lo convierte en estructura paquete. (Reserva memoria para el nuevo paquete)
-t_package* serialize_catch(t_message_catch* catch);
-
 
 
 

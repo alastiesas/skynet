@@ -95,8 +95,10 @@ bool exists_file(char* file_name);
 void create_pokemon(char* pokemon_name);
 void create_pokemon_directory(char* pokemon_name);
 void create_pokemon_file(char* pokemon_name);
-void open_pokemon_file();
+t_config* open_pokemon_file(char* pokemon_name);
 void update_pokemon_file();
 void send_appeared_pokemon();
+char* get_key(uint32_t position_x, uint32_t position_y);
+char* get_value(t_dictionary* dictionary, char* key);
 
 #endif /* GAMECARD_H_ */
