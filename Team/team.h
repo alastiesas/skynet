@@ -575,7 +575,7 @@ void add_objective(char* pokemon)
 		objective->count++;
 	else{
 		objective = malloc(sizeof(t_objective));
-		objective->pokemon = pokemon;
+		objective->pokemon = create_copy_string(pokemon);
 		objective->count = 1;
 		objective->caught = 0;
 		objective->catching = 0;
@@ -593,8 +593,15 @@ void add_caught(char* pokemon)
 		if(objective->catching>0)
 			objective->catching--;
 	}
-	else
-		printf("Lo rompiste todo, maldito idiota add_caught\n");
+	else {
+		objective = malloc(sizeof(t_objective));
+		objective->pokemon = create_copy_string(pokemon);
+		objective->count = 0;
+		objective->caught = 1;
+		objective->catching = 0;
+		list_add(objectives_list,(void*)objective);
+
+	}
 	sem_post(&sem_objectives_list);
 }
 
@@ -688,6 +695,7 @@ void initialize_global_objectives()
 
 	sem_wait(&sem_state_lists);
 	list_iterate(new_list, &add_trainer_to_objective);
+	list_iterate(block_list, &add_trainer_to_objective);
 	sem_post(&sem_state_lists);
 
 }
@@ -697,9 +705,12 @@ bool success_global_objective()
 	printf("success_global_objective");
 	bool success = false;
 
+	printf("success_objective tamaño: %d\n", list_size(objectives_list));
 	sem_wait(&sem_objectives_list);
 	bool all_pokemon_catch = list_all_satisfy(objectives_list,&success_objective);
 	sem_post(&sem_objectives_list);
+	printf("FIN success_objective?\n");
+	printf("all_pokemon_catch = %d", all_pokemon_catch);
 
 	 if(all_pokemon_catch) {
 
@@ -848,6 +859,16 @@ void* short_thread()
 
 	while(!team_succes){
 
+		if(success_global_objective()) {
+			printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
+			printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
+			team_succes = true;
+		}else {
+			printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
+			printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
+			sleep(2);
+		}
+
 		sem_wait(&sem_short);
 		sem_wait(&sem_scheduler);
 		//printf("esta wacho aca??\n");
@@ -881,7 +902,7 @@ void long_term_scheduler(){
 	bool idle_cpu = list_size(ready_list) == 0 && list_size(exec_list) == 0;
 	sem_post(&sem_state_lists);
 
-	debug_colas();
+	//debug_colas();
 
 
 	if(idle_cpu || deadlock_priority == DEADLOCK_PRIORITY) {
@@ -932,10 +953,10 @@ void deadlock_handler(){
 		printf("\n");
 	}
 
-	printf("TABLA DE WAITING:\n");
-	dictionary_iterator(waiting_table, &debug_table);
-	printf("TABLA DE HELD:\n");
-	dictionary_iterator(held_table, &debug_table);
+//	printf("TABLA DE WAITING:\n");
+//	dictionary_iterator(waiting_table, &debug_table);
+//	printf("TABLA DE HELD:\n");
+//	dictionary_iterator(held_table, &debug_table);
 
 	assign_trade_couples(waiting_table,held_table, true);
 
@@ -945,14 +966,14 @@ void deadlock_handler(){
 
 	waiting_table = dictionary_create();
 	held_table = dictionary_create();
-	debug_colas();
+//	debug_colas();
 
 	deadlock_detector(waiting_table,held_table);
 
-	printf("TABLA DE WAITING:\n");
-	dictionary_iterator(waiting_table, &debug_table);
-	printf("TABLA DE HELD:\n");
-	dictionary_iterator(held_table, &debug_table);
+//	printf("TABLA DE WAITING:\n");
+//	dictionary_iterator(waiting_table, &debug_table);
+//	printf("TABLA DE HELD:\n");
+//	dictionary_iterator(held_table, &debug_table);
 	assign_trade_couples(waiting_table,held_table, false);
 
 }
@@ -967,7 +988,7 @@ uint32_t deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table
 	printf("ENTRENADORES BLOQUEADOS: %d\n", list_size(locked_trainers));
 
 
-	list_iterate(locked_trainers, &debug_trainer);
+//	list_iterate(locked_trainers, &debug_trainer);
 
 	void add_to_tables(t_trainer* trainer) {
 		//uint32_t* id = malloc(sizeof(uint32_t));
@@ -1064,10 +1085,10 @@ void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, 
 				}
 				//aca buscar segun perfect o no
 				if(trainer_couple != NULL){
-					printf("SE SELECCIONO COMO COUPLE A\n");
-					debug_trainer(trainer_couple);
-					printf("PARA\n");
-					debug_trainer(trainer);
+//					printf("SE SELECCIONO COMO COUPLE A\n");
+//					debug_trainer(trainer_couple);
+//					printf("PARA\n");
+//					debug_trainer(trainer);
 					if(trainer->action == FREE && trainer_couple->action == FREE){
 						char* pokemon_from_held = NULL;
 						t_list* trainer_held_pokemons_list = trainer_held_pokemons(trainer);
@@ -1109,16 +1130,16 @@ void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer
 	deadlocks++;
 	log_info(log, "deadlock detectado -> intecambio planificado:\ntrainer[%d] ->%s-> trainer[%d]\ntrainer[%d] ->%s-> trainer[%d]", trainer1->id, pokemon1, trainer2->id, trainer2->id, pokemon2, trainer1->id);
 
-	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer1->id, pokemon1, trainer2->id);
-	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer2->id, pokemon2, trainer1->id);
+//	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer1->id, pokemon1, trainer2->id);
+//	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer2->id, pokemon2, trainer1->id);
 
 	trainer_assign_move(trainer1, pokemon1, trainer2->position, 0, trainer2->id);
 	trainer_assign_trade(trainer2, pokemon2, trainer1->id);
 
-	printf("\tassign_trade_couple\n");
-	debug_trainer(trainer1);
-	debug_trainer(trainer2);
-	printf("\tassign_trade_couple\n");
+//	printf("\tassign_trade_couple\n");
+//	debug_trainer(trainer1);
+//	debug_trainer(trainer2);
+//	printf("\tassign_trade_couple\n");
 
 
 }//*/
@@ -1358,10 +1379,10 @@ t_trainer* shortest_job_trainer_from_ready() {
 void trainer_assign_move(t_trainer* trainer, char* pokemon, t_position* position, bool catching, uint32_t target_id /*0 = no trainer*/)
 {
 	//trainer_assign_move asigna el target y envía el trainer a ready
-	printf("\nse asignara al entrenador[%d] a %s al pokemon %s, en la posicion (%d, %d)\n", trainer->id, catching?"atrapar":"intercambiar", pokemon, position->x, position->y);
+//	printf("\nse asignara al entrenador[%d] a %s al pokemon %s, en la posicion (%d, %d)\n", trainer->id, catching?"atrapar":"intercambiar", pokemon, position->x, position->y);
 	trainer->action = MOVE;
 	trainer_set_target(trainer, create_target(pokemon, position, target_id, catching));
-	debug_trainer(trainer);
+//	debug_trainer(trainer);
 	transition_from_id_to_ready(trainer->id);
 }
 
@@ -1692,9 +1713,9 @@ void* sender_thread()
 			pthread_exit(NULL);
 		}
 
-		printf("me clave en sem messages\n");
-		debug_colas();
-		debug_message_list();
+
+//		debug_colas();
+//		debug_message_list();
 		sem_wait(&sem_messages);
 		printf("me clave en sem messages list\n");
 		sem_wait(&sem_messages_list);
@@ -1787,7 +1808,7 @@ void process_message(serve_thread_args* args) {
 			//long_term_scheduler();
 			sem_post(&sem_long);
 		}
-		debug_colas();
+//		debug_colas();
 	break;
 	case OPERATION_GET:
 		printf("SE RECIBIO UN  GET, PERO NO SE QUE HACER <----------------------------\n");
@@ -1828,7 +1849,7 @@ void process_message(serve_thread_args* args) {
 		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
 		if(dictionary_has_key(message_response,str_correlative_id) == 1){
 			t_trainer* trainer = (t_trainer*) dictionary_remove(message_response, str_correlative_id);
-			debug_trainer(trainer);
+//			debug_trainer(trainer);
 
 //			if(((t_message_caught*)(message))->result){
 //				add_pokemon(trainer, trainer->target->pokemon);
@@ -1868,7 +1889,7 @@ void process_message(serve_thread_args* args) {
 		printf("SE VA A BORRAR EL MENSAJE\n");
 		destroy_message_caught(message);
 		printf("SE BORRO EL MENSAJE\n");
-		debug_message_list();
+//		debug_message_list();
 	break;
 	default:
 		printf("CODIGO DE OPERACION ERRONEO\n");
@@ -1945,7 +1966,8 @@ void trainer_catch(t_trainer* trainer, bool result) {
 	if(result){
 		add_pokemon(trainer, trainer->target->pokemon);
 		add_caught(trainer->target->pokemon);
-		debug_trainer(trainer);
+		sub_catching(trainer->target->pokemon);
+//		debug_trainer(trainer);
 		if(trainer_success_objective(trainer) == 1){
 			printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 			trainer->action = FINISH;
@@ -1964,8 +1986,8 @@ void trainer_catch(t_trainer* trainer, bool result) {
 	} else {
 
 		trainer->action = FREE;
+		sub_catching(trainer->target->pokemon);
 	}
-	sub_catching(trainer->target->pokemon);
 	trainer_set_target(trainer, create_target("", create_position(0,0), 0, false));
 	//trainer->target->catching = 0;
 	//free(trainer->target->position);
@@ -2010,11 +2032,11 @@ void trade_trainer(t_trainer* trainer1){
 	sem_post(&sem_state_lists);
 
 	printf("\tBEFORE TRADE:\n");
-	debug_trainer(trainer1);
+//	debug_trainer(trainer1);
 	if(trainer2 ==NULL) {
 		printf("EL TRAINER ES NULL LA CONCHA DE LA LORA\n");
 	}
-	debug_trainer(trainer2);
+//	debug_trainer(trainer2);
 	if(trainer2 != NULL) {
 		char* pokemon1 = create_copy_string(trainer1->target->pokemon);
 		char* pokemon2 = create_copy_string(trainer2->target->pokemon);
@@ -2088,9 +2110,9 @@ void trade_trainer(t_trainer* trainer1){
 	}
 
 
-	printf("\tAFTER TRADE:\n");
-	debug_trainer(trainer1);
-	debug_trainer(trainer2);
+//	printf("\tAFTER TRADE:\n");
+//	debug_trainer(trainer1);
+//	debug_trainer(trainer2);
 
 }
 

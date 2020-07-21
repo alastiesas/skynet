@@ -303,15 +303,15 @@ bool trainer_locked(t_trainer* trainer) {
 		if(trainer_full(trainer)) {
 			if(!trainer_success_objective(trainer)) {
 				locked = true;
-				printf("trainer[%d] está bloqueado\n", trainer->id);
+//				printf("trainer[%d] está bloqueado\n", trainer->id);
 			}else {
-				printf("trainer[%d] no está bloqueado porque ya cumplio sus objetivos\n", trainer->id);
+//				printf("trainer[%d] no está bloqueado porque ya cumplio sus objetivos\n", trainer->id);
 			}
 		}else {
-			printf("trainer[%d] no está bloqueado porque no tiene el inventario lleno\n", trainer->id);
+//			printf("trainer[%d] no está bloqueado porque no tiene el inventario lleno\n", trainer->id);
 		}
 	}else {
-		printf("trainer[%d] no está bloqueado porque no está en FREE\n", trainer->id);
+//		printf("trainer[%d] no está bloqueado porque no está en FREE\n", trainer->id);
 	}
 	return locked;
 }
@@ -389,7 +389,7 @@ t_algorithm read_algorithm(char* config_algorithm) {
 	}else if(strcmp(config_algorithm, "SJF-CD") == 0) {
 		algorithm = SJFC;
 	}else {
-		printf("no se leyo el algoritmo en el config, default: FIFO\n");
+//		printf("no se leyo el algoritmo en el config, default: FIFO\n");
 	}
 	return algorithm;
 }
