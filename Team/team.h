@@ -54,15 +54,16 @@ sem_t sem_state_lists;//todas usan el mismo semáforo
 sem_t sem_scheduler;//short y long no se ejecutan a la vez
 sem_t sem_short;
 sem_t sem_long;
-t_state_change_reason exit_cpu_reason = NO_CHANGE;//TODO agregar mutex? same as preguntar mas abajo
+t_state_change_reason exit_cpu_reason = NO_CHANGE;//MUTEX = sem_cpu_info
 bool team_succes = false;
 
 //informes
-uint32_t cpu_cycles = 0;//Preguntar
+uint32_t cpu_cycles = 0;//MUTEX = sem_cpu_info
 uint32_t context_changes = 0;//MUTEX = sem_state_lists (el mismo que las colas)
 uint32_t deadlock_priority;//Exclusivo de long_term
 uint32_t deadlocks = 0;//Exclusivo de long_term -> deadlock_handler
 uint32_t solved_deadlocks = 0;//Exclusivo de long_term -> deadlock_handler
+sem_t sem_cpu_info;
 
 //comunicacion
 t_list* messages_list;//MUTEX = sem_messages_list | CONTADOR = sem_messages
@@ -121,7 +122,7 @@ void transition_block_to_exit(uint32_t index);
 void long_term_scheduler();
 bool possible_deadlock();
 void deadlock_handler();
-void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table);
+uint32_t deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table);
 void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, bool perfect);
 void* short_thread();
 // algoritmos de seleccion
@@ -194,6 +195,8 @@ void initialize_semaphores() {
 	sem_init(&sem_state_lists, 0, 1);
 	sem_init(&sem_poke_map, 0, 1);
 	sem_init(&sem_objectives_list, 0, 1);
+	sem_init(&sem_cpu_info, 0, 1);
+
 }
 
 void callback_fifo(t_trainer* trainer){
@@ -203,39 +206,53 @@ void callback_fifo(t_trainer* trainer){
 	case FREE:
 		//liberar cpu y llamar al short
 		trainer->burst = 0;
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = BURST;
+		sem_post(&sem_cpu_info);
 		sem_post(&sem_short);
 		break;
 	case MOVE:
 		//continuar ejecutando o volver a ready
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = NO_CHANGE;
+		sem_post(&sem_cpu_info);
 		sem_post(&trainer->sem_thread);
 		break;
 	case CATCH:
 		//continuar ejecutando o volver a ready
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = NO_CHANGE;
+		sem_post(&sem_cpu_info);
 		sem_post(&trainer->sem_thread);
 		break;
 	case CATCHING:
 		//liberar cpu y llamar al short
 		trainer->burst = 0;
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = CATCH_PETITION;
+		sem_post(&sem_cpu_info);
 		sem_post(&sem_short);
 		break;
 	case TRADE:
 		//liberar cpu y llamar al short
 		trainer->burst = 0;
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = TRADE_WAITING;
+		sem_post(&sem_cpu_info);
 		sem_post(&sem_short);
 		break;
 	case FINISH:
 		//liberar cpu y llamar al short
 		trainer->burst = 0;
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = EXIT;
+		sem_post(&sem_cpu_info);
 		sem_post(&sem_short);
 		break;
 	default:
+		sem_wait(&sem_cpu_info);
 		exit_cpu_reason = NO_CHANGE;
+		sem_post(&sem_cpu_info);
 		sem_post(&trainer->sem_thread);
 		break;
 	}
@@ -248,7 +265,9 @@ void callback_rr(t_trainer* trainer) {
 		case FREE:
 			//liberar cpu y llamar al short
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = BURST;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case MOVE:
@@ -256,11 +275,15 @@ void callback_rr(t_trainer* trainer) {
 			if(trainer_full_quantum(trainer, quantum)) {
 				//si se cumpleto el quantum, se desaloja
 				trainer->burst = 0;
+				sem_wait(&sem_cpu_info);
 				exit_cpu_reason = FULL_QUANTUM;
+				sem_post(&sem_cpu_info);
 				sem_post(&sem_short);
 			}else {
 				//si no completó el quantum, continua ejecutando
+				sem_wait(&sem_cpu_info);
 				exit_cpu_reason = NO_CHANGE;
+				sem_post(&sem_cpu_info);
 				sem_post(&trainer->sem_thread);
 			}
 			break;
@@ -269,34 +292,46 @@ void callback_rr(t_trainer* trainer) {
 			if(trainer_full_quantum(trainer, quantum)) {
 				//si se cumpleto el quantum, se desaloja
 				trainer->burst = 0;
+				sem_wait(&sem_cpu_info);
 				exit_cpu_reason = FULL_QUANTUM;
+				sem_post(&sem_cpu_info);
 				sem_post(&sem_short);
 			}else {
 				//si no completó el quantum, continua ejecutando
+				sem_wait(&sem_cpu_info);
 				exit_cpu_reason = NO_CHANGE;
+				sem_post(&sem_cpu_info);
 				sem_post(&trainer->sem_thread);
 			}
 			break;
 		case CATCHING:
 			//liberar cpu y llamar al short
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = CATCH_PETITION;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case TRADE:
 			//liberar cpu y llamar al short
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = TRADE_WAITING;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case FINISH:
 			//liberar cpu y llamar al short
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = EXIT;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		default:
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = NO_CHANGE;
+			sem_post(&sem_cpu_info);
 			sem_post(&trainer->sem_thread);
 			break;
 		}
@@ -309,42 +344,56 @@ void callback_sjfs(t_trainer* trainer) {
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = BURST;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case MOVE:
 			//continuar ejecutando o volver a ready
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = NO_CHANGE;
+			sem_post(&sem_cpu_info);
 			sem_post(&trainer->sem_thread);
 			break;
 		case CATCH:
 			//continuar ejecutando o volver a ready
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = NO_CHANGE;
+			sem_post(&sem_cpu_info);
 			sem_post(&trainer->sem_thread);
 			break;
 		case CATCHING:
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = CATCH_PETITION;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case TRADE:
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = TRADE_WAITING;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case FINISH:
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = EXIT;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		default:
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = NO_CHANGE;
+			sem_post(&sem_cpu_info);
 			sem_post(&trainer->sem_thread);
 			break;
 	}
@@ -367,7 +416,9 @@ void callback_sjfc(t_trainer* trainer) {
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = BURST;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case MOVE:
@@ -376,15 +427,21 @@ void callback_sjfc(t_trainer* trainer) {
 				t_trainer* sj_trainer = shortest_job_trainer_from_ready();
 				if(trainer_burst_estimate(sj_trainer) < trainer_burst_estimate(trainer)){
 					//Uno de los nuevos en ready tiene menor estimado -> se desaloja (sin actualizar el estimado
+					sem_wait(&sem_cpu_info);
 					exit_cpu_reason = SJF_PRIORITY;
+					sem_post(&sem_cpu_info);
 					sem_post(&sem_short);
 				} else {//Ninguno con menor estimado -> no se desaloja
 					new_trainer_in_ready = false;
+					sem_wait(&sem_cpu_info);
 					exit_cpu_reason = NO_CHANGE;
+					sem_post(&sem_cpu_info);
 					sem_post(&trainer->sem_thread);
 				}
 			} else {//flag en false -> imposible ser desalojado
+				sem_wait(&sem_cpu_info);
 				exit_cpu_reason = NO_CHANGE;
+				sem_post(&sem_cpu_info);
 				sem_post(&trainer->sem_thread);
 			}
 			break;
@@ -394,15 +451,21 @@ void callback_sjfc(t_trainer* trainer) {
 				t_trainer* sj_trainer = shortest_job_trainer_from_ready();
 				if(trainer_burst_estimate(sj_trainer) < trainer_burst_estimate(trainer)){
 					//Uno de los nuevos en ready tiene menor estimado -> se desaloja (sin actualizar el estimado
+					sem_wait(&sem_cpu_info);
 					exit_cpu_reason = SJF_PRIORITY;
+					sem_post(&sem_cpu_info);
 					sem_post(&sem_short);
 				} else {//Ninguno con menor estimado -> no se desaloja
 					new_trainer_in_ready = false;
+					sem_wait(&sem_cpu_info);
 					exit_cpu_reason = NO_CHANGE;
+					sem_post(&sem_cpu_info);
 					sem_post(&trainer->sem_thread);
 				}
 			} else {//flag en false -> imposible ser desalojado
+				sem_wait(&sem_cpu_info);
 				exit_cpu_reason = NO_CHANGE;
+				sem_post(&sem_cpu_info);
 				sem_post(&trainer->sem_thread);
 			}
 			break;
@@ -410,7 +473,9 @@ void callback_sjfc(t_trainer* trainer) {
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = CATCH_PETITION;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		case TRADE:
@@ -419,18 +484,24 @@ void callback_sjfc(t_trainer* trainer) {
 //			trainer->burst = 0;
 //			exit_cpu_reason = TRADE_WAITING;
 //			sem_post(&sem_short);
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = NO_CHANGE;
+			sem_post(&sem_cpu_info);
 			sem_post(&trainer->sem_thread);
 			break;
 		case FINISH:
 			//liberar cpu y llamar al short
 			trainer_update_burst_estimate(trainer);
 			trainer->burst = 0;
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = EXIT;
+			sem_post(&sem_cpu_info);
 			sem_post(&sem_short);
 			break;
 		default:
+			sem_wait(&sem_cpu_info);
 			exit_cpu_reason = NO_CHANGE;
+			sem_post(&sem_cpu_info);
 			sem_post(&trainer->sem_thread);
 			break;
 	}
@@ -668,7 +739,7 @@ void trainer_thread(t_callback* callback_thread)
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
-					log_info(log, "trainer[%d] movimiento: (%s) -> (%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y);
+					log_info(log, "trainer[%d] operación: movimiento (%s) -> (%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y);
 				}
 				else if(trainer->target->catching)
 					trainer->action = CATCH;
@@ -680,7 +751,7 @@ void trainer_thread(t_callback* callback_thread)
 				break;
 			case CATCH:
 				catch(trainer);
-				log_info(log, "trainer[%d] atrapar: %s en (%d, %d)", trainer->id, trainer->target->pokemon, trainer->position->x, trainer->position->y);
+				log_info(log, "trainer[%d] operación: atrapar %s en (%d, %d)", trainer->id, trainer->target->pokemon, trainer->position->x, trainer->position->y);
 				break;
 			case CATCHING:
 				printf("Estoy atrapando pokemon, comando CATCHING\n");
@@ -785,7 +856,6 @@ void* short_thread()
 		short_term_scheduler();
 		sem_post(&sem_scheduler);
 	}
-	printf("cantidad de CPU %d\n", cpu_cycles);
 }
 
 void long_term_scheduler(){
@@ -843,7 +913,14 @@ void deadlock_handler(){
 	t_dictionary* waiting_table = dictionary_create();
 	t_dictionary* held_table = dictionary_create();
 
-	deadlock_detector(waiting_table,held_table);
+	printf("PRIMERO PAREJAS PERFECTAS\n");
+
+	log_info(log, "inicio de algoritmo de deteccion de deadlocks");
+
+	uint32_t locked_trainers = deadlock_detector(waiting_table,held_table);
+
+	log_info(log, "entrenadores interbloqueados: %d, pokemon (especies) retenidos: %d, pokemon (especies) en espera: %d", locked_trainers, dictionary_size(held_table), dictionary_size(waiting_table));
+
 	//fixeamos parejas perfectas
 
 	void debug_table(char* key, t_list* table) {
@@ -855,6 +932,7 @@ void deadlock_handler(){
 		list_iterate(table, &debug_list);
 		printf("\n");
 	}
+
 	printf("TABLA DE WAITING:\n");
 	dictionary_iterator(waiting_table, &debug_table);
 	printf("TABLA DE HELD:\n");
@@ -880,7 +958,7 @@ void deadlock_handler(){
 
 }
 
-void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
+uint32_t deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 	printf("DEADLOCKDETECTOR\n");
 	//tomo los entrenadores que esten interbloqueados
 	sem_wait(&sem_state_lists);
@@ -888,6 +966,8 @@ void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 	sem_post(&sem_state_lists);
 
 	printf("ENTRENADORES BLOQUEADOS: %d\n", list_size(locked_trainers));
+
+
 	list_iterate(locked_trainers, &debug_trainer);
 
 	void add_to_tables(t_trainer* trainer) {
@@ -928,6 +1008,7 @@ void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
 
 	list_iterate(locked_trainers, &add_to_tables);
 
+	return list_size(locked_trainers);
 	//printf("dictionary has %d\n",dictionary_has_key(waiting_table,"Pidgey"));
 
 	//printf("trainer has charmander %d\n",list_get((dictionary_get(waiting_table, "Pidgey")),0));
@@ -1025,6 +1106,10 @@ void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, 
 
 void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer2, char* pokemon2) {
 	printf("DEBE REALIZARSE EL SIGUIENTE INTERCAMBIO\n");
+
+	deadlocks++;
+	log_info(log, "deadlock detectado -> intecambio planificado:\ntrainer[%d] ->%s-> trainer[%d]\ntrainer[%d] ->%s-> trainer[%d]", trainer1->id, pokemon1, trainer2->id, trainer2->id, pokemon2, trainer1->id);
+
 	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer1->id, pokemon1, trainer2->id);
 	printf("trainer[%d] ->%s-> trainer[%d]\n", trainer2->id, pokemon2, trainer1->id);
 
@@ -1186,11 +1271,16 @@ void exit_cpu() {
 				break;
 		}//fin switch
 
-		if(exit_cpu_reason != NO_CHANGE) {
+
+		sem_wait(&sem_cpu_info);
+		int reason_int = exit_cpu_reason;
+		sem_post(&sem_cpu_info);
+		if(reason_int != NO_CHANGE) {
 			char* reason = exit_cpu_reason_string();
 			log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
 			free(reason);
 		}
+
 		free(state_change_log);
 	}//fin if
 
@@ -1198,7 +1288,10 @@ void exit_cpu() {
 
 char* exit_cpu_reason_string() {
 	char* reason = NULL;
-	switch(exit_cpu_reason) {
+	sem_wait(&sem_cpu_info);
+	int reason_int = exit_cpu_reason;
+	sem_post(&sem_cpu_info);
+	switch(reason_int) {
 	case NO_CHANGE:
 		reason = create_copy_string("sin cambios");
 		break;
@@ -1266,7 +1359,7 @@ t_trainer* shortest_job_trainer_from_ready() {
 void trainer_assign_move(t_trainer* trainer, char* pokemon, t_position* position, bool catching, uint32_t target_id /*0 = no trainer*/)
 {
 	//trainer_assign_move asigna el target y envía el trainer a ready
-	printf("\nse asignara al entrenador[%d] a atrapar al pokemon %s, en la posicion (%d, %d)\n", trainer->id, pokemon, position->x, position->y);
+	printf("\nse asignara al entrenador[%d] a %s al pokemon %s, en la posicion (%d, %d)\n", trainer->id, catching?"atrapar":"intercambiar", pokemon, position->x, position->y);
 	trainer->action = MOVE;
 	trainer_set_target(trainer, create_target(pokemon, position, target_id, catching));
 	debug_trainer(trainer);
@@ -1537,7 +1630,9 @@ void move_up(t_trainer* trainer)
 	trainer->position->y++;
 	trainer->cpu_cycles++;
 	trainer->burst++;
+	sem_wait(&sem_cpu_info);
 	cpu_cycles++;
+	sem_post(&sem_cpu_info);
 }
 
 void move_down(t_trainer* trainer)
@@ -1546,7 +1641,9 @@ void move_down(t_trainer* trainer)
 	trainer->position->y--;
 	trainer->cpu_cycles++;
 	trainer->burst++;
+	sem_wait(&sem_cpu_info);
 	cpu_cycles++;
+	sem_post(&sem_cpu_info);
 }
 
 void move_right(t_trainer* trainer)
@@ -1555,7 +1652,9 @@ void move_right(t_trainer* trainer)
 	trainer->position->x++;
 	trainer->cpu_cycles++;
 	trainer->burst++;
+	sem_wait(&sem_cpu_info);
 	cpu_cycles++;
+	sem_post(&sem_cpu_info);
 }
 
 void move_left(t_trainer* trainer)
@@ -1564,7 +1663,9 @@ void move_left(t_trainer* trainer)
 	trainer->position->x--;
 	trainer->cpu_cycles++;
 	trainer->burst++;
+	sem_wait(&sem_cpu_info);
 	cpu_cycles++;
+	sem_post(&sem_cpu_info);
 }
 
 void move(t_trainer* trainer)
@@ -1658,13 +1759,16 @@ void process_message(serve_thread_args* args) {
 		printf("SE RECIBIO UN  NEW, PERO NO SE QUE HACER <----------------------------\n");
 	break;
 	case OPERATION_APPEARED:
-		printf("SE RECIBIO UN  APPEARED [");
-		printf("ID: %d, ", ((t_message_appeared*)(message))->id);
-		printf("CORRELATIVE_ID: %d, ", ((t_message_appeared*)(message))->correlative_id);
-		printf("SIZE: %d, ", ((t_message_appeared*)(message))->size_pokemon_name);
-		printf("POKEMON: %s, ", ((t_message_appeared*)(message))->pokemon_name);;
-		printf("POSITION: (%d, %d) ", ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
-		printf("]\n");
+//		printf("SE RECIBIO UN  APPEARED [");
+//		printf("ID: %d, ", ((t_message_appeared*)(message))->id);
+//		printf("CORRELATIVE_ID: %d, ", ((t_message_appeared*)(message))->correlative_id);
+//		printf("SIZE: %d, ", ((t_message_appeared*)(message))->size_pokemon_name);
+//		printf("POKEMON: %s, ", ((t_message_appeared*)(message))->pokemon_name);
+//		printf("POSITION: (%d, %d) ", ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
+//		printf("]\n");
+
+		log_info(log, "appeared recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION: (%d, %d)]", ((t_message_appeared*)(message))->id, ((t_message_appeared*)(message))->correlative_id, ((t_message_appeared*)(message))->size_pokemon_name, ((t_message_appeared*)(message))->pokemon_name, ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
+
 		//SOLO SE AGREGA SI ES REQUERIDO EN OBJETIVOS GLOBALES
 		if(pokemon_is_needed_on_pokemap(((t_message_appeared*)(message))->pokemon_name)){
 			add_to_poke_map(((t_message_appeared*)(message))->pokemon_name,((t_message_appeared*)(message))->position);
@@ -1681,25 +1785,32 @@ void process_message(serve_thread_args* args) {
 		printf("ID: %d, ", ((t_message_localized*)(message))->id);
 		printf("CORRELATIVE_ID: %d, ", ((t_message_localized*)(message))->correlative_id);
 		printf("SIZE: %d, ", ((t_message_localized*)(message))->size_pokemon_name);
-		printf("POKEMON: %s, ", ((t_message_localized*)(message))->pokemon_name);;
+		printf("POKEMON: %s, ", ((t_message_localized*)(message))->pokemon_name);
 		printf("POSITION_AMOUNT: %d, ", ((t_message_localized*)(message))->position_amount);
 		printf("POSITIONS: [");
 		t_position* test = ((t_message_localized*)(message))->positions;
-		for(int i = 0; i<((t_message_localized*)(message))->position_amount; i++){
-			printf(" (%d, %d) ",(test+i)->x, (test+i)->y);
+		char* positions_string = string_new();
+		for(int i = 0; i < ((t_message_localized*)(message))->position_amount; i++){
+			char* aux = malloc(12);
+			sprintf(aux, " (%d, %d) ", (test+i)->x, (test+i)->y);
 
 		}
 		printf("]\n");
-		//TODO ¿gamecard contesta a los get?
+		log_info(log, "localized recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION_AMOUNT: %d, POSITIONS:%s]", ((t_message_localized*)(message))->id, ((t_message_localized*)(message))->correlative_id, ((t_message_localized*)(message))->size_pokemon_name, ((t_message_localized*)(message))->pokemon_name, ((t_message_localized*)(message))->position_amount, positions_string);
+
+		destroy_message_localized(message);
+
 	break;
 	case OPERATION_CATCH:
 		printf("SE RECIBIO UN  CATCH, PERO NO SE QUE HACER <----------------------------\n");
 	break;
 	case OPERATION_CAUGHT:
-		printf("SE RECIBIO UN  CAUGHT [");
-		printf("ID: %d, ",((t_message_caught*)(message))->id);
-		printf("CORRELATIVE_ID %d, ",((t_message_caught*)(message))->correlative_id);
-		printf("RESULT: %d]<----------\n",((t_message_caught*)(message))->result);
+//		printf("SE RECIBIO UN  CAUGHT [");
+//		printf("ID: %d, ",((t_message_caught*)(message))->id);
+//		printf("CORRELATIVE_ID %d, ",((t_message_caught*)(message))->correlative_id);
+//		printf("RESULT: %d]<----------\n",((t_message_caught*)(message))->result);
+
+		log_info(log, "caught recibido [ID: %d, CORRELATIVE_ID %d, RESULT: %s]", ((t_message_caught*)(message))->id, ((t_message_caught*)(message))->correlative_id, ((t_message_caught*)(message))->result?"OK":"FAIL");
 
 		char str_correlative_id[6];
 		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
@@ -1756,6 +1867,7 @@ pthread_t subscribe(queue_code queue_code) {
 	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time, retry_count, log_utils);
 
 	t_package* package = serialize_suscripcion(team_id, queue_code);
+	if( socket != -1) { //conexion realizada
 
 	send_paquete(socket, package);
 	if (receive_ACK(socket, log_utils) == -1) {
@@ -1771,6 +1883,12 @@ pthread_t subscribe(queue_code queue_code) {
 	args->function = process_message;
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
+
+	} else {//conexion fallida -> comportamiento default
+		log_info(log, "error de suscripción al broker en cola %s -> se realizará la operación default", queue_code_string(queue_code));
+	}
+	sleep(100);
+
 	return thread;
 
 	//Al completar el objetivo global, enviar tres mensajes al broker con ID de proceso e ID de cola asi puede liberar memoria
@@ -1809,13 +1927,16 @@ uint32_t trade(t_trainer* trainer, uint32_t trade_cpu){
 	sleep(time_delay);
 	trainer->cpu_cycles++;
 	trainer->burst++;
+	sem_wait(&sem_cpu_info);
 	cpu_cycles++;
+	sem_post(&sem_cpu_info);
 	trade_cpu++;
 	printf("trade_cpu = %d\n", trade_cpu);
 
 	if(trade_cpu == 5){
 		//efectuamos el trade
 		//entrenador1 target->pokemon pasa al inventario del entrenador2 y el entrenador2 target->pokemon pasa al inventario del 1
+		log_info(log, "trainer[%d] operación: intercambio con trainer[%d]", trainer->id, trainer->target->trainer_id);
 		trade_trainer(trainer);
 		trade_cpu = 0;
 	}
@@ -1871,7 +1992,8 @@ void trade_trainer(t_trainer* trainer1){
 			trainer2->pokemons[index2] = pokemon1;
 		}
 		//ya se realizo el intercambio
-		log_info(log, "trainer[%d] (%s) <- intercambio -> (%s) trainer[%d]", trainer1->id, pokemon1, pokemon2, trainer2->id);
+		solved_deadlocks++;
+		log_info(log, "deadlock resuelto -> intercambio realizado:\ntrainer[%d] ->%s-> trainer[%d]\ntrainer[%d] ->%s-> trainer[%d]", trainer1->id, pokemon1, trainer2->id, trainer2->id, pokemon2, trainer1->id);
 
 	} else {
 		printf("TRAINER2 = null, se rompio todo\n");
@@ -1880,8 +2002,8 @@ void trade_trainer(t_trainer* trainer1){
 	trainer_set_target(trainer1, create_target("", create_position(0,0), 0, false));
 	trainer_set_target(trainer2, create_target("", create_position(0,0), 0, false));
 
-//	destroy_target(trainer1->target);
-//	destroy_target(trainer2->target);
+//	destroy_target(trainer1->target);//NO ANDA
+//	destroy_target(trainer2->target);//NO ANDA -> use set target vacio
 
 	if(trainer_success_objective(trainer1) == 1){
 		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");

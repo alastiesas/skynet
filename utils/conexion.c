@@ -275,17 +275,9 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_
 	//int tid = pthread_self();
 	//pthread_getname_np(tid, modulo, 16);
 	int conexion = -2;
-	uint32_t i = 0;
+	uint32_t tries = 1;
 	while (conexion < 0){
-
-		if (conexion == -1){
-			i++;
-			if(i == retry_amount){
-				return -1;
-			}
-			log_info(logger, "Reintentando en %d segundos\n", retry_time);
-				sleep(retry_time);
-		}
+		log_info(logger, "Intento de conexión %d de %d", tries, retry_amount);
 
 		struct addrinfo hints;
 		struct addrinfo *server_info;
@@ -303,9 +295,18 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_
 
 		conexion = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
 		if(conexion == -1)
-			log_warning(logger, "Error de conexion con el proceso %s:%s\n", ip, puerto);
+			//log_warning(logger, "Error de conexion con el proceso ip:%s puerto:%s\n", ip, puerto);
+			log_warning(logger, "Error de conexion");
 
 		freeaddrinfo(server_info);
+		if (conexion == -1){
+			tries++;
+			if(tries == retry_amount){
+				return -1;
+			}
+			log_info(logger, "Reintentando conexion en %d segundos\n", retry_time);
+				sleep(retry_time);
+		}
 	}
 
 	log_info(logger, "Conexion creada\n");

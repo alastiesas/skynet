@@ -20,6 +20,7 @@ void free_string_list(char** string_list);
 t_index* search_index(t_index* index ,t_objective* objective);
 t_objective* find_key(t_list* list, char* key);
 char* create_copy_string(char* from);
+char* queue_code_string(queue_code queue);
 uint32_t max(int32_t x, int32_t y);
 uint32_t min(int32_t x, int32_t y);
 

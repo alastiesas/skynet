@@ -13,16 +13,14 @@
 
 int main(void)
 {
-
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
 	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
-	log_info(log_utils, "STARTING TEAM PROGRAM, GOOD LUCK");
-
 
 	config = config_create("team.config");
 	initialize_global_config();
 	initialize_semaphores();
 
+	log_info(log, "inicio programa team[%d]", team_id);
 
 	pthread_t sender_tid;
 	pthread_create(&sender_tid, NULL, sender_thread, NULL);
@@ -73,9 +71,9 @@ int main(void)
 	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
 	subscribe(OPERATION_APPEARED);
-	subscribe(OPERATION_LOCALIZED);
-	subscribe(OPERATION_CAUGHT);
-	sleep(5);
+//	subscribe(OPERATION_LOCALIZED);
+//	subscribe(OPERATION_CAUGHT);
+//	sleep(5);
 
 
 	pthread_t long_tid;
@@ -97,7 +95,7 @@ int main(void)
 
 	log_info(log, "Cantidad de ciclos de CPU totales: %d", cpu_cycles);
 	log_info(log, "Cantidad de cambios de contexto realizados: %d", context_changes);
-	log_info(log, "deadlocks: producidos: %d\tresueltos: %d(//TODO)", deadlocks, solved_deadlocks);//TODO
+	log_info(log, "deadlocks: producidos: %d\tresueltos: %d", deadlocks, solved_deadlocks);
 
 
 	exit(0);

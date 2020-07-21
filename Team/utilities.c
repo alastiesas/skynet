@@ -80,6 +80,34 @@ char* create_copy_string(char* from) {
 
 }
 
+char* queue_code_string(queue_code queue) {
+	char* string = NULL;
+	switch(queue) {
+	case COLA_NEW:
+		string = create_copy_string("NEW");
+		break;
+	case COLA_APPEARED:
+		string = create_copy_string("APPEARED");
+		break;
+	case COLA_GET:
+		string = create_copy_string("GET");
+		break;
+	case COLA_LOCALIZED:
+		string = create_copy_string("LOCALIZED");
+		break;
+	case COLA_CATCH:
+		string = create_copy_string("CATCH");
+		break;
+	case COLA_CAUGHT:
+		string = create_copy_string("CAUGHT");
+		break;
+	default:
+		string = create_copy_string("");
+		break;
+	}
+	return string;
+}
+
 uint32_t max(int32_t x, int32_t y) {
 	uint32_t max_number = x;
 	if(x < y) {

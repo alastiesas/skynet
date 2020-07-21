@@ -104,6 +104,10 @@ t_message_caught* create_message_caught(uint32_t correlative_id, uint32_t result
 	return caught;
 }
 
+
+
+
+
 void destroy_message_appeared(t_message_appeared* message_appeared) {
 
 	free(message_appeared->pokemon_name);
