@@ -53,6 +53,7 @@ typedef struct
 	//pthread_attr_t attr;
 	sem_t sem_thread;
 	t_action action;
+	uint32_t cpu_cycles;
 	uint32_t quantum;
 	uint32_t burst;
 	uint32_t burst_estimate;
@@ -110,13 +111,13 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons);
 t_position* create_position_from_config(char* positions);
 t_target* create_target(char* pokemon, t_position* position, uint32_t trainer_id, bool catching);
-void destroy_target(t_target* target);
 void trainer_set_target(t_trainer* trainer, t_target* target);
 void add_pokemon(t_trainer* trainer, char*pokemon);
 //FIN constructores
 
 //destructores
 void destroy_trainer(t_trainer* trainer);
+void destroy_target(t_target* target);
 //FIN destructores
 
 //consultas

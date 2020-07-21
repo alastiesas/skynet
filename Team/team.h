@@ -21,6 +21,7 @@ bool probando = true;
 //configuracion
 t_config* config;
 t_log* log;
+t_log* log_utils;
 uint32_t team_id;
 char* ip_broker;
 char* port_broker;
@@ -54,6 +55,7 @@ sem_t sem_scheduler;//short y long no se ejecutan a la vez
 sem_t sem_short;
 sem_t sem_long;
 t_state_change_reason exit_cpu_reason = NO_CHANGE;//TODO agregar mutex? same as preguntar mas abajo
+bool team_succes = false;
 
 //informes
 uint32_t cpu_cycles = 0;//Preguntar
@@ -82,7 +84,7 @@ void initialize_global_objectives();
 
 //funciones de entrenadores
 void add_trainer_to_objective(t_trainer* trainer);
-void* trainer_thread(t_callback* callback_thread);
+void trainer_thread(t_callback* callback_thread);
 void trainer_assign_catch(char* pokemon, t_list* positions);
 t_trainer* find_trainer_for_catch(t_position* position);
 void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer2, char* pokemon2);
@@ -160,7 +162,7 @@ void trade_trainer(t_trainer* trainer1);
 void message_list_add_catch(t_trainer* trainer);
 void* sender_thread();
 void process_message(serve_thread_args* args);
-void subscribe(queue_code queue_code);
+pthread_t subscribe(queue_code queue_code);
 //FIN comunicación
 
 //debugs
@@ -644,7 +646,7 @@ bool success_global_objective()
 	return success;
 }
 
-void* trainer_thread(t_callback* callback_thread)
+void trainer_thread(t_callback* callback_thread)
 {
 	//if(/*si es 0 menor*/)
 		//funcion cambiar valor global de variable interrumption
@@ -654,27 +656,25 @@ void* trainer_thread(t_callback* callback_thread)
 
 	printf("hola soy el entrenador %d\n", (int)trainer->tid);
 	uint32_t trade_cpu = 0;
-	while(1){
+	while(trainer->action != FINISH){
 		sem_wait(&trainer->sem_thread);
 
 		switch(trainer->action){
 			case MOVE:
 				printf("trainer[%d]->(comando MOVE), objetivo: [%s (%d, %d)]\n", trainer->id, trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
-				printf("Posicion actual: (%d,%d)", trainer->position->x,trainer->position->y);
 				//t_position* previous_position = create_position(trainer->position->x, trainer->position->y);
 				char* previous_string = malloc(sizeof(char)*4);
 				sprintf(previous_string, "%d, %d", trainer->position->x, trainer->position->y);
 				//aca va un if, no un while
-				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y)
+				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
+					log_info(log, "trainer[%d] movimiento: (%s) -> (%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y);
+				}
 				else if(trainer->target->catching)
 					trainer->action = CATCH;
 				else
 					trainer->action = TRADE;
 
-				printf("(%d,%d)\n", trainer->position->x,trainer->position->y);
-
-				log_info(log, "trainer[%d] movimiento: (%s) -> (%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y);
 				free(previous_string);
 
 				break;
@@ -691,8 +691,8 @@ void* trainer_thread(t_callback* callback_thread)
 				break;
 			case FINISH:
 
-
-				pthread_exit();
+				//en teoria nunca llega acá. . .
+				//pthread_exit(NULL);
 				break;
 			default:
 				printf("No hago nada\n");
@@ -702,10 +702,13 @@ void* trainer_thread(t_callback* callback_thread)
 		callback_thread->callback(trainer);
 	}
 
+
 	printf("HILO debug del entrenador %s\n", trainer->objectives[0]);
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
-	return NULL;
+	printf("trainer[%d] destruido\n", trainer->id);
+	log_info(log, "trainer[%d] finalizado con exito cantidad de ciclos utilizados: %d", trainer->id, trainer->cpu_cycles);
+	destroy_trainer(trainer);
 }
 
 //encuentra al entrenador mas cerca de la posicion en ambas listas
@@ -727,7 +730,18 @@ void long_thread() {
 	sem_init(&sem_scheduler, 0, 1);
 	//sem post para pruebas
 	sem_post(&sem_long);
-	while(1){
+	while(!team_succes){
+
+		if(success_global_objective()) {
+			printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
+			printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
+			team_succes = true;
+		}else {
+			printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
+			printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
+			sleep(2);
+		}
+
 		sem_wait(&sem_long);
 		sem_wait(&sem_scheduler);
 		//printf("esta aca??\n");
@@ -735,6 +749,7 @@ void long_thread() {
 		sem_post(&sem_scheduler);
 		sem_post(&sem_short);
 	}
+	log_info(log, "TERMINO EL LONG------------------------------------");
 
 }
 
@@ -761,7 +776,8 @@ void* short_thread()
 	}
 	sem_init(&sem_short, 0, 0);
 
-	while(1){
+	while(!team_succes){
+
 		sem_wait(&sem_short);
 		sem_wait(&sem_scheduler);
 		//printf("esta wacho aca??\n");
@@ -776,15 +792,7 @@ void long_term_scheduler(){
 
 	//PRUEBAAAAA
 
-	if(success_global_objective()) {
-		printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
-		printf("OBJETIVOS GLOBALES CUMPLIDOS, TERMINA EL PROGRAMA!!!!!!\n");
-		sleep(999);
-	}else {
-		printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
-		printf("NO SE CUMPLIERON LOS OBJETIVOS GLOBALES\n");
-		sleep(2);
-	}
+
 
 	//revisar size ready
 	sem_wait(&sem_state_lists);
@@ -873,6 +881,7 @@ void deadlock_handler(){
 }
 
 void deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table) {
+	printf("DEADLOCKDETECTOR\n");
 	//tomo los entrenadores que esten interbloqueados
 	sem_wait(&sem_state_lists);
 	t_list* locked_trainers = list_filter(block_list, &trainer_locked);
@@ -1386,10 +1395,10 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 	context_changes++;
 	if(to == exit_list) {
 		trainer->action = FINISH;
-		sem_post(trainer->sem_thread);
+		sem_post(&trainer->sem_thread);
 	}
 
-}//NO ES RESPONSABLE DEL LOG
+}//NO ES RESPONSABLE DEL log
 
 void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	bool condition(void* trainer) {
@@ -1422,10 +1431,10 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 		free(state);
 
 		trainer->action = FINISH;
-		sem_post(trainer->sem_thread);
+		sem_post(&trainer->sem_thread);
 	}
 
-}//YA TIENE LOG
+}//YA TIENE log
 
 void transition_from_id_to_ready(uint32_t id) {
 	bool condition(void* trainer) {
@@ -1466,7 +1475,7 @@ void transition_from_id_to_ready(uint32_t id) {
 		log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
 		free(reason);
 	}
-}//YA TIENE LOG
+}//YA TIENE log
 
 void transition_new_to_ready(uint32_t index)
 {
@@ -1483,30 +1492,30 @@ void transition_ready_to_exec(uint32_t index)
 	char* reason = enter_cpu_reason_string();
 	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
 	sem_post(&trainer->sem_thread);
-}//YA TIENE LOG
+}//YA TIENE log
 
 void transition_ready_to_exec_by_trainer(t_trainer* trainer) {
 	transition_by_id(trainer->id, ready_list, exec_list);
 	char* reason = enter_cpu_reason_string();
 	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
 	sem_post(&trainer->sem_thread);
-}//YA TIENE LOG
+}//YA TIENE log
 
 void transition_exec_to_ready()
 {
 	state_change(0,exec_list,ready_list);
 	//new_trainer_in_ready = true;//Si pasa de EXEC a READY es porque fue desalojado
-}//YA TIENE LOG EN EXIT_CPU
+}//YA TIENE log EN EXIT_CPU
 
 void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
-}//YA TIENE LOG EN EXIT_CPU
+}//YA TIENE log EN EXIT_CPU
 
 void transition_exec_to_exit()
 {
 	state_change(0,exec_list,exit_list);
-}//YA TIENE LOG EN EXIT_CPU
+}//YA TIENE log EN EXIT_CPU
 
 void transition_block_to_ready(uint32_t index)
 {
@@ -1526,36 +1535,36 @@ void move_up(t_trainer* trainer)
 {
 	sleep(time_delay);
 	trainer->position->y++;
+	trainer->cpu_cycles++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_up -> ");
 }
 
 void move_down(t_trainer* trainer)
 {
 	sleep(time_delay);
 	trainer->position->y--;
+	trainer->cpu_cycles++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_down -> ");
 }
 
 void move_right(t_trainer* trainer)
 {
 	sleep(time_delay);
 	trainer->position->x++;
+	trainer->cpu_cycles++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_right -> ");
 }
 
 void move_left(t_trainer* trainer)
 {
 	sleep(time_delay);
 	trainer->position->x--;
+	trainer->cpu_cycles++;
 	trainer->burst++;
 	cpu_cycles++;
-	printf(" -> move_left ->");
 }
 
 void move(t_trainer* trainer)
@@ -1578,6 +1587,11 @@ void* sender_thread()
 	sem_init(&sem_messages, 0, 0);
 	sem_init(&sem_messages_recieve_list, 0, 1);
 	while(1){
+
+		if(team_succes) {
+			pthread_exit(NULL);
+		}
+
 		printf("me clave en sem messages\n");
 		debug_colas();
 		debug_message_list();
@@ -1699,7 +1713,7 @@ void process_message(serve_thread_args* args) {
 				if(trainer_success_objective(trainer) == 1){
 					printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 					trainer->action = FINISH;
-					transition_by_id(trainer->id, block_list, exit_list);//YA HACE LOG a EXIT FALTA FROM
+					transition_by_id(trainer->id, block_list, exit_list);//YA HACE log a EXIT FALTA FROM
 					//TODO EL MENSAJE DEBE ELIMINARSE, HACER FREE O ALGO,
 					if(success_global_objective()) {
 						printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
@@ -1734,17 +1748,17 @@ void process_message(serve_thread_args* args) {
 }
 
 
-void subscribe(queue_code queue_code) {
+pthread_t subscribe(queue_code queue_code) {
 	printf("COD OPERATION %d\n", queue_code);
 
 
 
-	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time, retry_count, log);
+	int32_t socket = connect_to_server(ip_broker, port_broker,retry_time, retry_count, log_utils);
 
 	t_package* package = serialize_suscripcion(team_id, queue_code);
 
 	send_paquete(socket, package);
-	if (receive_ACK(socket, log) == -1) {
+	if (receive_ACK(socket, log_utils) == -1) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -1753,11 +1767,11 @@ void subscribe(queue_code queue_code) {
 
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->socket = socket;
-	args->logger = log;
+	args->logger = log_utils;
 	args->function = process_message;
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
-
+	return thread;
 
 	//Al completar el objetivo global, enviar tres mensajes al broker con ID de proceso e ID de cola asi puede liberar memoria
 }
@@ -1765,11 +1779,11 @@ void subscribe(queue_code queue_code) {
 
 int32_t send_message(char* ip, char* port, t_package* package) {
 
-	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);
+	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log_utils);
 	send_paquete(socket, package);//ya libera el paquete
 
-	int32_t correlative_id = receive_ID(socket, log);
-	send_ACK(socket, log);
+	int32_t correlative_id = receive_ID(socket, log_utils);
+	send_ACK(socket, log_utils);
 	return correlative_id;
 }
 
@@ -1784,6 +1798,7 @@ void catch(t_trainer* trainer){
 	sleep(time_delay);
 	pthread_create(&tid, NULL, &message_list_add_catch, trainer);
 	trainer->action = CATCHING;
+	trainer->cpu_cycles++;
 	trainer->burst++;
 	cpu_cycles++;
 	printf(" -> Catch: %s\n", trainer->target->pokemon);
@@ -1792,6 +1807,7 @@ void catch(t_trainer* trainer){
 uint32_t trade(t_trainer* trainer, uint32_t trade_cpu){
 
 	sleep(time_delay);
+	trainer->cpu_cycles++;
 	trainer->burst++;
 	cpu_cycles++;
 	trade_cpu++;
@@ -1825,15 +1841,15 @@ void trade_trainer(t_trainer* trainer1){
 	}
 	debug_trainer(trainer2);
 	if(trainer2 != NULL) {
-		char* pokemon1 = NULL;
-		char* pokemon2 = NULL;
+		char* pokemon1 = create_copy_string(trainer1->target->pokemon);
+		char* pokemon2 = create_copy_string(trainer2->target->pokemon);
 		uint32_t index1 = 0;
 		uint32_t index2 = 0;
 		uint32_t i = 0;
 
 		while(trainer1->pokemons[i] != NULL){
 			if(strcmp(trainer1->pokemons[i],trainer1->target->pokemon) == 0){
-				pokemon1 = trainer1->pokemons[i];
+				//pokemon1 = trainer1->pokemons[i];
 				index1 = i;
 			}
 			i++;
@@ -1842,13 +1858,15 @@ void trade_trainer(t_trainer* trainer1){
 
 		while(trainer2->pokemons[i] != NULL){
 			if(strcmp(trainer2->pokemons[i],trainer2->target->pokemon) == 0){
-				pokemon2 = trainer2->pokemons[i];
+				//pokemon2 = trainer2->pokemons[i];
 				index2 = i;
 			}
 			i++;
 		}
 
 		if(pokemon1 != NULL && pokemon2 != NULL){
+			free(trainer1->pokemons[index1]);
+			free(trainer2->pokemons[index2]);
 			trainer1->pokemons[index1] = pokemon2;
 			trainer2->pokemons[index2] = pokemon1;
 		}
@@ -1858,14 +1876,17 @@ void trade_trainer(t_trainer* trainer1){
 	} else {
 		printf("TRAINER2 = null, se rompio todo\n");
 	}
-	destroy_target(trainer1->target);
-	destroy_target(trainer2->target);
+
+	trainer_set_target(trainer1, create_target("", create_position(0,0), 0, false));
+	trainer_set_target(trainer2, create_target("", create_position(0,0), 0, false));
+
+//	destroy_target(trainer1->target);
+//	destroy_target(trainer2->target);
 
 	if(trainer_success_objective(trainer1) == 1){
 		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 		trainer1->action = FINISH;
-		free(trainer1->target);
-		transition_by_id(trainer1->id, exec_list, exit_list);//YA HACE LOG a EXIT FALTA FROM
+		transition_by_id(trainer1->id, exec_list, exit_list);//YA HACE log a EXIT FALTA FROM
 		if(success_global_objective()) {
 			printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
 		} else {
@@ -1879,8 +1900,7 @@ void trade_trainer(t_trainer* trainer1){
 	if(trainer_success_objective(trainer2) == 1){
 		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
 		trainer2->action = FINISH;
-		free(trainer2->target);
-		transition_by_id(trainer2->id, block_list, exit_list);//YA HACE LOG a EXIT FALTA FROM
+		transition_by_id(trainer2->id, block_list, exit_list);//YA HACE log a EXIT FALTA FROM
 		if(success_global_objective()) {
 			printf("BRAVO! EL TEAM A CUMPLIDO TODOS SUS OBJETIVOS\n");
 		} else {

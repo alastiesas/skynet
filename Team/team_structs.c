@@ -12,10 +12,13 @@ void debug_trainer(t_trainer* trainer) {
 	printf("\n**DEBUG DEL ENTRENADOR**\n");
 	printf("trainer->id: %d\n", trainer->id);
 	printf("trainer->action: %d\n", trainer->action);
-	if(trainer->target != NULL)
+
+	if(trainer->target != NULL){
 		printf("trainer->target: [pokemon: %s, posicion: (%d, %d), catching: %d, trainer_id: %d]\n", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y, trainer->target->catching, trainer->target->trainer_id);
-	else
+	}
+	else {
 		printf("sin target\n");
+	}
 
 	printf("trainer->posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
 	uint32_t i = 0;
@@ -41,11 +44,12 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	t_trainer* trainer = malloc(sizeof(t_trainer));
 	trainer->id = id;
 	trainer->action = FREE;
-	trainer->target = NULL;
+	trainer->cpu_cycles = 0;
 	trainer->burst = 0;
 	trainer->quantum = 0;
 	trainer->burst_estimate = 0;
 	trainer->action_burst = 0;
+	trainer->target = NULL;
 	sem_init(&trainer->sem_thread, 0, 0);
 	trainer->position = position;
 	trainer->objectives = objectives;
@@ -89,17 +93,54 @@ t_target* create_target(char* pokemon, t_position* position, uint32_t trainer_id
 	return target;
 }
 
+void trainer_set_target(t_trainer* trainer, t_target* target) {
+	destroy_target(trainer->target);
+	trainer->target = target;
+}
+
+void add_pokemon(t_trainer* trainer, char*pokemon)
+{
+	uint32_t i = 0;
+	while(trainer->pokemons[i] != NULL)
+	{
+		i++;
+	}
+	//printf("ROMPE EN REALLOC\n");
+	//array, array_size * sizeof(*array)
+	// EL POBLEMA ESTA EN ESE REALLOC
+	//trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(char*));//PRUEBA CALLOC
+	//trainer->pokemons[i] = malloc(strlen(pokemon)+1);
+	//memcpy(trainer->pokemons[i], pokemon, strlen(pokemon)+1);
+	trainer->pokemons[i] = create_copy_string(pokemon);
+}
+
+
+void destroy_trainer(t_trainer* trainer) {
+	if(trainer != NULL) {
+		destroy_target(trainer->target);
+		free(trainer->position);
+		int i = 0;
+		while(trainer->objectives[i]!= NULL){
+			free(trainer->objectives[i]);
+			i++;
+		}
+		free(trainer->objectives[i]);
+		i = 0;
+		while(trainer->pokemons[i]!= NULL){
+			free(trainer->pokemons[i]);
+			i++;
+		}
+		free(trainer->pokemons[i]);
+		free(trainer);
+	}
+}
+
 void destroy_target(t_target* target) {
 	if(target != NULL) {
 		free(target->pokemon);
 		free(target->position);
-		//free(target);
+		free(target);
 	}
-}
-
-void trainer_set_target(t_trainer* trainer, t_target* target) {
-	destroy_target(trainer->target);
-	trainer->target = target;
 }
 
 
@@ -183,22 +224,6 @@ int32_t closest_free_trainer_job(t_list* list_trainer, t_position* destiny)
 int32_t closest_free_trainer_deadlock(t_list* list_trainer, t_position* destiny)
 {
 	return closest_free_trainer(list_trainer, destiny, "deadlock");
-}
-
-void add_pokemon(t_trainer* trainer, char*pokemon)
-{
-	uint32_t i = 0;
-	while(trainer->pokemons[i] != NULL)
-	{
-		i++;
-	}
-	//printf("ROMPE EN REALLOC\n");
-	//array, array_size * sizeof(*array)
-	// EL POBLEMA ESTA EN ESE REALLOC
-	//trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(char*));//PRUEBA CALLOC
-	//trainer->pokemons[i] = malloc(strlen(pokemon)+1);
-	//memcpy(trainer->pokemons[i], pokemon, strlen(pokemon)+1);
-	trainer->pokemons[i] = create_copy_string(pokemon);
 }
 
 bool trainer_success_objective(t_trainer* trainer)
