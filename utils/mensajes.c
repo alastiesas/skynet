@@ -396,7 +396,7 @@ t_message_localized* receive_localized(uint32_t socket_cliente, uint32_t* size, 
 		if(recv_with_retry(socket_cliente, &(localized->position_amount), sizeof(localized->position_amount), MSG_WAITALL) == -1)
 			log_error(logger, "Error al recibir el size_nombre de localized");
 		else
-			log_info(logger, "size_nombre de localized recibido: %d", localized->position_amount);
+			log_info(logger, "cantidad de posiciones localized recibido: %d", localized->position_amount);
 
 	//allocar memoria para las posiciones
 	localized->positions = malloc(sizeof(t_position)*localized->position_amount);

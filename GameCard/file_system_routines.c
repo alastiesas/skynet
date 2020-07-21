@@ -28,7 +28,7 @@ void init_fs(){
 		file = fopen(metadata_path, "w");
 		if(file == NULL){
 			log_error(logger, "no se pudo crear archivo en /Metadata/Metadata.bin");
-			log_error(logger, "no se pudo crear filesystem en %s", PUNTO_MONTAJE_TALLGRASS);
+			log_warning(logger, "no se pudo crear filesystem en el path dado por config %s", PUNTO_MONTAJE_TALLGRASS);
 		    printf("fopen failed, errno = %d\n", errno);
 		    exit(-1);
 		}
