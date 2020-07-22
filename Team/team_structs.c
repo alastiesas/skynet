@@ -56,11 +56,13 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	uint32_t inventory_size = string_list_size(objectives);
 	trainer->pokemons = calloc(inventory_size+1, sizeof(char*));
 	uint32_t i = 0;
-	while(pokemons[i] != NULL) {
-		trainer->pokemons[i] = pokemons[i];
-		i++;
-	}//PRUEBA CALLOC A VER SI ANDA
-	//trainer->pokemons = pokemons;
+	if(pokemons != NULL) {
+		while(pokemons[i] != NULL) {
+			trainer->pokemons[i] = pokemons[i];
+			i++;
+		}
+	}
+
 	debug_trainer(trainer);
 	return trainer;
 }
@@ -69,7 +71,12 @@ t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* 
 
 	t_position* position = create_position_from_config(config_position);
 	char** objectives = string_split(config_objectives, "|");
-	char** pokemons = string_split(config_pokemons, "|");
+	char** pokemons = NULL;
+	if(config_pokemons != NULL) {
+		pokemons = string_split(config_pokemons, "|");
+	}
+
+
 	return create_trainer(id, position, objectives, pokemons);
 
 }
@@ -157,8 +164,9 @@ uint32_t distance(t_position* current, t_position* destiny) {
 
 bool trainer_full(t_trainer* trainer) {
 	bool response = false;
-	if(string_list_size(trainer->pokemons) >=  string_list_size(trainer->objectives))
+	if(string_list_size(trainer->pokemons) >=  string_list_size(trainer->objectives)) {
 		response = true;
+	}
 	return response;
 }
 
@@ -303,15 +311,15 @@ bool trainer_locked(t_trainer* trainer) {
 		if(trainer_full(trainer)) {
 			if(!trainer_success_objective(trainer)) {
 				locked = true;
-//				printf("trainer[%d] está bloqueado\n", trainer->id);
+				printf("trainer[%d] está bloqueado\n", trainer->id);
 			}else {
-//				printf("trainer[%d] no está bloqueado porque ya cumplio sus objetivos\n", trainer->id);
+				printf("trainer[%d] no está bloqueado porque ya cumplio sus objetivos\n", trainer->id);
 			}
 		}else {
-//			printf("trainer[%d] no está bloqueado porque no tiene el inventario lleno\n", trainer->id);
+			printf("trainer[%d] no está bloqueado porque no tiene el inventario lleno\n", trainer->id);
 		}
 	}else {
-//		printf("trainer[%d] no está bloqueado porque no está en FREE\n", trainer->id);
+		printf("trainer[%d] no está bloqueado porque no está en FREE\n", trainer->id);
 	}
 	return locked;
 }
