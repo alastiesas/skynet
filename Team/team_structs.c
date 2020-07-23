@@ -22,24 +22,23 @@ void debug_trainer(t_trainer* trainer) {
 
 	printf("trainer->posicion: (%d, %d)\n", trainer->position->x, trainer->position->y);
 	uint32_t i = 0;
-	printf("trainer->objetivos: [");
-	while(trainer->objectives[i] != NULL) {
-		printf(" \"%s\" ", trainer->objectives[i]);
-		i++;
+
+
+	void debug_pokemon(char* string, uint32_t* count) {
+		printf(" (%s: %d) ", string, *count);
 	}
+
+	printf("trainer->objetivos: [");
+	dictionary_iterator(trainer->objectives, &debug_pokemon);
+	printf("]\n");
+	printf("trainer->objetivos: [");
+	dictionary_iterator(trainer->pokemons, &debug_pokemon);
 	printf("]\n");
 
-	i = 0;
-	printf("trainer->pokemones: [");
-	while(trainer->pokemons[i] != NULL) {
-		printf(" \"%s\" ", trainer->pokemons[i]);
-		i++;
-	}
-	printf("]\n");
 	printf("**FIN DEBUG**\n\n");
 }
 
-t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, char** pokemons) {
+t_trainer* create_trainer(uint32_t id, t_position* position, t_dictionary* objectives, t_dictionary* pokemons, uint32_t inventory_size) {
 
 	t_trainer* trainer = malloc(sizeof(t_trainer));
 	trainer->id = id;
@@ -53,15 +52,8 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 	sem_init(&trainer->sem_thread, 0, 0);
 	trainer->position = position;
 	trainer->objectives = objectives;
-	uint32_t inventory_size = string_list_size(objectives);
-	trainer->pokemons = calloc(inventory_size+1, sizeof(char*));
-	uint32_t i = 0;
-	if(pokemons != NULL) {
-		while(pokemons[i] != NULL) {
-			trainer->pokemons[i] = pokemons[i];
-			i++;
-		}
-	}
+	trainer->pokemons = pokemons;
+	trainer->inventory_size = inventory_size;
 
 	debug_trainer(trainer);
 	return trainer;
@@ -70,14 +62,38 @@ t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, 
 t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons) {
 
 	t_position* position = create_position_from_config(config_position);
-	char** objectives = string_split(config_objectives, "|");
-	char** pokemons = NULL;
+	char** objectives_string = string_split(config_objectives, "|");
+	char** pokemons_string = NULL;
 	if(config_pokemons != NULL) {
-		pokemons = string_split(config_pokemons, "|");
+		pokemons_string = string_split(config_pokemons, "|");
+	}
+	t_dictionary* objectives = dictionary_create();
+	t_dictionary* pokemons = dictionary_create();
+
+	int i = 0;
+	if(objectives_string != NULL) {
+		while(objectives_string[i] != NULL) {
+			add_one_to_dictionary(objectives, objectives_string[i]);
+			i++;
+		}
+	}
+	uint32_t inventory_size = i;
+	i = 0;
+	if(pokemons_string != NULL) {
+		while(pokemons_string[i] != NULL) {
+			add_one_to_dictionary(pokemons, pokemons_string[i]);
+			i++;
+		}
+	}
+	if(i > inventory_size){
+		printf("ERROR DE CONFIG: pokemons > objetivos en trainer[%d]", id);
+		exit(-1);
 	}
 
 
-	return create_trainer(id, position, objectives, pokemons);
+	//tira error si intento borrar los punteros split
+
+	return create_trainer(id, position, objectives, pokemons, inventory_size);
 
 }
 
@@ -105,20 +121,12 @@ void trainer_set_target(t_trainer* trainer, t_target* target) {
 	trainer->target = target;
 }
 
-void add_pokemon(t_trainer* trainer, char*pokemon)
-{
-	uint32_t i = 0;
-	while(trainer->pokemons[i] != NULL)
-	{
-		i++;
-	}
-	//printf("ROMPE EN REALLOC\n");
-	//array, array_size * sizeof(*array)
-	// EL POBLEMA ESTA EN ESE REALLOC
-	//trainer->pokemons = (char**)realloc(trainer->pokemons,new_size*sizeof(char*));//PRUEBA CALLOC
-	//trainer->pokemons[i] = malloc(strlen(pokemon)+1);
-	//memcpy(trainer->pokemons[i], pokemon, strlen(pokemon)+1);
-	trainer->pokemons[i] = create_copy_string(pokemon);
+void add_pokemon(t_trainer* trainer, char* pokemon) {
+	add_one_to_dictionary(trainer->pokemons, pokemon);
+}
+
+void sub_pokemon(t_trainer* trainer, char* pokemon) {
+	sub_one_from_dicionary(trainer->pokemons, pokemon);
 }
 
 
@@ -127,17 +135,10 @@ void destroy_trainer(t_trainer* trainer) {
 		destroy_target(trainer->target);
 		free(trainer->position);
 		int i = 0;
-		while(trainer->objectives[i]!= NULL){
-			free(trainer->objectives[i]);
-			i++;
-		}
-		free(trainer->objectives[i]);
-		i = 0;
-		while(trainer->pokemons[i]!= NULL){
-			free(trainer->pokemons[i]);
-			i++;
-		}
-		free(trainer->pokemons[i]);
+
+		dictionary_destroy_and_destroy_elements(trainer->objectives, free);
+		dictionary_destroy_and_destroy_elements(trainer->pokemons, free);
+
 		free(trainer);
 	}
 }
@@ -163,11 +164,16 @@ uint32_t distance(t_position* current, t_position* destiny) {
 }
 
 bool trainer_full(t_trainer* trainer) {
-	bool response = false;
-	if(string_list_size(trainer->pokemons) >=  string_list_size(trainer->objectives)) {
-		response = true;
+
+	uint32_t pokemons_in_inventory = 0;
+	void count_pokemons(char* pokemon, uint32_t* count) {
+		pokemons_in_inventory += *count;
 	}
-	return response;
+
+	dictionary_iterator(trainer->pokemons, &count_pokemons);
+
+	return pokemons_in_inventory == trainer->inventory_size;
+
 }
 
 bool trainer_free_space(t_trainer* trainer) {
@@ -237,70 +243,39 @@ int32_t closest_free_trainer_deadlock(t_list* list_trainer, t_position* destiny)
 bool trainer_success_objective(t_trainer* trainer)
 {
 	//EL DICCIONARIO KEY->(cant,cantInv)
-	bool success = 1;//true
-	t_dictionary* dictionary = dictionary_create();
-	typedef struct
-	{
-		uint32_t count;
-		uint32_t caught;
-	} t_objective_aux;
+	bool success = true;//true
+	void single_objective_succes(char* pokemon_needed, uint32_t* amount_needed){
 
-  uint32_t i = 0;
-	while(trainer->objectives[i] != NULL){
-		if(dictionary_has_key(dictionary,trainer->objectives[i])){
-			t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->objectives[i]);
-			objective_aux->count++;
+		if(dictionary_has_key(trainer->pokemons, pokemon_needed)) {
+			uint32_t* count = dictionary_get(trainer->pokemons, pokemon_needed);
+			if(*count < *amount_needed) {
+				success = false;
+			} else {
+			}
+		} else {
+			success = false;
 		}
-		else{
-			t_objective_aux* objective_aux = malloc(sizeof(t_objective_aux));
-			objective_aux->count = 1;
-			objective_aux->caught = 0;
-			dictionary_put(dictionary, trainer->objectives[i], objective_aux);
-		}
-		i++;
-	}
-	i=0;
 
-	while(trainer->pokemons[i] != NULL){
-		if(dictionary_has_key(dictionary,trainer->pokemons[i])){
-			t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->pokemons[i]);
-			objective_aux->caught++;
-		}
-		i++;
 	}
-	i=0;
-	while(trainer->objectives[i] != NULL){
-		t_objective_aux* objective_aux = (t_objective_aux*) dictionary_get(dictionary,trainer->objectives[i]);
-		if(objective_aux->caught != objective_aux->count)
-			success = 0;//false
-		i++;
-	}
-	//dictionary_destroy_and_destroy_elements(dictionary, free);
-	//ACA HAY QUE LIMPIAR EL DICCIONARIO TODO
+
+	dictionary_iterator(trainer->objectives, &single_objective_succes);
 	return success;
+
+
+
 }
 
-
 bool trainer_needs(t_trainer* trainer, char* pokemon) {
-	bool needs = false;
-	int32_t count_objective= 0;
-	int32_t count_pokemon= 0;
-	int32_t i= 0;
-
-	while(trainer->objectives[i] != NULL) {
-		if(strcmp(trainer->objectives[i], pokemon) == 0) {
-			count_objective++;
+	bool needs = true;
+	if(dictionary_has_key(trainer->objectives, pokemon)) {
+		if(dictionary_has_key(trainer->pokemons, pokemon)) {
+			uint32_t* amount_needed = dictionary_get(trainer->objectives, pokemon);
+			uint32_t* count = dictionary_get(trainer->pokemons, pokemon);
+			needs = (*count < *amount_needed);//si tiene menos de los que necesita, entonces necesita
 		}
-			i++;
+	} else {
+		needs = false;
 	}
-	i = 0;
-	while(trainer->pokemons[i] != NULL) {
-		if(strcmp(trainer->pokemons[i], pokemon) == 0) {
-			count_pokemon++;
-		}
-			i++;
-	}
-	needs = count_objective > count_pokemon;
 	return needs;
 }
 
@@ -326,49 +301,44 @@ bool trainer_locked(t_trainer* trainer) {
 
 //*
 t_list* trainer_held_pokemons(t_trainer* trainer) {
-	int i = 0;
-	bool condition(void* pokemon) {
-		return (strcmp(trainer->objectives[i], pokemon) == 0);
-	}
-
 	t_list* held_pokemons = list_create();
 
-	while(trainer->pokemons[i] != NULL) {
-
-		list_add(held_pokemons, create_copy_string(trainer->pokemons[i]));
-		i++;
+	bool holds(void* pokemon, uint32_t* has) {
+		bool answer = true;
+		if(dictionary_has_key(trainer->objectives, pokemon)){//si no lo tiene en objetivos, no lo necesita -> lo retiene
+			uint32_t* needs = dictionary_get(trainer->objectives, pokemon);
+			answer = *has > *needs;//si lo tiene en objetivos, lo retiene si tiene más de los que necesita
+		}
+		return answer;
 	}
+	void list_add_if_holds(char* pokemon, uint32_t* count) {
 
-	i = 0;
+		if(holds(pokemon, count)) {//solo agrega si esta reteniendo
+		list_add(held_pokemons, create_copy_string(pokemon));//suma el pokemon una vez, si retiene mas de uno es redundante, porque cuando lo pasen a intercambiar ya no va ser candidato de nuevo
 
-	while(trainer->objectives[i] != NULL) {
-		list_remove_by_condition(held_pokemons, &condition);
-		i++;
-	}//resta los objetivos de la lista
+		}
+	}
+	dictionary_iterator(trainer->pokemons, &list_add_if_holds);
 
 	return held_pokemons;
 }
 
 t_list* trainer_waiting_pokemons(t_trainer* trainer) {
 	int i = 0;
-	bool condition(void* pokemon) {
-		return (strcmp(trainer->pokemons[i], pokemon) == 0);
-	}
-
 	t_list* waiting_pokemons = list_create();
 
-	while(trainer->objectives[i] != NULL) {
-
-		list_add(waiting_pokemons, create_copy_string(trainer->objectives[i]));
-		i++;
+	bool waits(void* pokemon) {
+		return trainer_needs(trainer, pokemon);
 	}
 
-	i = 0;
+	void list_add_if_waits(void* pokemon, uint32_t* needs) {
+		if(waits(pokemon)) {
+			list_add(waiting_pokemons, create_copy_string(pokemon));
+		}
 
-	while(trainer->pokemons[i] != NULL) {
-		char* removed = list_remove_by_condition(waiting_pokemons, &condition);
-		i++;
 	}
+	dictionary_iterator(trainer->objectives, &list_add_if_waits);
+
 
 	return waiting_pokemons;
 

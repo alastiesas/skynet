@@ -37,17 +37,46 @@ int main(void)
 
 
 	initialize_trainers();
+
+//	printf("SE INICIARON LOS ENTRENADORES\n");
+//	debug_colas();
+//	t_trainer* retest_trainer = list_get(new_list, 0);
+//	add_pokemon(retest_trainer, "Paralax");
+//	add_pokemon(retest_trainer, "Charmander");
+//	sub_pokemon(retest_trainer, "Charmander");
+//	add_pokemon(retest_trainer, "Raiquaza");
+//	debug_trainer(retest_trainer);
+//
+//	printf("trainer[%d] necesita Onix? %s\n", retest_trainer->id, trainer_needs(retest_trainer, "Onix")?"SI":"NO");
+//	printf("trainer[%d] necesita Squirtle? %s\n", retest_trainer->id,trainer_needs(retest_trainer, "Squirtle")?"SI":"NO");
+
 	initialize_global_objectives();
+//	debug_objective_list();
+//	t_list* held_table = trainer_held_pokemons(retest_trainer);
+//	printf("trainer[%d] retiene:\n", retest_trainer->id);
+//	void debug_table(char* pokemon) {
+//		printf("%s\n", pokemon);
+//	}
+//	list_iterate(held_table, &debug_table);
+//
+//	t_list* wait_table = trainer_waiting_pokemons(retest_trainer);
+//	printf("trainer[%d] espera:\n", retest_trainer->id);
+//	list_iterate(wait_table, &debug_table);
+
+
+
+	printf("SE INICIARON LOS OBJETIVOS GLOBALES\n");
+//	exit(0);
 
 
 
 	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
 
 	//FIN DEBUG DEADLOCKS
-//	t_position* test_position_0 = malloc(sizeof(t_position));
-//	test_position_0->x = 1;
-//	test_position_0->y = 0;
-//	add_to_poke_map("Raichu",(void*) test_position_0);
+	t_position* test_position_0 = malloc(sizeof(t_position));
+	test_position_0->x = 1;
+	test_position_0->y = 0;
+	add_to_poke_map("Raichu",(void*) test_position_0);
 //*
 //	t_position* test_position_1 = malloc(sizeof(t_position));
 //	test_position_1->x = 1;

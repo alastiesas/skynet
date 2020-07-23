@@ -124,3 +124,41 @@ uint32_t min(int32_t x, int32_t y) {
 	return max_number;
 }
 
+void add_one_to_dictionary(t_dictionary* dictonary, char* pokemon) {
+	if(dictionary_has_key(dictonary, pokemon)){
+		uint32_t* count = malloc(sizeof(uint32_t));
+		count = dictionary_get(dictonary, pokemon);
+		(*count)++;
+
+	}else {
+		uint32_t* count = malloc(sizeof(uint32_t));
+		*count = 1;
+		dictionary_put(dictonary, pokemon, count);
+	}
+}
+
+void sub_one_from_dicionary(t_dictionary* dictonary, char* pokemon) {
+	if(dictionary_has_key(dictonary, pokemon)){//debe tener el pokemon
+		uint32_t* has = dictionary_get(dictonary, pokemon);//ahora se cuantos tiene
+		if(*has > 1) {//si tiene más de uno se lo resto
+			(*has)--;
+		} else {//si solo le queda uno, lo elimino
+			dictionary_remove(dictonary, pokemon);
+		}
+
+
+	} else {//si no tiene ese pokemon, errorazo
+		printf("ERROR SACANDO UN POKEMON A UN TRAINER QUE NO LO TIENE\n");
+		exit(-1);
+	}
+
+}
+
+
+
+
+
+
+
+
+

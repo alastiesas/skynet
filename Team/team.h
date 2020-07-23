@@ -242,11 +242,10 @@ void callback_fifo(t_trainer* trainer){
 		break;
 	case TRADE:
 		//liberar cpu y llamar al short
-		trainer->burst = 0;
 		sem_wait(&sem_cpu_info);
-		exit_cpu_reason = TRADE_WAITING;
+		exit_cpu_reason = NO_CHANGE;
 		sem_post(&sem_cpu_info);
-		sem_post(&sem_short);
+		sem_post(&trainer->sem_thread);
 		break;
 	case FINISH:
 		//liberar cpu y llamar al short
@@ -321,11 +320,10 @@ void callback_rr(t_trainer* trainer) {
 			break;
 		case TRADE:
 			//liberar cpu y llamar al short
-			trainer->burst = 0;
 			sem_wait(&sem_cpu_info);
-			exit_cpu_reason = TRADE_WAITING;
+			exit_cpu_reason = NO_CHANGE;
 			sem_post(&sem_cpu_info);
-			sem_post(&sem_short);
+			sem_post(&trainer->sem_thread);
 			break;
 		case FINISH:
 			//liberar cpu y llamar al short
@@ -381,12 +379,10 @@ void callback_sjfs(t_trainer* trainer) {
 			break;
 		case TRADE:
 			//liberar cpu y llamar al short
-			trainer_update_burst_estimate(trainer);
-			trainer->burst = 0;
 			sem_wait(&sem_cpu_info);
-			exit_cpu_reason = TRADE_WAITING;
+			exit_cpu_reason = NO_CHANGE;
 			sem_post(&sem_cpu_info);
-			sem_post(&sem_short);
+			sem_post(&trainer->sem_thread);
 			break;
 		case FINISH:
 			//liberar cpu y llamar al short
@@ -545,11 +541,11 @@ void initialize_trainers()
 	char** positions_config = config_get_array_value(config,"POSICIONES_ENTRENADORES");
 	char** objectives_config = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
 	char** pokemons_config = config_get_array_value(config,"POKEMON_ENTRENADORES");
-	bool no_more_pokemons = false;
+	bool no_more_pokemons = pokemons_config == NULL;
 	int i = 0;
 	while(positions_config[i] != NULL){
 		t_trainer* trainer = NULL;
-		if(no_more_pokemons) {
+		if(!no_more_pokemons) {
 			if(pokemons_config[i] == NULL) {
 				no_more_pokemons = true;
 				trainer = initialize_trainer(i+1, positions_config[i], objectives_config[i], NULL);
@@ -562,26 +558,57 @@ void initialize_trainers()
 
 		sem_wait(&sem_state_lists);
 		if(trainer_success_objective(trainer))
-			list_add(exit_list, trainer);
+			list_add(exit_list, trainer);//TODO TRAINER NO SE BORRA DE ESTA MANERA
 		else if(trainer_full(trainer)) {
+
+			printf("trainer[%d] esta lleno\n", trainer->id);
 			list_add(block_list, trainer);
-		} else
+		} else {
+
+			printf("trainer[%d] no esta lleno\n", trainer->id);
 			list_add(new_list, trainer);
+		}
 		sem_post(&sem_state_lists);
 
 		i++;
 	}
-	//liberar memoria (los char**)
-	//free_string_list(positions_config);
-	//free_string_list(objectives_config);
-	//free_string_list(pokemons_config);
+
+	free_string_list(positions_config);
+	free_string_list(objectives_config);
+	free_string_list(pokemons_config);
 
 	printf("TODOS LOS ENTRENADORES HAN SIDO CONFIGURADOS\n");
 	//TODO BORRAR LISTAS LEVANTADAS DEL CONFIG
 }
 
+void debug_objective_list() {
+
+	void debug_objective(t_objective* objective) {
+		printf("%s: %d, atrapados: %d, atrapando: %d\n", objective->pokemon, objective->count, objective->caught, objective->catching);
+	}
+	list_iterate(objectives_list, &debug_objective);
+}
+
+void add_trainer_to_objective(t_trainer* trainer)
+{
+
+	void(*add)(char*);
 
 
+	void add_x_times(char* pokemon, uint32_t* count) {
+		for(int i = 0; i<*count; i++) {
+			//printf("agregar %s", pokemon);
+			add(pokemon);
+		}
+	}
+
+	add = &add_objective;
+	dictionary_iterator(trainer->objectives, &add_x_times);
+
+	add = &add_caught;
+	dictionary_iterator(trainer->pokemons, &add_x_times);
+
+}
 
 void add_objective(char* pokemon)
 {
@@ -691,20 +718,6 @@ bool pokemon_is_needed_on_pokemap(char* pokemon)
 	return pokemon_is_needed(pokemon,"pokemap");
 }
 
-void add_trainer_to_objective(t_trainer* trainer)
-{
-	int i = 0;
-	while(trainer->objectives[i]!= NULL){
-		add_objective(trainer->objectives[i]);
-		i++;
-	}
-	i = 0;
-	while(trainer->pokemons[i]!= NULL){
-		add_caught(trainer->pokemons[i]);
-		i++;
-	}
-}
-
 void initialize_global_objectives()
 {
 	sem_wait(&sem_objectives_list);
@@ -762,12 +775,15 @@ void trainer_thread(t_callback* callback_thread)
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
+					printf("trainer target catching: %d", trainer->target->catching);
 					log_info(log, "trainer[%d] operación: movimiento (%s) -> (%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y);
 				}
-				else if(trainer->target->catching)
+				else if(trainer->target->catching){
 					trainer->action = CATCH;
-				else
+				} else {
 					trainer->action = TRADE;
+					printf("SE PASO A TRADE\n");
+				}
 
 				free(previous_string);
 
@@ -799,13 +815,13 @@ void trainer_thread(t_callback* callback_thread)
 	}
 
 
-	printf("HILO debug del entrenador %s\n", trainer->objectives[0]);
+
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
 	printf("trainer[%d] destruido\n", trainer->id);
 	log_info(log, "trainer[%d] finalizado con exito cantidad de ciclos utilizados: %d", trainer->id, trainer->cpu_cycles);
 	destroy_trainer(trainer);
-}
+}//TODO COMENTADO POR PRUEBAS REFACTOR?
 
 //encuentra al entrenador mas cerca de la posicion en ambas listas
 
@@ -2054,54 +2070,27 @@ void trade_trainer(t_trainer* trainer1){
 	sem_post(&sem_state_lists);
 
 	printf("\tBEFORE TRADE:\n");
-//	debug_trainer(trainer1);
-	if(trainer2 ==NULL) {
-		printf("EL TRAINER ES NULL LA CONCHA DE LA LORA\n");
-	}
-//	debug_trainer(trainer2);
 	if(trainer2 != NULL) {
+
 		char* pokemon1 = create_copy_string(trainer1->target->pokemon);
 		char* pokemon2 = create_copy_string(trainer2->target->pokemon);
-		uint32_t index1 = 0;
-		uint32_t index2 = 0;
-		uint32_t i = 0;
 
-		while(trainer1->pokemons[i] != NULL){
-			if(strcmp(trainer1->pokemons[i],trainer1->target->pokemon) == 0){
-				//pokemon1 = trainer1->pokemons[i];
-				index1 = i;
-			}
-			i++;
-		}
-		i = 0;
+		sub_pokemon(trainer1, pokemon1);
+		sub_pokemon(trainer2, pokemon2);
+		add_pokemon(trainer1, pokemon2);
+		add_pokemon(trainer2, pokemon1);
 
-		while(trainer2->pokemons[i] != NULL){
-			if(strcmp(trainer2->pokemons[i],trainer2->target->pokemon) == 0){
-				//pokemon2 = trainer2->pokemons[i];
-				index2 = i;
-			}
-			i++;
-		}
-
-		if(pokemon1 != NULL && pokemon2 != NULL){
-			free(trainer1->pokemons[index1]);
-			free(trainer2->pokemons[index2]);
-			trainer1->pokemons[index1] = pokemon2;
-			trainer2->pokemons[index2] = pokemon1;
-		}
 		//ya se realizo el intercambio
 		solved_deadlocks++;
 		log_info(log, "deadlock resuelto -> intercambio realizado:\ntrainer[%d] ->%s-> trainer[%d]\ntrainer[%d] ->%s-> trainer[%d]", trainer1->id, pokemon1, trainer2->id, trainer2->id, pokemon2, trainer1->id);
 
 	} else {
-		printf("TRAINER2 = null, se rompio todo\n");
+		printf("ERROR TRAINER NULL EN TRADE\n");
+		exit(-1);
 	}
 
 	trainer_set_target(trainer1, create_target("", create_position(0,0), 0, false));
 	trainer_set_target(trainer2, create_target("", create_position(0,0), 0, false));
-
-//	destroy_target(trainer1->target);//NO ANDA
-//	destroy_target(trainer2->target);//NO ANDA -> use set target vacio
 
 	if(trainer_success_objective(trainer1) == 1){
 		printf("ESTE ENTRENADOR TERMINO RE PIOLA\n");
@@ -2131,12 +2120,8 @@ void trade_trainer(t_trainer* trainer1){
 		trainer2->action = FREE;
 	}
 
-
-//	printf("\tAFTER TRADE:\n");
-//	debug_trainer(trainer1);
-//	debug_trainer(trainer2);
-
 }
+
 
 void message_list_add_catch(t_trainer* trainer) {
 	printf(" message_list_add_catch acallego y dspues rompio\n");
@@ -2169,6 +2154,6 @@ void debug_message_list() {
 		//agregar a que entrenador pertenece
 	};
 	printf("The IDs on message list response are these: \n");
-	dictionary_iterator(message_response, &printf_function);//TODO BORRAR
+	dictionary_iterator(message_response, &printf_function);
 }
 #endif /* TEAM_H_ */

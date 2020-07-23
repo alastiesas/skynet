@@ -64,8 +64,10 @@ typedef struct
 	t_target* target;
 
 	t_position* position;
-	char** objectives;
-	char** pokemons;
+	t_dictionary* objectives;
+	t_dictionary* pokemons;
+	uint32_t inventory_size;
+
 } t_trainer;
 
 typedef struct
@@ -107,7 +109,7 @@ typedef struct
 
 void debug_trainer(t_trainer* trainer);
 //constructores
-t_trainer* create_trainer(uint32_t id, t_position* position, char** objectives, char** pokemons);
+t_trainer* create_trainer(uint32_t id, t_position* position, t_dictionary* objectives, t_dictionary* pokemons, uint32_t inventory_size);
 t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons);
 t_position* create_position_from_config(char* positions);
 t_target* create_target(char* pokemon, t_position* position, uint32_t trainer_id, bool catching);
