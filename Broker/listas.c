@@ -6,7 +6,7 @@ void* find_cache_element_given_ID(void* ID_encontrar, uint32_t* bytes, t_log* lo
 	t_partition* partition;
 
 	bool _soy_ID_buscado(void* p){
-		return ((t_partition*) p)->ID_message == (uint32_t) ID_encontrar;
+		return ((t_partition*) p)->available == false && ((t_partition*) p)->ID_message == (uint32_t) ID_encontrar;
 	}
 	pthread_mutex_lock(&mutex_cache);
 	partition = list_find(partitions, _soy_ID_buscado);

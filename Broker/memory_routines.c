@@ -114,8 +114,8 @@ void delete_buddy_partition(t_list** deleted_messages) {
 
 
 
-	if(min_partition_size > victim_partition->size)
-		victim_partition->size = min_partition_size;
+//	if(min_partition_size > victim_partition->size)
+//		victim_partition->size = min_partition_size;
 
 
 }
@@ -126,11 +126,11 @@ int32_t compact_buddy_to_right(int32_t partition_index){
 	int32_t times_compacted = 0;
 			while (next_partition_index + 1 <= list_size(partitions) && is_free_partition_by_index(next_partition_index + 1) && is_buddy(next_partition_index, next_partition_index + 1 )) {
 
-				merge_partitions(next_partition_index, next_partition_index + 1);
 				log_info(obligatorio, "Se asocia la particion (%d-%d) con la particion (%d-%d)", ((t_partition*)list_get(partitions, next_partition_index))->initial_position - mem,
 																									((t_partition*)list_get(partitions, next_partition_index))->final_position - mem,
 																									((t_partition*)list_get(partitions, next_partition_index + 1))->initial_position - mem,
 																									((t_partition*)list_get(partitions, next_partition_index + 1))->final_position - mem);
+				merge_partitions(next_partition_index, next_partition_index + 1);
 				times_compacted ++;
 			}
 	return times_compacted;
@@ -142,11 +142,11 @@ int32_t compact_buddy_to_left(int32_t partition_index){
 	int32_t times_compacted = 0;
 			while (previous_partition_index - 1 >= 0 && is_free_partition_by_index(previous_partition_index - 1) && is_buddy(previous_partition_index, previous_partition_index - 1 )) {
 
-				merge_partitions(previous_partition_index -1, previous_partition_index);
 				log_info(obligatorio, "Se asocia la particion (%d-%d) con la particion (%d-%d)", ((t_partition*)list_get(partitions, previous_partition_index - 1))->initial_position - mem,
 																									((t_partition*)list_get(partitions, previous_partition_index - 1))->final_position - mem,
 																									((t_partition*)list_get(partitions, previous_partition_index))->initial_position - mem,
 																									((t_partition*)list_get(partitions, previous_partition_index))->final_position - mem);
+				merge_partitions(previous_partition_index -1, previous_partition_index);
 				previous_partition_index --;
 
 				times_compacted ++;
