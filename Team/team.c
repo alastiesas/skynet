@@ -73,10 +73,10 @@ int main(void)
 	//REEMPLAZO DE SUBSCRIBE PARA DEBUG DE DEADLOCKS!
 
 	//FIN DEBUG DEADLOCKS
-	t_position* test_position_0 = malloc(sizeof(t_position));
-	test_position_0->x = 1;
-	test_position_0->y = 0;
-	add_to_poke_map("Raichu",(void*) test_position_0);
+//	t_position* test_position_0 = malloc(sizeof(t_position));
+//	test_position_0->x = 1;
+//	test_position_0->y = 0;
+//	add_to_poke_map("Raichu",(void*) test_position_0);
 //*
 //	t_position* test_position_1 = malloc(sizeof(t_position));
 //	test_position_1->x = 1;

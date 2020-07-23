@@ -810,8 +810,8 @@ void trainer_thread(t_callback* callback_thread)
 //				trainer->action = FREE;
 				break;
 		}
-		sem_post(&sem_cpu);
 		callback_thread->callback(trainer);
+		sem_post(&sem_cpu);
 	}
 
 
