@@ -74,7 +74,7 @@ t_objective* find_key(t_list* list, char* key)
 }
 
 char* create_copy_string(char* from) {
-	char* to = malloc(strlen(from)+1);
+	char* to = calloc(strlen(from)+1, 1);
 	memcpy(to, from, strlen(from)+1);
 	return to;
 
@@ -126,8 +126,9 @@ uint32_t min(int32_t x, int32_t y) {
 
 void add_one_to_dictionary(t_dictionary* dictonary, char* pokemon) {
 	if(dictionary_has_key(dictonary, pokemon)){
-		uint32_t* count = malloc(sizeof(uint32_t));
-		count = dictionary_get(dictonary, pokemon);
+//		uint32_t* count = malloc(sizeof(uint32_t));
+//		count = dictionary_get(dictonary, pokemon);
+		uint32_t* count = dictionary_get(dictonary, pokemon);
 		(*count)++;
 
 	}else {

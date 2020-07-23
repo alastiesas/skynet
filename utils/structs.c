@@ -69,7 +69,7 @@ t_message_localized* create_message_localized(uint32_t correlative_id, char* pok
 	localized->id = 0; //El Broker se encarga de generar este dato
 	localized->correlative_id = correlative_id; //El que responde se encarga de generar este dato
 	localized->size_pokemon_name = strlen(pokemon_name);
-	localized->pokemon_name = malloc(localized->size_pokemon_name + 1);
+	localized->pokemon_name = calloc(localized->size_pokemon_name + 1, 1);
 	strcpy(localized->pokemon_name, pokemon_name);
 	localized->position_amount = position_amount;
 	if(position_amount != 0){

@@ -22,22 +22,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Broker
+all: broker
 
 dependents:
-	-cd /home/utnso/tp-2020-1c-Skynet/utils/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2020-1c-Skynet/utils/Debug && $(MAKE) clean all
 
 # Tool invocations
-Broker: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so
+broker: $(OBJS) $(USER_OBJS) /home/utnso/tp-2020-1c-Skynet/utils/Debug/libutils.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2020-1c-Skynet/utils/Debug" -o "Broker" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2020-1c-Skynet/utils/Debug" -o "broker" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Broker
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) broker
 	-@echo ' '
 
 .PHONY: all clean dependents

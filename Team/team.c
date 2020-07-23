@@ -16,6 +16,23 @@ int main(void)
 	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
 	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
 
+//	//PRUEBAS DURAS
+	t_position* positions = calloc(2, sizeof(t_position));
+	positions->x = 1;
+	positions->y = 2;
+	(positions+1)->x = 3;
+	(positions+1)->y = 4;
+	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
+//
+//	serve_thread_args* argsgsgs = malloc(sizeof(serve_thread_args));//TODO TESTING
+//	argsgsgs->op_code = OPERATION_LOCALIZED;//TODO TESTING
+//	argsgsgs-> message = mensaje_prueba;//TODO TESTING
+//	process_message(argsgsgs);//TODO TESTING
+//	free(argsgsgs);
+//
+//	exit(0);
+
+
 	config = config_create("team.config");
 	initialize_global_config();
 	initialize_semaphores();
@@ -102,8 +119,8 @@ int main(void)
 
 	subscribe(OPERATION_APPEARED);
 	subscribe(OPERATION_LOCALIZED);
-	//subscribe(OPERATION_CAUGHT);
-	caught_default_behavior = true;
+	subscribe(OPERATION_CAUGHT);
+//	caught_default_behavior = true;
 //	sleep(5);
 
 
@@ -116,7 +133,12 @@ int main(void)
 	printf("Creacion Hilo short\n");
 	pthread_create(&short_tid, NULL, short_thread, NULL);
 
-
+	//PRUEBAS
+	serve_thread_args* argumentos = malloc(sizeof(serve_thread_args));//TODO TESTING
+	argumentos->op_code = OPERATION_LOCALIZED;//TODO TESTING
+	argumentos-> message = mensaje_prueba;//TODO TESTING
+	process_message(argumentos);//TODO TESTING
+	//FIN PRUEBAS
 
 	pthread_join(long_tid, NULL);
 	printf("pthread_join(long_tid, NULL);'n");
