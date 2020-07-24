@@ -24,6 +24,7 @@ int main(void)
 //	(positions+1)->y = 9;
 //	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
 //
+//
 //	serve_thread_args* argsgsgs = malloc(sizeof(serve_thread_args));//TODO TESTING
 //	argsgsgs->op_code = OPERATION_LOCALIZED;//TODO TESTING
 //	argsgsgs-> message = mensaje_prueba;//TODO TESTING
@@ -68,6 +69,7 @@ int main(void)
 //	printf("trainer[%d] necesita Squirtle? %s\n", retest_trainer->id,trainer_needs(retest_trainer, "Squirtle")?"SI":"NO");
 
 	initialize_global_objectives();
+
 //	debug_objective_list();
 //	t_list* held_table = trainer_held_pokemons(retest_trainer);
 //	printf("trainer[%d] retiene:\n", retest_trainer->id);
@@ -82,7 +84,6 @@ int main(void)
 
 
 
-	printf("SE INICIARON LOS OBJETIVOS GLOBALES\n");
 //	exit(0);
 
 
@@ -130,7 +131,6 @@ int main(void)
 
 	pthread_t short_tid;
 
-	printf("Creacion Hilo short\n");
 	pthread_create(&short_tid, NULL, short_thread, NULL);
 
 	//PRUEBAS
@@ -141,10 +141,8 @@ int main(void)
 	//FIN PRUEBAS
 
 	pthread_join(long_tid, NULL);
-	printf("pthread_join(long_tid, NULL);'n");
 
 	pthread_join(short_tid, NULL);
-	printf("pthread_join(short_tid, NULL);\n");
 
 	log_info(log, "Cantidad de ciclos de CPU totales: %d", cpu_cycles);
 	log_info(log, "Cantidad de cambios de contexto realizados: %d", context_changes);
