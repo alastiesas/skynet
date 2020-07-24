@@ -327,7 +327,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			free(new_size_to_metadata);
 			free(blocks_to_write);
 			//destruir diccionario y actualizar a open = N
-
+			free(new_pokemon_file);
 		}
 		else
 		{
@@ -337,16 +337,19 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			//NO SE ENCONTRO LA POSICION BUSCADA EN EL FILESYSTEM
 			//destruir diccionario y actualizar a open = N
 		}
+		free(key);
 
 		dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
 
 		}
 		else{
+			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//caso archivo sin bloques, diccionario no creado
 			caught_result = 0;
 
 		}
+		list_destroy(blocks_list_int);
 
 		config_set_value(file, "OPEN","N");
 
@@ -481,10 +484,12 @@ t_message_localized* process_get(t_message_get* message_get){
 		}
 		else
 		{
+			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//no contenia bloques el archivo entonces ni se crea el diccionario
 
 			message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 0, NULL);
 		}
+		list_destroy(blocks_list_int);
 
 		//actualizar metadata. No van a cambiar ni el size ni la lista de bloques
 		config_set_value(file, "OPEN", "N");
