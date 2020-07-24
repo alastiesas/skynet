@@ -55,7 +55,7 @@ t_trainer* create_trainer(uint32_t id, t_position* position, t_dictionary* objec
 	trainer->pokemons = pokemons;
 	trainer->inventory_size = inventory_size;
 
-	debug_trainer(trainer);
+//	debug_trainer(trainer);
 	return trainer;
 }
 

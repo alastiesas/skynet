@@ -166,6 +166,7 @@ void trade_trainer(t_trainer* trainer1);
 void message_list_add_catch(t_trainer* trainer);
 void* sender_thread();
 void team_send_catch(t_message_team* message);
+void team_send_get(char* pokemon);
 void set_default_behavior(queue_code);
 void process_message(serve_thread_args* args);
 pthread_t subscribe(queue_code queue_code);
@@ -707,7 +708,23 @@ void initialize_global_objectives()
 
 
 
+	bool team_needs_objective(t_objective* objective) {
+		printf("LLEGA HASTA team_needs_objective\n");
+		return pokemon_is_needed_on_pokemap(objective->pokemon);
+	}
 
+	printf("LLEGA HASTA ACA\n");
+	t_list* need_catch_objectives = list_filter(objectives_list, &team_needs_objective);
+
+	printf("LLEGA HASTA ACA\n");
+
+	void send_get_if_needed(t_objective* objective) {
+		printf("ENVIAR GET %s\n", objective->pokemon);
+		pthread_t* tid;
+		pthread_create(&tid, NULL, &team_send_get, objective->pokemon);
+	}
+
+	list_iterate(need_catch_objectives, &send_get_if_needed);
 	//TODO ACA MANDAR LOS GET!!!
 
 }
@@ -740,7 +757,7 @@ void trainer_thread(t_callback* callback_thread)
 		//while(1) agregar
 	t_trainer* trainer = callback_thread->trainer;
 
-	debug_trainer(trainer);
+//	debug_trainer(trainer);
 	uint32_t trade_cpu = 0;
 	while(trainer->action != FINISH){
 		sem_wait(&trainer->sem_thread);
@@ -1738,7 +1755,7 @@ void team_send_get(char* pokemon) {
 	t_package* package = serialize_get(get);
 
 	int32_t id = team_send_package(ip_broker, port_broker, package);//send_message ya libera el paquete
-	log_info(log, "mensaje CATCH enviado: [ID: %d, pokemon: %s]", id, pokemon);
+	log_info(log, "mensaje GET enviado: [ID: %d, pokemon: %s]", id, pokemon);
 	destroy_message_get(get);
 
 }
@@ -1802,7 +1819,7 @@ void process_message(serve_thread_args* args) {
 		if(pokemon_is_needed_on_pokemap(localized_message->pokemon_name)){//se necesita el pokemon?
 
 			for(int i = 0; i < ((t_message_localized*)(message))->position_amount;i++) {
-				add_to_pokemap_if_needed(localized_message->pokemon_name,(localized_message->positions+i));
+				add_to_poke_map(localized_message->pokemon_name,(localized_message->positions+i));
 			}
 		}
 

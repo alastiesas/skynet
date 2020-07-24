@@ -17,12 +17,12 @@ int main(void)
 	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
 
 //	//PRUEBAS DURAS
-	t_position* positions = calloc(2, sizeof(t_position));
-	positions->x = 9;
-	positions->y = 9;
-	(positions+1)->x = 1;
-	(positions+1)->y = 9;
-	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
+//	t_position* positions = calloc(2, sizeof(t_position));
+//	positions->x = 9;
+//	positions->y = 9;
+//	(positions+1)->x = 1;
+//	(positions+1)->y = 9;
+//	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
 //
 //	serve_thread_args* argsgsgs = malloc(sizeof(serve_thread_args));//TODO TESTING
 //	argsgsgs->op_code = OPERATION_LOCALIZED;//TODO TESTING
@@ -134,10 +134,10 @@ int main(void)
 	pthread_create(&short_tid, NULL, short_thread, NULL);
 
 	//PRUEBAS
-	serve_thread_args* argumentos = malloc(sizeof(serve_thread_args));//TODO TESTING
-	argumentos->op_code = OPERATION_LOCALIZED;//TODO TESTING
-	argumentos-> message = mensaje_prueba;//TODO TESTING
-	process_message(argumentos);//TODO TESTING
+//	serve_thread_args* argumentos = malloc(sizeof(serve_thread_args));//TODO TESTING
+//	argumentos->op_code = OPERATION_LOCALIZED;//TODO TESTING
+//	argumentos-> message = mensaje_prueba;//TODO TESTING
+//	process_message(argumentos);//TODO TESTING
 	//FIN PRUEBAS
 
 	pthread_join(long_tid, NULL);
