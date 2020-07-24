@@ -669,16 +669,18 @@ void sub_catching(char* pokemon)
 
 bool pokemon_is_needed(char* pokemon,char* channel)
 {
-	bool needed = 0;
+	bool needed = false;
 	sem_wait(&sem_objectives_list);
 	t_objective* objective = find_key(objectives_list, pokemon);
 	sem_post(&sem_objectives_list);
 
 	if(objective != NULL){
-		if(strcmp(channel,"trainer") == 0)
+		if(strcmp(channel,"trainer") == 0){
 			needed = objective->count > (objective->caught + objective->catching);
-		else
-			needed = 1;
+		}
+		else{
+			needed = true;
+		}
 	}
 
 	return needed;
@@ -709,23 +711,18 @@ void initialize_global_objectives()
 
 
 	bool team_needs_objective(t_objective* objective) {
-		printf("LLEGA HASTA team_needs_objective\n");
-		return pokemon_is_needed_on_pokemap(objective->pokemon);
+		return pokemon_is_needed_on_trainer(objective->pokemon);
 	}
 
-	printf("LLEGA HASTA ACA\n");
 	t_list* need_catch_objectives = list_filter(objectives_list, &team_needs_objective);
 
-	printf("LLEGA HASTA ACA\n");
 
 	void send_get_if_needed(t_objective* objective) {
-		printf("ENVIAR GET %s\n", objective->pokemon);
 		pthread_t* tid;
 		pthread_create(&tid, NULL, &team_send_get, objective->pokemon);
 	}
 
-	list_iterate(need_catch_objectives, &send_get_if_needed);
-	//TODO ACA MANDAR LOS GET!!!
+	list_iterate(need_catch_objectives, &send_get_if_needed);//para cada pokemon que necesite envia el get inicial
 
 }
 
@@ -1470,7 +1467,15 @@ void add_to_poke_map(char* pokemon, t_position* position)
 	else
 	{
 		t_list* positions = (t_list*) dictionary_get(poke_map,pokemon);
-		list_add(positions, position_copy);
+
+		bool condition(t_position* pos) {
+			//si alguna de las posiciones es la que se intenta agregar, no se agrega
+			return (pos->x == position->x && pos->y == position->y);
+		}
+		if(!list_any_satisfy(positions, &condition)) {//si ninguna posicione del pokemap es la que se intenta agregar si se agrega
+			list_add(positions, position_copy);
+		}
+
 	}
 	sem_post(&sem_poke_map);
 	//EL CASO DE QUE ESTE EL POKEMON EN EL MAPA
@@ -1814,9 +1819,15 @@ void process_message(serve_thread_args* args) {
 			strcat(positions_string, aux);
 			free(aux);
 		}
-		log_info(log, "localized recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION_AMOUNT: %d, POSITIONS:%s]", ((t_message_localized*)(message))->id, ((t_message_localized*)(message))->correlative_id, ((t_message_localized*)(message))->size_pokemon_name, ((t_message_localized*)(message))->pokemon_name, ((t_message_localized*)(message))->position_amount, positions_string);
 
-		if(pokemon_is_needed_on_pokemap(localized_message->pokemon_name)){//se necesita el pokemon?
+		bool already_on_map = false;
+		sem_wait(&sem_poke_map);
+		already_on_map = dictionary_has_key(poke_map, localized_message->pokemon_name);
+		sem_post(&sem_poke_map);
+
+		log_info(log, "localized recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION_AMOUNT: %d, POSITIONS:%s] %s", localized_message->id, localized_message->correlative_id, localized_message->size_pokemon_name, localized_message->pokemon_name, localized_message->position_amount, positions_string, already_on_map?"IGNORADO":"PROCESADO");
+
+		if((!already_on_map) && pokemon_is_needed_on_pokemap(localized_message->pokemon_name)){//se necesita el pokemon?
 
 			for(int i = 0; i < ((t_message_localized*)(message))->position_amount;i++) {
 				add_to_poke_map(localized_message->pokemon_name,(localized_message->positions+i));
