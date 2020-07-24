@@ -196,6 +196,7 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 	}
 	char* test = void_to_string(pokemon_file, total_size);
 	printf("el file tiene %s\n",test);
+	free(test);
 	list_destroy(file_blocks);
 	return pokemon_file;	//este es mi void* del string del archivo pokemon, sin el '\0' del string
 }
@@ -325,7 +326,9 @@ t_dictionary* void_to_dictionary(void* pokemon_file, uint32_t total_size){
 
 
 	char* test = string_new();
-	string_append(&test, void_to_string(pokemon_file, total_size));
+	char* temp = void_to_string(pokemon_file, total_size);
+	string_append(&test, temp);
+	free(temp);
 	string_append(&test, "\0");
 
 	char** lines = string_split(test, "\n");
@@ -341,6 +344,7 @@ t_dictionary* void_to_dictionary(void* pokemon_file, uint32_t total_size){
 	string_iterate_lines(lines, add_cofiguration);
 	string_iterate_lines(lines, (void*) free);
 
+	free(test);
 	free(lines);
 	free(pokemon_file);
 	//pasar el void* a un diccionario como hace config_create() de config.c
@@ -361,9 +365,7 @@ void* dictionary_to_void(t_dictionary* pokemon_file_dictionary, uint32_t* size){
 	*size = strlen(lines);
 	//pokemon_file = string_to_void(lines, *size);
 
-	//TODO destruir diccionarIo
-	//FIXME destruir diccionarIo
-	//XXX destruir diccionarIo
+
 	return (void*)lines;
 }
 
@@ -444,7 +446,7 @@ bool exists_pokemon(char* pokemon_name) {
 
 char* get_pokemon_directory(char* pokemon_name) {
 
-	char* pokemon_directory = (char*) malloc(strlen(files_directory) + strlen(pokemon_name));
+	char* pokemon_directory = (char*) malloc(strlen(files_directory) + strlen(pokemon_name) + 1);
 	strcpy(pokemon_directory, files_directory);
 	strcat(pokemon_directory, pokemon_name);
 
@@ -454,7 +456,7 @@ char* get_pokemon_directory(char* pokemon_name) {
 char* get_pokemon_file(char* pokemon_name) {
 
 	char* pokemon_directory = get_pokemon_directory(pokemon_name);
-	char* pokemon_file = (char*) malloc(strlen(pokemon_directory) + 13);
+	char* pokemon_file = (char*) malloc(strlen(pokemon_directory) + 14);
 	strcpy(pokemon_file, pokemon_directory);
 	strcat(pokemon_file, "/Metadata.bin");
 
@@ -509,13 +511,13 @@ void create_pokemon_file(char* pokemon_name) {
 
 t_config* open_pokemon_file(char* pokemon_name) {
 
-	char* pokemon_file = get_pokemon_file(pokemon_name);
+	char* pokemon_file_path = get_pokemon_file(pokemon_name);
 	t_config* pokemon_config; //change object?
 	char* open;
 
 	do {
 		pthread_mutex_lock(&mutex_pkmetadata);
-		pokemon_config = config_create(pokemon_file);
+		pokemon_config = config_create(pokemon_file_path);
 		open = config_get_string_value(pokemon_config, "OPEN");
 		if (strcmp(open, "Y") == 0) {
 			pthread_mutex_unlock(&mutex_pkmetadata);
@@ -529,7 +531,7 @@ t_config* open_pokemon_file(char* pokemon_name) {
 	config_save(pokemon_config);
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
-	free(pokemon_file);
+	free(pokemon_file_path);
 
 	return pokemon_config;
 }
@@ -538,7 +540,7 @@ char* get_key(uint32_t position_x, uint32_t position_y) {
 
 	char* x = string_itoa(position_x);
 	char* y = string_itoa(position_y);
-	char* key = (char*) malloc(strlen(x) + 1 + strlen(y));
+	char* key = (char*) malloc(strlen(x) + 2 + strlen(y));
 	strcpy(key, x);
 	strcat(key, "-");
 	strcat(key, y);

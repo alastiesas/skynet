@@ -37,6 +37,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
 	t_dictionary* pokemon_dictionary;
 	if (size == 0) {
+		list_destroy(blocks_list);
 		//si no tenia bloques se crea un diccionario vacio
 		pokemon_dictionary = dictionary_create();
 	} else {
@@ -87,6 +88,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 			msync(bmap, blocks / 8, MS_SYNC);
 		}
 		pthread_mutex_unlock(&mutex_bitmap);
+		list_destroy(available_blocks);
 	}
 
 	/*-----------------------------------*/
@@ -109,6 +111,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	}
 	list_iterate(blocks_list_int, (void*)list_to_string);
 	string_append(&blocks_to_write, "]");
+	list_destroy(blocks_list_int);
 
 	//actualizar metadata
 	config_set_value(pokemon_config, "BLOCKS", blocks_to_write);
@@ -120,9 +123,11 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	config_destroy(pokemon_config);
+	dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
 	free(new_size_to_metadata);
 	free(blocks_to_write);
+	free(new_pokemon_file);
 
 	t_message_appeared* message_appeared = create_message_appeared_long(new_pokemon->id, new_pokemon->pokemon_name, new_pokemon->location->position->x, new_pokemon->location->position->y);
 
@@ -361,7 +366,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 	log_info(logger, "Se genero el mensaje caught");
 	destroy_message_catch(message_catch);
 
-
+	free(pokemon_metadata);
 	return message_caught;
 }
 
@@ -495,7 +500,7 @@ t_message_localized* process_get(t_message_get* message_get){
 	log_info(logger, "Se genero el mensaje localized");
 	destroy_message_get(message_get);
 
-
+	free(pokemon_metadata);
 	//generar mensaje localized y destruir el mensaje get
 	return message_localized;
 }
