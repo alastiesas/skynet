@@ -17,13 +17,19 @@ int main(void)
 	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
 
 //	//PRUEBAS DURAS
-//	t_position* positions = calloc(2, sizeof(t_position));
-//	positions->x = 9;
-//	positions->y = 9;
-//	(positions+1)->x = 1;
-//	(positions+1)->y = 9;
-//	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
+	t_position* positions = calloc(2, sizeof(t_position));
+	positions->x = 9;
+	positions->y = 9;
+	(positions+1)->x = 1;
+	(positions+1)->y = 9;
+	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
 //
+	t_position* positions2 = calloc(2, sizeof(t_position));
+	positions2->x = 9;
+	positions2->y = 9;
+	(positions2+1)->x = 1;
+	(positions2+1)->y = 9;
+	t_message_localized* mensaje_prueba2 = create_message_localized(1,"Gengar",2,positions2);
 //
 //	serve_thread_args* argsgsgs = malloc(sizeof(serve_thread_args));//TODO TESTING
 //	argsgsgs->op_code = OPERATION_LOCALIZED;//TODO TESTING
@@ -70,6 +76,17 @@ int main(void)
 
 	initialize_global_objectives();
 
+	serve_thread_args* argumentos = malloc(sizeof(serve_thread_args));//TODO TESTING
+	argumentos->op_code = OPERATION_LOCALIZED;//TODO TESTING
+	argumentos-> message = mensaje_prueba;//TODO TESTING
+	process_message(argumentos);//TODO TESTING
+
+	serve_thread_args* argumentos2 = malloc(sizeof(serve_thread_args));//TODO TESTING
+	argumentos2->op_code = OPERATION_LOCALIZED;//TODO TESTING
+	argumentos2-> message = mensaje_prueba2;//TODO TESTING
+	process_message(argumentos);//TODO TESTING
+
+	//exit(0);
 //	debug_objective_list();
 //	t_list* held_table = trainer_held_pokemons(retest_trainer);
 //	printf("trainer[%d] retiene:\n", retest_trainer->id);
@@ -84,6 +101,7 @@ int main(void)
 
 
 
+	printf("SE INICIARON LOS OBJETIVOS GLOBALES\n");
 //	exit(0);
 
 
@@ -131,6 +149,7 @@ int main(void)
 
 	pthread_t short_tid;
 
+	printf("Creacion Hilo short\n");
 	pthread_create(&short_tid, NULL, short_thread, NULL);
 
 	//PRUEBAS
@@ -141,8 +160,10 @@ int main(void)
 	//FIN PRUEBAS
 
 	pthread_join(long_tid, NULL);
+	printf("pthread_join(long_tid, NULL);'n");
 
 	pthread_join(short_tid, NULL);
+	printf("pthread_join(short_tid, NULL);\n");
 
 	log_info(log, "Cantidad de ciclos de CPU totales: %d", cpu_cycles);
 	log_info(log, "Cantidad de cambios de contexto realizados: %d", context_changes);

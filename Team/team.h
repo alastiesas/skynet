@@ -1819,9 +1819,15 @@ void process_message(serve_thread_args* args) {
 			strcat(positions_string, aux);
 			free(aux);
 		}
-		log_info(log, "localized recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION_AMOUNT: %d, POSITIONS:%s]", ((t_message_localized*)(message))->id, ((t_message_localized*)(message))->correlative_id, ((t_message_localized*)(message))->size_pokemon_name, ((t_message_localized*)(message))->pokemon_name, ((t_message_localized*)(message))->position_amount, positions_string);
 
-		if(pokemon_is_needed_on_pokemap(localized_message->pokemon_name)){//se necesita el pokemon?
+		bool already_on_map = false;
+		sem_wait(&sem_poke_map);
+		already_on_map = dictionary_has_key(poke_map, localized_message->pokemon_name);
+		sem_post(&sem_poke_map);
+
+		log_info(log, "localized recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION_AMOUNT: %d, POSITIONS:%s] %s", localized_message->id, localized_message->correlative_id, localized_message->size_pokemon_name, localized_message->pokemon_name, localized_message->position_amount, positions_string, already_on_map?"IGNORADO":"PROCESADO");
+
+		if((!already_on_map) && pokemon_is_needed_on_pokemap(localized_message->pokemon_name)){//se necesita el pokemon?
 
 			for(int i = 0; i < ((t_message_localized*)(message))->position_amount;i++) {
 				add_to_poke_map(localized_message->pokemon_name,(localized_message->positions+i));
