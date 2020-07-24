@@ -83,6 +83,7 @@ void delete_buddy_partition(t_list** deleted_messages) {
 	uint32_t log_final = victim_partition->final_position - mem;
 
 	victim_partition->available = true;
+	victim_partition->size = get_size_partition_by_index(victim_partition_number);
 	log_info(obligatorio, "Se elimina la particion en posicion %d - %d", log_initial, log_final);
 	//eliminar la particion implica convertirla en disponible (no se hacen frees)
 
@@ -423,6 +424,7 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 
 					list_add_in_index(partitions, i + 1, new_buddy_partition);
 
+
 				}
 				partition_number = i;
 			}
@@ -431,10 +433,10 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 		partition = list_get(partitions, partition_location);
 
 		if (get_size_partition_by_index(partition_location) >= searched_size) {
-			new_size = partition->size;
+			new_size = get_size_partition_by_index(partition_location);
 			while (new_size > searched_size && new_size >= min_partition_size) {
 				partition = list_get(partitions, partition_location);
-				new_size = partition->size/2;
+				new_size = get_size_partition_by_index(partition_location)/2;
 				partition->size = new_size;
 				partition->final_position = partition->final_position - new_size;
 
@@ -445,6 +447,9 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 				new_buddy_partition->final_position = new_buddy_partition->initial_position + new_size;
 
 				list_add_in_index(partitions, partition_location + 1, new_buddy_partition);
+
+				dump_cache();
+
 			}
 			partition_number = partition_location;
 		}

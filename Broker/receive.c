@@ -153,8 +153,9 @@ void process_receive_message(int32_t socket_cliente, t_log* logger, t_list* queu
 
 	if(strcmp(memory_algorithm, "PARTICIONES") == 0)
 		store_message_partition(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
-	else if(strcmp(memory_algorithm, "BS") == 0)
+	else if(strcmp(memory_algorithm, "BS") == 0){
 		store_message_buddy(t_mensaje->ID_mensaje, t_mensaje->bytes, t_mensaje->datos_mensaje, queue_code);
+	}
 
 //------------------------------------------------------------------------------------------------------
 
@@ -292,12 +293,12 @@ pthread_mutex_t* get_mutex_and_queues_by_id(queue_code queue_id, t_list** queue,
 
 void store_message_buddy(uint32_t message_id, uint32_t size_message, void* message_data, queue_code queue_code){
 
-	t_partition* new_partition = malloc(sizeof(t_partition));
-	new_partition->ID_message = message_id;
-	new_partition->available = false;
-	new_partition->size = size_message;
-	new_partition->queue_code = queue_code;
-	new_partition->lru = 0; //para que no quede sin inicializar, pero en update lru se setea
+//	t_partition* new_partition = malloc(sizeof(t_partition));
+//	new_partition->ID_message = message_id;
+//	new_partition->available = false;
+//	new_partition->size = size_message;
+//	new_partition->queue_code = queue_code;
+//	new_partition->lru = 0; //para que no quede sin inicializar, pero en update lru se setea
 	t_list* deleted_messages = list_create();
 
 	pthread_mutex_lock(&(mutex_cache));
@@ -312,9 +313,9 @@ void store_message_buddy(uint32_t message_id, uint32_t size_message, void* messa
 
 		//actualizar la posicion de la particion nueva, y agregar a la lista
 		t_partition* free_partition = (t_partition*)list_get(partitions, free_partition_index);
-		new_partition->initial_position = free_partition->initial_position;
-
-		new_partition->final_position = free_partition->final_position;
+//		new_partition->initial_position = free_partition->initial_position;
+//
+//		new_partition->final_position = free_partition->final_position;
 
 		free_partition->ID_message = message_id;
 		free_partition->available = false;
@@ -343,7 +344,7 @@ void store_message_buddy(uint32_t message_id, uint32_t size_message, void* messa
 	}
 	else{
 		log_error(helper, "No hay particion disponible");
-		free(new_partition);
+//		free(new_partition);
 	}
 
 
