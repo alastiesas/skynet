@@ -1723,6 +1723,7 @@ void team_send_catch(t_message_team* message) {
 	//una vez enviado y legoeado la info destruyo el mensahe
 	destroy_message_catch(catch);
 
+
 	//por ultimo agrego el correlative id a la lista de espera de caught
 	char str_correlative_id[6];
 	sprintf(str_correlative_id,"%d",correlative_id);
@@ -1731,6 +1732,16 @@ void team_send_catch(t_message_team* message) {
 	sem_post(&sem_messages_recieve_list);
 }
 
+void team_send_get(char* pokemon) {
+
+	t_message_get* get = create_message_get(pokemon);
+	t_package* package = serialize_get(get);
+
+	int32_t id = team_send_package(ip_broker, port_broker, package);//send_message ya libera el paquete
+	log_info(log, "mensaje CATCH enviado: [ID: %d, pokemon: %s]", id, pokemon);
+	destroy_message_get(get);
+
+}
 
 void set_default_behavior(queue_code queue) {
 	switch(queue) {
