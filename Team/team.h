@@ -55,7 +55,7 @@ sem_t sem_state_lists;//todas usan el mismo semáforo
 sem_t sem_scheduler;//short y long no se ejecutan a la vez
 sem_t sem_short;
 sem_t sem_long;
-t_state_change_reason exit_cpu_reason = NO_CHANGE;//MUTEX = sem_cpu_info
+t_state_change_reason exit_cpu_reason = START;//MUTEX = sem_cpu_info
 bool team_succes = false;
 sem_t sem_cpu;//mutex para que short y traienrs no puedan ejecutarse a la vez
 
@@ -132,7 +132,7 @@ void fifo_algorithm();
 void rr_algorithm();
 void sjfs_algorithm();
 void sjfc_algorithm();
-void exit_cpu();
+bool exit_cpu();
 char* exit_cpu_reason_string();
 char* enter_cpu_reason_string();
 void trainer_update_burst_estimate(t_trainer* trainer);
@@ -165,6 +165,7 @@ void trade_trainer(t_trainer* trainer1);
 //comunicación
 void message_list_add_catch(t_trainer* trainer);
 void* sender_thread();
+void team_send_catch(t_message_team* message);
 void set_default_behavior(queue_code);
 void process_message(serve_thread_args* args);
 pthread_t subscribe(queue_code queue_code);
@@ -194,6 +195,8 @@ void initialize_global_config() {
 	if(config_has_property(config, "ALPHA")) {
 		alpha = config_get_double_value(config, "ALPHA");
 	}
+
+
 }
 
 void initialize_semaphores() {
@@ -702,6 +705,11 @@ void initialize_global_objectives()
 	list_iterate(block_list, &add_trainer_to_objective);
 	sem_post(&sem_state_lists);
 
+
+
+
+	//TODO ACA MANDAR LOS GET!!!
+
 }
 
 bool success_global_objective()
@@ -736,6 +744,7 @@ void trainer_thread(t_callback* callback_thread)
 	uint32_t trade_cpu = 0;
 	while(trainer->action != FINISH){
 		sem_wait(&trainer->sem_thread);
+
 		sem_wait(&sem_cpu);
 
 		switch(trainer->action){
@@ -1127,17 +1136,25 @@ void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer
 
 void fifo_algorithm()
 {
-
-	exit_cpu();
+//	sem_wait(&sem_cpu_info);
+//	int reason_int = exit_cpu_reason;
+//	sem_post(&sem_cpu_info);
 
 	sem_wait(&sem_state_lists);
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
+	if(exit_cpu()) {
 
-	if(ready_size > 0){
-		transition_ready_to_exec(0);//toma el primero de la cola ready
-	}
-	else{
+
+
+		if(ready_size > 0){
+			transition_ready_to_exec(0);//toma el primero de la cola ready
+		}
+		else{
+			sem_post(&sem_long);//toma el mando el long
+		}
+
+	} else if(ready_size == 0) {
 		sem_post(&sem_long);//toma el mando el long
 	}
 
@@ -1146,39 +1163,48 @@ void fifo_algorithm()
 void rr_algorithm()
 {
 
-	exit_cpu();
 
 	sem_wait(&sem_state_lists);
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
-	if(ready_size > 0){
-		transition_ready_to_exec(0);//toma el primero de la cola ready
+	if(exit_cpu()) {
+		if(ready_size > 0){
+			transition_ready_to_exec(0);//toma el primero de la cola ready
+		}
+		else{
+			//toma el mando el long
+			sem_post(&sem_long);
+		}
+
+	}else if(ready_size == 0) {
+		sem_post(&sem_long);//toma el mando el long
 	}
-	else{
-		//toma el mando el long
-		sem_post(&sem_long);
-	}
+
 }
 
 void sjfs_algorithm()
 {
 
-	exit_cpu();
 
 	sem_wait(&sem_state_lists);
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
-	if(ready_size > 0){
-		t_trainer* trainer = shortest_job_trainer_from_ready();
-		if(trainer != NULL) {
-			transition_ready_to_exec_by_trainer(trainer);
-//			transition_by_id(trainer->id, ready_list, exec_list);
-//			sem_post(&trainer->sem_thread);
+	if(exit_cpu()) {
+		if(ready_size > 0){
+			t_trainer* trainer = shortest_job_trainer_from_ready();
+			if(trainer != NULL) {
+				transition_ready_to_exec_by_trainer(trainer);
+		//			transition_by_id(trainer->id, ready_list, exec_list);
+		//			sem_post(&trainer->sem_thread);
+			}
 		}
-	}
-	else{
-		//toma el mando el long
-		sem_post(&sem_long);
+		else{
+			//toma el mando el long
+			sem_post(&sem_long);
+		}
+
+	}else if(ready_size == 0) {
+		sem_post(&sem_long);//toma el mando el long
 	}
 }
 
@@ -1186,75 +1212,86 @@ void sjfc_algorithm()
 {
 	new_trainer_in_ready = false;
 
-	exit_cpu();
 
 	sem_wait(&sem_state_lists);
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
-	if(ready_size > 0){
-		t_trainer* trainer = shortest_job_trainer_from_ready();
-		if(trainer != NULL) {
-			transition_ready_to_exec_by_trainer(trainer);
-//			transition_by_id(trainer->id, ready_list, exec_list);
-//			sem_post(&trainer->sem_thread);
+	if(exit_cpu()) {
+		if(ready_size > 0){
+			t_trainer* trainer = shortest_job_trainer_from_ready();
+			if(trainer != NULL) {
+				transition_ready_to_exec_by_trainer(trainer);
+	//			transition_by_id(trainer->id, ready_list, exec_list);
+	//			sem_post(&trainer->sem_thread);
+			}
+		} else{
+			//toma el mando el long
+			sem_post(&sem_long);
 		}
-	} else{
-		//toma el mando el long
-		sem_post(&sem_long);
+
+	}else if(ready_size == 0) {
+		sem_post(&sem_long);//toma el mando el long
 	}
 }
 
-void exit_cpu() {
+bool exit_cpu() {
+	sem_wait(&sem_cpu_info);
+	int reason_int = exit_cpu_reason;
+	sem_post(&sem_cpu_info);
+	bool exit = false;
+	if(reason_int != NO_CHANGE) {
+		exit = true;
 
-	sem_wait(&sem_state_lists);
-	t_trainer* trainer = NULL;
-	if(list_size(exec_list) > 0) {
-		trainer = list_get(exec_list, 0);
-	}
-	sem_post(&sem_state_lists);
-
-	if(trainer != NULL) {
-		char* state_change_log = NULL;
-		switch(trainer->action) {
-			case FREE://pasa a block
-				state_change_log = create_copy_string("exec -> block");
-				transition_exec_to_block();
-				break;
-			case MOVE://no terminó, vuelve a ready
-				state_change_log = create_copy_string("exec -> ready");
-				transition_exec_to_ready();
-				break;
-			case CATCH://no terminó, vuelve a ready
-				state_change_log = create_copy_string("exec -> ready");
-				transition_exec_to_ready();
-				break;
-			case CATCHING://pasa a block
-				state_change_log = create_copy_string("exec -> block");
-				transition_exec_to_block();
-				break;
-			case TRADE://pasa a block
-				state_change_log = create_copy_string("exec -> block");
-				transition_exec_to_block();
-				break;
-			case FINISH://pasa a exit
-				state_change_log = create_copy_string("exec -> exit");
-				transition_exec_to_exit();
-				break;
-		}//fin switch
-
-
-		sem_wait(&sem_cpu_info);
-		int reason_int = exit_cpu_reason;
-		sem_post(&sem_cpu_info);
-		if(reason_int != NO_CHANGE) {
-			char* reason = exit_cpu_reason_string();
-			log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
-			free(reason);
+		sem_wait(&sem_state_lists);
+		t_trainer* trainer = NULL;
+		if(list_size(exec_list) > 0) {
+			trainer = list_get(exec_list, 0);
 		}
+		sem_post(&sem_state_lists);
 
-		free(state_change_log);
-	}//fin if
+		if(trainer != NULL) {
+			char* state_change_log = NULL;
+			switch(trainer->action) {
+				case FREE://pasa a block
+					state_change_log = create_copy_string("exec -> block");
+					transition_exec_to_block();
+					break;
+				case MOVE://no terminó, vuelve a ready
+					state_change_log = create_copy_string("exec -> ready");
+					transition_exec_to_ready();
+					break;
+				case CATCH://no terminó, vuelve a ready
+					state_change_log = create_copy_string("exec -> ready");
+					transition_exec_to_ready();
+					break;
+				case CATCHING://pasa a block
+					state_change_log = create_copy_string("exec -> block");
+					transition_exec_to_block();
+					break;
+				case TRADE://pasa a block
+					state_change_log = create_copy_string("exec -> block");
+					transition_exec_to_block();
+					break;
+				case FINISH://pasa a exit
+					state_change_log = create_copy_string("exec -> exit");
+					transition_exec_to_exit();
+					break;
+			}//fin switch
 
+
+			sem_wait(&sem_cpu_info);
+			int reason_int = exit_cpu_reason;
+			sem_post(&sem_cpu_info);
+			if(reason_int != NO_CHANGE) {
+				char* reason = exit_cpu_reason_string();
+				log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
+				free(reason);
+			}
+
+			free(state_change_log);
+		}//fin if
+	}
+	return exit;
 }
 
 char* exit_cpu_reason_string() {
@@ -1349,13 +1386,10 @@ void trainer_assign_catch(char* pokemon, t_list* positions)
 	t_position* position;
 
 	void assign_closest_trainer(t_position* position) {
-		//t_list* list_from = NULL;
 		t_trainer* selected_trainer = find_trainer_for_catch(position);
 
 		if(selected_trainer != NULL) {
 			add_catching(pokemon);
-
-
 
 			trainer_assign_move(selected_trainer, pokemon, position, 1, 0);
 			bool condition(t_position* iterate_position) {
@@ -1363,6 +1397,7 @@ void trainer_assign_catch(char* pokemon, t_list* positions)
 			}
 			log_info(log_utils, "ENRENADOR ASIGNADO, SE ELIMINARÁ LA POSICION (%d, %d) del pokemap en [%s]\n", position->x, position->y, pokemon);
 			list_remove_by_condition(positions, &condition);
+		}else {
 		}
 
 	}
@@ -1377,12 +1412,15 @@ t_trainer* find_trainer_for_catch(t_position* position) {
 	int32_t closest_from_new = closest_free_trainer_job(new_list, position);
 	sem_post(&sem_state_lists);
 
+
 	sem_wait(&sem_state_lists);
 	int32_t closest_from_block = closest_free_trainer_job(block_list, position);
 	sem_post(&sem_state_lists);
 
+
 	if(closest_from_new >= 0){
 		sem_wait(&sem_state_lists);
+		debug_colas();
 		trainer_new = list_get(new_list,closest_from_new);
 		sem_post(&sem_state_lists);
 	}
@@ -1650,11 +1688,7 @@ void* sender_thread()
 	sem_init(&sem_messages_list, 0, 1);
 	sem_init(&sem_messages, 0, 0);
 	sem_init(&sem_messages_recieve_list, 0, 1);
-	while(1){
-
-		if(team_succes) {
-			pthread_exit(NULL);
-		}
+	while(!team_succes){
 
 
 //		debug_colas();
@@ -1663,38 +1697,40 @@ void* sender_thread()
 		sem_wait(&sem_messages_list);
 		t_message_team* message = list_remove(messages_list, 0);
 		sem_post(&sem_messages_list);
-		t_message_catch* catch = create_message_catch_long(message->pokemon, message->position->x, message->position->y);
 
+		pthread_t catch_sender_tid;
+		pthread_create(&catch_sender_tid, NULL, team_send_catch, message);
 
-		t_package* package = serialize_catch(catch);
-		//TODO ESTO DEBE IR EN OTRO HILO, CREAR NUEVO HILO PARA CADA SEND_MESSAGE
-		int32_t correlative_id = send_message(ip_broker, port_broker, package);//send_message ya libera el paquete
-
-		log_info(log, "mensaje CATCH enviado: [ID: %d, pokemon: %s, posicion: (%d, %d)]", correlative_id, message->pokemon, message->position->x, message->position->y);
-
-
-		destroy_message_catch(catch);
-
-		char str_correlative_id[6];
-		sem_wait(&sem_messages_recieve_list);
-		dictionary_put(message_response,str_correlative_id,message->trainer);
-		sem_post(&sem_messages_recieve_list);
-
-		//Liberar el mensaje removido de la lista de mensajes TODO NO ANDA
 
 	}
 
-	//send al broker, (pokemon, posicion, el entrenador)
-
-	//
-
-	//pthread_t tid;
-	//pthread_create(&tid, NULL, subscribe, NULL);
-	//pthread_join(tid, NULL);
 
 
 
 }
+
+void team_send_catch(t_message_team* message) {
+	//primero creo la estructura de mensaje
+	t_message_catch* catch = create_message_catch_long(message->pokemon, message->position->x, message->position->y);
+
+	//segundo serializo la estructura en el paquete
+	t_package* package = serialize_catch(catch);
+
+	//tercero envio el paquete
+	int32_t correlative_id = team_send_package(ip_broker, port_broker, package);//send_message ya libera el paquete
+	log_info(log, "mensaje CATCH enviado: [ID: %d, pokemon: %s, posicion: (%d, %d)]", correlative_id, message->pokemon, message->position->x, message->position->y);
+
+	//una vez enviado y legoeado la info destruyo el mensahe
+	destroy_message_catch(catch);
+
+	//por ultimo agrego el correlative id a la lista de espera de caught
+	char str_correlative_id[6];
+	sprintf(str_correlative_id,"%d",correlative_id);
+	sem_wait(&sem_messages_recieve_list);
+	dictionary_put(message_response,str_correlative_id,message->trainer);
+	sem_post(&sem_messages_recieve_list);
+}
+
 
 void set_default_behavior(queue_code queue) {
 	switch(queue) {
@@ -1746,6 +1782,7 @@ void process_message(serve_thread_args* args) {
 		char* positions_string =  calloc(100, sizeof(char));
 		for(int i = 0; i < localized_message->position_amount; i++){
 			char* aux = calloc(12, sizeof(char));
+			sprintf(aux, " (%d, %d) ", (localized_message->positions+i)->x, (localized_message->positions+i)->y);
 			strcat(positions_string, aux);
 			free(aux);
 		}
@@ -1771,6 +1808,7 @@ void process_message(serve_thread_args* args) {
 		log_info(log, "mensaje CAUGHT recibido [ID: %d, CORRELATIVE_ID %d, RESULT: %s]", caught_message->id, caught_message->correlative_id, caught_message->result?"OK":"FAIL");
 
 		char str_correlative_id[6];
+		sprintf(str_correlative_id,"%d",((t_message_caught*)(message))->correlative_id);
 		if(dictionary_has_key(message_response,str_correlative_id) == 1){
 			log_info(log, "mensaje CAUGHT [ID: %d, CORRELATIVE_ID %d, RESULT: %s] PROCESADO", caught_message->id, caught_message->correlative_id, caught_message->result?"OK":"FAIL");
 
@@ -1783,7 +1821,6 @@ void process_message(serve_thread_args* args) {
 		}
 		else{
 			log_info(log, "mensaje CAUGHT [ID: %d, CORRELATIVE_ID %d, RESULT: %s] IGNORADO", caught_message->id, caught_message->correlative_id, caught_message->result?"OK":"FAIL");
-
 		}
 		destroy_message_caught(message);
 	break;
@@ -1830,7 +1867,7 @@ pthread_t subscribe(queue_code queue_code) {
 }
 
 
-int32_t send_message(char* ip, char* port, t_package* package) {
+int32_t team_send_package(char* ip, char* port, t_package* package) {
 
 	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log_utils);
 	send_paquete(socket, package);//ya libera el paquete

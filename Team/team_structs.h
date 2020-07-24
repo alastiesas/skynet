@@ -19,13 +19,15 @@ typedef enum {
 } t_algorithm;
 
 typedef enum {
-	NO_CHANGE = 0,
-	BURST = 1,
-	CATCH_PETITION = 2,
-	TRADE_WAITING = 3,
-	FULL_QUANTUM = 4,
-	SJF_PRIORITY = 5,
-	EXIT = 6,
+	START = 0,
+	NO_CHANGE = 1,
+	BURST = 2,
+	CATCH_PETITION = 3,
+	TRADE_WAITING = 4,
+	FULL_QUANTUM = 5,
+	SJF_PRIORITY = 6,
+	EXIT = 7,
+
 } t_state_change_reason;
 
 

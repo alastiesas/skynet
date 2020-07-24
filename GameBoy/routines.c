@@ -77,7 +77,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 
 }
 
-void send_message(int process_code, char* ip, char* port, t_package* package) {
+void team_send_package(int process_code, char* ip, char* port, t_package* package) {
 
 	log_info(gameboy_behavior_log, " 3. message instruction");
 

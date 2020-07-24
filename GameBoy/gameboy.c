@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
 		} else {
 			exit_failure();
 		}
-		send_message(process_code, ip, port, package);
+		team_send_package(process_code, ip, port, package);
 
 	}
 

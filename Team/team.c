@@ -18,10 +18,10 @@ int main(void)
 
 //	//PRUEBAS DURAS
 	t_position* positions = calloc(2, sizeof(t_position));
-	positions->x = 1;
-	positions->y = 2;
-	(positions+1)->x = 3;
-	(positions+1)->y = 4;
+	positions->x = 9;
+	positions->y = 9;
+	(positions+1)->x = 1;
+	(positions+1)->y = 9;
 	t_message_localized* mensaje_prueba = create_message_localized(1,"Gengar",2,positions);
 //
 //	serve_thread_args* argsgsgs = malloc(sizeof(serve_thread_args));//TODO TESTING

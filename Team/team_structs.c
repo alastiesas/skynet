@@ -31,7 +31,7 @@ void debug_trainer(t_trainer* trainer) {
 	printf("trainer->objetivos: [");
 	dictionary_iterator(trainer->objectives, &debug_pokemon);
 	printf("]\n");
-	printf("trainer->objetivos: [");
+	printf("trainer->pokemons: [");
 	dictionary_iterator(trainer->pokemons, &debug_pokemon);
 	printf("]\n");
 
@@ -159,7 +159,6 @@ bool success_objective(t_objective* objective) {
 uint32_t distance(t_position* current, t_position* destiny) {
 	uint32_t distance_x = abs(current->x-destiny->x);
 	uint32_t distance_y = abs(current->y-destiny->y);
-
 	return distance_x + distance_y;
 }
 
@@ -194,7 +193,6 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* ch
 
 	if(list_size(list_trainer) != 0)
 	{
-
 		t_link_element* element = list_trainer->head;
 		uint32_t closest_distance = -1;
 		//uint32_t distance = dinstance(((t_trainer*)element->data)->position, destiny);
@@ -204,13 +202,7 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* ch
 		i = 0;
 		while(element != NULL) {
 			uint32_t distance_aux = distance(((t_trainer*)element->data)->position, destiny);
-//			printf("LA POSICION DEL ENTRANDOR ES (%d,%d)\n",((t_trainer*)element->data)->position->x,((t_trainer*)element->data)->position->y);
-//			printf("distance actual de este entrenador: %d\n" ,distance_aux);
-//			printf("distance minima: %d\n" ,closest_distance);
-//			printf("el actions es (0=libre): %d\n", ((t_trainer*)element->data)->action);
-//			printf("teiene espacio en inventario: %d\n" ,trainer_free_space(((t_trainer*)element->data)));
-			//debug_trainer(((t_trainer*)element->data));
-			bool trainer_free_space2 = 1;
+			bool trainer_free_space2 = true;
 			if(strcmp(channel,"job") == 0)
 				trainer_free_space2 = trainer_free_space(((t_trainer*)element->data));
 
@@ -218,10 +210,7 @@ int32_t closest_free_trainer(t_list* list_trainer, t_position* destiny, char* ch
 				closest_distance = distance_aux;
 				//trainer = (t_trainer*) element->data;
 				index = i;
-//				printf("-> SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			}
-			else
-//				printf("-> NO SELECCIONADO %d\n",((t_trainer*)element->data)->id);
 			element = element->next;
 			i++;
 		}
@@ -286,15 +275,8 @@ bool trainer_locked(t_trainer* trainer) {
 		if(trainer_full(trainer)) {
 			if(!trainer_success_objective(trainer)) {
 				locked = true;
-				printf("trainer[%d] está bloqueado\n", trainer->id);
-			}else {
-				printf("trainer[%d] no está bloqueado porque ya cumplio sus objetivos\n", trainer->id);
 			}
-		}else {
-			printf("trainer[%d] no está bloqueado porque no tiene el inventario lleno\n", trainer->id);
 		}
-	}else {
-		printf("trainer[%d] no está bloqueado porque no está en FREE\n", trainer->id);
 	}
 	return locked;
 }
