@@ -25,6 +25,7 @@ t_log* log_utils;
 uint32_t team_id;
 char* ip_broker;
 char* port_broker;
+char* log_file;
 
 uint32_t time_delay = 1;//READ_ONLY
 uint32_t quantum = 2;//READ_ONLY
@@ -185,6 +186,8 @@ void destroy_message_team(t_message_team* message);
 
 
 void initialize_global_config() {
+
+	log_file = config_get_string_value(config, "LOG_FILE");
 
 	team_id = config_get_int_value(config, "ID");
 

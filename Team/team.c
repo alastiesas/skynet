@@ -13,8 +13,6 @@
 
 int main(void)
 {
-	log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
-	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
 
 //	//PRUEBAS DURAS
 //	t_position* positions = calloc(2, sizeof(t_position));//TODO TESTING
@@ -43,7 +41,11 @@ int main(void)
 	config = config_create("team.config");
 	initialize_global_config();
 	initialize_semaphores();
-
+	char* team_name = malloc(sizeof(char)*10);
+	sprintf(team_name, "team[%d]", team_id);
+	log = log_create(log_file, "team[]", true, LOG_LEVEL_INFO);
+	//log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
+	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
 	log_info(log, "inicio programa team[%d]", team_id);
 
 	pthread_t sender_tid;
