@@ -125,15 +125,16 @@ int32_t compact_buddy_to_right(int32_t partition_index){
 	int32_t next_partition_index;
 	next_partition_index = partition_index;
 	int32_t times_compacted = 0;
-			while (next_partition_index + 1 <= list_size(partitions) && is_free_partition_by_index(next_partition_index + 1) && is_buddy(next_partition_index, next_partition_index + 1 )) {
+	while (next_partition_index + 1 < list_size(partitions) && is_free_partition_by_index(next_partition_index + 1) && is_buddy(next_partition_index, next_partition_index + 1 )) {
 
-				log_info(obligatorio, "Se asocia la particion (%d-%d) con la particion (%d-%d)", ((t_partition*)list_get(partitions, next_partition_index))->initial_position - mem,
-																									((t_partition*)list_get(partitions, next_partition_index))->final_position - mem,
-																									((t_partition*)list_get(partitions, next_partition_index + 1))->initial_position - mem,
-																									((t_partition*)list_get(partitions, next_partition_index + 1))->final_position - mem);
-				merge_partitions(next_partition_index, next_partition_index + 1);
-				times_compacted ++;
-			}
+		log_info(obligatorio, "Se asocia la particion (%d-%d) con la particion (%d-%d)", ((t_partition*)list_get(partitions, next_partition_index))->initial_position - mem,
+				((t_partition*)list_get(partitions, next_partition_index))->final_position - mem,
+				((t_partition*)list_get(partitions, next_partition_index + 1))->initial_position - mem,
+				((t_partition*)list_get(partitions, next_partition_index + 1))->final_position - mem);
+		merge_partitions(next_partition_index, next_partition_index + 1);
+		times_compacted ++;
+	}
+
 	return times_compacted;
 }
 
@@ -141,17 +142,17 @@ int32_t compact_buddy_to_left(int32_t partition_index){
 	int32_t previous_partition_index;
 	previous_partition_index = partition_index;
 	int32_t times_compacted = 0;
-			while (previous_partition_index - 1 >= 0 && is_free_partition_by_index(previous_partition_index - 1) && is_buddy(previous_partition_index, previous_partition_index - 1 )) {
+	while (previous_partition_index - 1 > 0 && is_free_partition_by_index(previous_partition_index - 1) && is_buddy(previous_partition_index, previous_partition_index - 1 )) {
 
-				log_info(obligatorio, "Se asocia la particion (%d-%d) con la particion (%d-%d)", ((t_partition*)list_get(partitions, previous_partition_index - 1))->initial_position - mem,
-																									((t_partition*)list_get(partitions, previous_partition_index - 1))->final_position - mem,
-																									((t_partition*)list_get(partitions, previous_partition_index))->initial_position - mem,
-																									((t_partition*)list_get(partitions, previous_partition_index))->final_position - mem);
-				merge_partitions(previous_partition_index -1, previous_partition_index);
-				previous_partition_index --;
+		log_info(obligatorio, "Se asocia la particion (%d-%d) con la particion (%d-%d)", ((t_partition*)list_get(partitions, previous_partition_index - 1))->initial_position - mem,
+				((t_partition*)list_get(partitions, previous_partition_index - 1))->final_position - mem,
+				((t_partition*)list_get(partitions, previous_partition_index))->initial_position - mem,
+				((t_partition*)list_get(partitions, previous_partition_index))->final_position - mem);
+		merge_partitions(previous_partition_index -1, previous_partition_index);
+		previous_partition_index --;
 
-				times_compacted ++;
-			}
+		times_compacted ++;
+	}
 	return times_compacted;
 }
 
@@ -159,6 +160,7 @@ bool is_free_partition_by_index(int32_t partition_index){
 	bool is_free = false;
 	t_partition* partition = list_get(partitions, partition_index);
 	is_free = partition->available;
+
 	return is_free;
 }
 
@@ -447,8 +449,6 @@ int32_t create_and_search_partition_buddy(uint32_t searched_size, int32_t partit
 				new_buddy_partition->final_position = new_buddy_partition->initial_position + new_size;
 
 				list_add_in_index(partitions, partition_location + 1, new_buddy_partition);
-
-				dump_cache();
 
 			}
 			partition_number = partition_location;
