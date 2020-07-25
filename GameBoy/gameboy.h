@@ -8,10 +8,12 @@
 
 t_log* gameboy_behavior_log;
 t_log* gameboy_log;
+t_log* obligatorio;
 t_config* gameboy_config;
 char* ip;
 char* log_line;
 char* port;
+char* log_path;
 
 bool log_debug_console;
 

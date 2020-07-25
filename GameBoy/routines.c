@@ -11,7 +11,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	port = config_get_string_value(gameboy_config, "PUERTO_BROKER");
 
 	int32_t socket = connect_to_server(ip, port, 4, 4, gameboy_log); //TODO el gameboy no tiene tiempo de reintento?
-
+	log_info(obligatorio,"Conectado al broker");
 
 	strcpy(log_line, " 1. connected to process broker (ip:");
 	strcat(log_line, ip);
@@ -63,7 +63,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 	args->logger = gameboy_log;
 	args->function = &process_free;
 
-	printf("Se suscribe por %d segundos\n", time);
+	log_info(obligatorio,"Se suscribe a la cola %s por %d segundos", queue_name, time);
 	//se crea un thread para recibir muchos mensajes
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
@@ -77,7 +77,7 @@ void subscribe_timed(queue_code queue_code, int time) {
 
 }
 
-void team_send_package(int process_code, char* ip, char* port, t_package* package) {
+void team_send_package(int process_code, char* ip, char* port, t_package* package, char* message_name) {
 
 	log_info(gameboy_behavior_log, " 3. message instruction");
 
@@ -113,6 +113,8 @@ void team_send_package(int process_code, char* ip, char* port, t_package* packag
 
 	receive_ID(socket, gameboy_log);
 	send_ACK(socket, gameboy_log);
+	log_info(obligatorio,"%s recibio el mensaje %s", process_name, message_name);
+
 	close(socket);
 }
 
@@ -201,6 +203,7 @@ void process_free(void* input){
 		break;
 	}
 
+	log_info(obligatorio,"Llego un %s a la cola de mensajes", operation_name);
 	strcat(log_line, operation_name);
 	strcat(log_line, " received (id:");
 	strcat(log_line, string_itoa(id));

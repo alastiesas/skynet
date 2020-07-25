@@ -331,6 +331,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		}
 		else
 		{
+			log_warning(helper, "%s/Metadata.bin no contenia la posicion %s", message_catch->pokemon_name, key);
 			//caso archivo sin la posicion, diccionario ya creado
 			caught_result = 0;
 			//SI NO LO ENCUENTRA ES QUE NO HAY POKEMON EN ESA POSICION CAUGHT FALSE.
@@ -346,6 +347,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		else{
 			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//caso archivo sin bloques, diccionario no creado
+			log_warning(helper, "%s/Metadata.bin no contenia bloques", message_catch->pokemon_name);
 			caught_result = 0;
 
 		}
@@ -486,7 +488,7 @@ t_message_localized* process_get(t_message_get* message_get){
 		{
 			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//no contenia bloques el archivo entonces ni se crea el diccionario
-
+			log_warning(helper, "%s/Metadata.bin no contenia bloques", message_get->pokemon_name);
 			message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 0, NULL);
 		}
 		list_destroy(blocks_list_int);
@@ -520,6 +522,7 @@ void serve_new(void* input){
 	if(op_code != OPERATION_NEW)
 		log_error(helper, "Aca nunca llego");
 
+	log_info(helper, "Llego un mensaje NEW");
 	t_message_new* message_new = (t_message_new*) message;
 
 	t_message_appeared* message_appeared;
@@ -534,6 +537,7 @@ void serve_new(void* input){
 
 
 	send_to_broker(package);
+	log_info(helper, "Se envio un mensaje APPEARED");
 }
 
 void serve_catch(void* input){
@@ -544,6 +548,7 @@ void serve_catch(void* input){
 	if(op_code != OPERATION_CATCH)
 		log_error(helper, "Aca nunca llego");
 
+	log_info(helper, "Llego un mensaje CATCH");
 	t_message_catch* message_catch = (t_message_catch*) message;
 
 	t_message_caught* message_caught;
@@ -556,6 +561,7 @@ void serve_catch(void* input){
 
 
 	send_to_broker(package);
+	log_info(helper, "Se envio un mensaje CAUGHT");
 }
 
 void serve_get(void* input){
@@ -566,6 +572,7 @@ void serve_get(void* input){
 	if(op_code != OPERATION_GET)
 		log_error(helper, "Aca nunca llego");
 
+	log_info(helper, "Llego un mensaje GET");
 	t_message_get* message_get = (t_message_get*) message;
 
 	t_message_localized* message_localized;
@@ -578,6 +585,7 @@ void serve_get(void* input){
 
 
 	send_to_broker(package);
+	log_info(helper, "Se envio un mensaje LOCALIZED");
 }
 
 

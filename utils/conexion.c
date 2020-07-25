@@ -277,7 +277,9 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_
 	uint32_t tries = 0;
 	while (conexion < 0){
 		tries++;
+		if(tries>1){
 		log_info(logger, "Intento de conexión %d de %d", tries, retry_amount);
+		}
 
 		struct addrinfo hints;
 		struct addrinfo *server_info;
@@ -308,7 +310,7 @@ int32_t connect_to_server(char * ip, char * puerto, uint32_t retry_time, uint32_
 		}
 	}
 
-	log_info(logger, "Conexion creada\n");
+	log_info(logger, "Conexion creada");
 
 	return socket_cliente;
 }

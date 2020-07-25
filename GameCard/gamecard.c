@@ -3,6 +3,7 @@
 void config_init(){
 	TIEMPO_DE_REINTENTO_CONEXION = config_get_int_value(config, "TIEMPO_DE_REINTENTO_CONEXION");
 	TIEMPO_DE_REINTENTO_OPERACION = config_get_int_value(config, "TIEMPO_DE_REINTENTO_OPERACION");
+	CANTIDAD_DE_REINTENTOS_CONEXION = config_get_int_value(config, "CANTIDAD_DE_REINTENTOS_CONEXION");
 	TIEMPO_RETARDO_OPERACION = config_get_int_value(config, "TIEMPO_RETARDO_OPERACION");
 	PUNTO_MONTAJE_TALLGRASS = config_get_string_value(config, "PUNTO_MONTAJE_TALLGRASS");
 	IP_BROKER = config_get_string_value(config, "IP_BROKER");

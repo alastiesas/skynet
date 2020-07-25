@@ -73,7 +73,7 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size);
 void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size, char* pokemon_name);
 t_list* find_available_blocks(uint32_t amount);
 void gameboy_function(void);
-void message_function(void (*function)(void*), queue_code queue_code);
+void message_function(void (*function)(void*), queue_code queue_code, char* queue_name);
 void new_function(void);
 void catch_function(void);
 void get_function(void);

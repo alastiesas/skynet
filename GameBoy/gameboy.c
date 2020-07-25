@@ -21,8 +21,10 @@ int main(int argc, char* argv[]) {
 		log_debug_console = true;
 
 	gameboy_behavior_log = log_create("gameboy_behavior.log", "gameboy behavior", log_debug_console, LOG_LEVEL_INFO);
-
 	gameboy_log = log_create("gameboy.log", "gameboy", log_debug_console, LOG_LEVEL_INFO);
+
+	log_path = config_get_string_value(gameboy_config, "LOG_FILE");
+	obligatorio = log_create(log_path, "gameboy", true, LOG_LEVEL_INFO);
 
 
 	log_line = (char*) malloc(300);
@@ -49,7 +51,6 @@ int main(int argc, char* argv[]) {
 	strcat(log_line, config_get_string_value(gameboy_config, "PUERTO_TEAM"));
 	log_info(gameboy_behavior_log, log_line);
 
-
 	if (strcmp(argv[1], "SUSCRIPTOR") == 0 && argc == 4) {
 		//gameboy SUSCRIPTOR [COLA_DE_MENSAJES] [TIEMPO]
 		queue_code queue_code;
@@ -74,6 +75,7 @@ int main(int argc, char* argv[]) {
 
 		t_package* package;
 		int process_code;
+		char* message_name;
 		if (strcmp(argv[1], "BROKER") == 0) {
 
 			ip = config_get_string_value(gameboy_config, "IP_BROKER");
@@ -85,6 +87,7 @@ int main(int argc, char* argv[]) {
 				get = create_message_get(argv[3]);
 				package = serialize_get(get);
 				destroy_message_get(get);
+				message_name = "GET_POKEMON";
 			} else if (argc == 5 && strcmp(argv[2], "CAUGHT_POKEMON") == 0) {
 				//gameboy BROKER CAUGHT_POKEMON [ID_CORRELATIVO] [OK/FAIL]
 				uint32_t result;
@@ -98,12 +101,14 @@ int main(int argc, char* argv[]) {
 				caught = create_message_caught(atoi(argv[3]), result);
 				package = serialize_caught(caught);
 				destroy_message_caught(caught);
+				message_name = "CAUGHT_POKEMON";
 			} else if (argc == 6 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
 				//gameboy BROKER CATCH_POKEMON [POKEMON] [POSX] [POSY]
 				t_message_catch* catch;
 				catch = create_message_catch_long(argv[3], atoi(argv[4]), atoi(argv[5]));
 				package = serialize_catch(catch);
 				destroy_message_catch(catch);
+				message_name = "CATCH_POKEMON";
 			} else if (argc == 7) {
 
 				if (strcmp(argv[2], "APPEARED_POKEMON") == 0) {
@@ -113,12 +118,14 @@ int main(int argc, char* argv[]) {
 					appeared->correlative_id = atoi(argv[6]);
 					package = serialize_appeared(appeared);
 					destroy_message_appeared(appeared);
+					message_name = "APPEARED_POKEMON";
 				} else if (strcmp(argv[2], "NEW_POKEMON") == 0) {
 					//gameboy BROKER NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD]
 					t_message_new* new;
 					new = create_message_new_long(argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
 					package = serialize_message_new(new);
 					destroy_message_new(new);
+					message_name = "NEW_POKEMON";
 				} else {
 					exit_failure();
 				}
@@ -138,6 +145,7 @@ int main(int argc, char* argv[]) {
 				get->id = atoi(argv[4]);
 				package = serialize_get(get);
 				destroy_message_get(get);
+				message_name = "GET_POKEMON";
 			} else if (argc == 7 && strcmp(argv[2], "CATCH_POKEMON") == 0) {
 				//gameboy GAMECARD CATCH_POKEMON [POKEMON] [POSX] [POSY] [ID_MENSAJE]
 				t_message_catch* catch;
@@ -145,7 +153,7 @@ int main(int argc, char* argv[]) {
 				catch->id = atoi(argv[6]);
 				package = serialize_catch(catch);
 				destroy_message_catch(catch);
-
+				message_name = "CATCH_POKEMON";
 			} else if (argc == 8 && strcmp(argv[2], "NEW_POKEMON") == 0) {
 				//gameboy GAMECARD NEW_POKEMON [POKEMON] [POSX] [POSY] [CANTIDAD] [ID_MENSAJE]
 				t_message_new* new;
@@ -153,7 +161,7 @@ int main(int argc, char* argv[]) {
 				new->id = atoi(argv[7]);
 				package = serialize_message_new(new);
 				destroy_message_new(new);
-
+				message_name = "NEW_POKEMON";
 			} else {
 				exit_failure();
 			}
@@ -167,11 +175,11 @@ int main(int argc, char* argv[]) {
 			appeared = create_message_appeared_long(0, argv[3], atoi(argv[4]), atoi(argv[5]));	//TODO ver id correlativo
 			package = serialize_appeared(appeared);
 			destroy_message_appeared(appeared);
-
+			message_name = "APPEARED_POKEMON";
 		} else {
 			exit_failure();
 		}
-		team_send_package(process_code, ip, port, package);
+		team_send_package(process_code, ip, port, package, message_name);
 
 	}
 

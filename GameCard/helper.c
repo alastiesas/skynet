@@ -10,13 +10,14 @@ void gameboy_function(void){
 	iniciar_servidor_gamecard();
 }
 
-void message_function(void (*function)(void*), queue_code queue_code){
+void message_function(void (*function)(void*), queue_code queue_code, char* queue_name){
 	struct thread_args* args = malloc(sizeof(struct thread_args));
 	args->logger = logger;
 	args->function = function;
 
 	while(1){
 		int32_t socket_cliente = suscribe_to_broker(queue_code);
+		log_info(helper, "Suscripto a la cola %s del broker", queue_name);
 
 		args->socket = socket_cliente;
 
@@ -33,22 +34,22 @@ void message_function(void (*function)(void*), queue_code queue_code){
 
 void new_function(void){
 
-	message_function(&serve_new, COLA_NEW);
+	message_function(&serve_new, COLA_NEW, "NEW");
 }
 
 void catch_function(void){
 
-	message_function(&serve_catch, COLA_CATCH);
+	message_function(&serve_catch, COLA_CATCH, "CATCH");
 }
 
 void get_function(void){
 
-	message_function(&serve_get, COLA_GET);
+	message_function(&serve_get, COLA_GET, "GET");
 }
 
 int32_t suscribe_to_broker(queue_code queue_code) {
 
-	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, logger);
+	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, helper);
 	if(socket == -1)
 		log_error(helper, "No se pudo conectar al broker");
 
@@ -56,6 +57,7 @@ int32_t suscribe_to_broker(queue_code queue_code) {
 
 	send_paquete(socket, suscription_package);
 	if (receive_ACK(socket, logger) == -1) {
+		log_info(helper, "ERROR EN LA SUSCRIPCION");
 		exit(EXIT_FAILURE);
 	}
 
