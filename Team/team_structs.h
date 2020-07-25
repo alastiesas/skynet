@@ -109,7 +109,7 @@ typedef struct
 } t_message_team;
 
 
-void debug_trainer(t_trainer* trainer);
+void printf_trainer(t_trainer* trainer);
 //constructores
 t_trainer* create_trainer(uint32_t id, t_position* position, t_dictionary* objectives, t_dictionary* pokemons, uint32_t inventory_size);
 t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* config_objectives, char* config_pokemons);

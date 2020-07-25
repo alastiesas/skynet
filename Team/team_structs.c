@@ -8,7 +8,7 @@
 #include "team_structs.h"
 
 
-void debug_trainer(t_trainer* trainer) {
+void printf_trainer(t_trainer* trainer) {
 	printf("\n**DEBUG DEL ENTRENADOR**\n");
 	printf("trainer->id: %d\n", trainer->id);
 	printf("trainer->action: %d\n", trainer->action);

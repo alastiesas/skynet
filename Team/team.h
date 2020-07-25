@@ -16,7 +16,7 @@
 
 //logs: pueden desactivarse para no mostrarse en consola
 //
-bool probando = true;
+bool debugging = false;
 
 //configuracion
 t_config* config;
@@ -188,6 +188,12 @@ void destroy_message_team(t_message_team* message);
 void initialize_global_config() {
 
 	log_file = config_get_string_value(config, "LOG_FILE");
+	if(config_has_property(config, "DEBUGGING")) {
+		uint32_t debug = config_get_int_value(config, "DEBUGGING");
+		if(debug > 0) {
+			debugging = true;
+		}
+	}
 
 	team_id = config_get_int_value(config, "ID");
 
@@ -587,14 +593,6 @@ void initialize_trainers()
 	//TODO BORRAR LISTAS LEVANTADAS DEL CONFIG
 }
 
-//void debug_objective_list() {
-//
-//	void debug_objective(t_objective* objective) {
-//		printf("%s: %d, atrapados: %d, atrapando: %d\n", objective->pokemon, objective->count, objective->caught, objective->catching);
-//	}
-//	list_iterate(objectives_list, &debug_objective);
-//}
-
 void add_trainer_to_objective(t_trainer* trainer)
 {
 
@@ -766,7 +764,7 @@ void trainer_thread(t_callback* callback_thread)
 		//while(1) agregar
 	t_trainer* trainer = callback_thread->trainer;
 
-//	debug_trainer(trainer);
+	debug_trainer(trainer);
 	uint32_t trade_cpu = 0;
 	while(trainer->action != FINISH){
 		sem_wait(&trainer->sem_thread);
@@ -810,6 +808,7 @@ void trainer_thread(t_callback* callback_thread)
 		}
 		callback_thread->callback(trainer);
 		sem_post(&sem_cpu);
+
 	}
 
 
@@ -1455,7 +1454,7 @@ t_trainer* find_trainer_for_catch(t_position* position) {
 
 	if(closest_from_new >= 0){
 		sem_wait(&sem_state_lists);
-		debug_colas();
+//		debug_colas();
 		trainer_new = list_get(new_list,closest_from_new);
 		sem_post(&sem_state_lists);
 	}
@@ -1936,10 +1935,10 @@ pthread_t subscribe(queue_code queue_code) {
 
 int32_t team_send_package(char* ip, char* port, t_package* package) {
 
-	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log_utils);
+	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);
 	send_paquete(socket, package);//ya libera el paquete
 
-	int32_t correlative_id = receive_ID(socket, log_utils);
+	int32_t correlative_id = receive_ID(socket, log);
 	send_ACK(socket, log_utils);
 	return correlative_id;
 }
@@ -1966,7 +1965,6 @@ void trainer_catch(t_trainer* trainer, bool result) {
 	if(result){
 		add_pokemon(trainer, trainer->target->pokemon);
 		add_caught(trainer->target->pokemon);
-		sub_catching(trainer->target->pokemon);
 //		debug_trainer(trainer);
 		if(trainer_success_objective(trainer)){
 			trainer->action = FINISH;
@@ -2081,15 +2079,20 @@ void message_list_add_catch(t_trainer* trainer) {
 }
 
 void debug_colas() {
+	if (debugging){
 	printf("the size of all list are [new: %d] [ready: %d] [block: %d] [exec: %d] [exit: %d]\n",list_size(new_list),list_size(ready_list),list_size(block_list),list_size(exec_list), list_size(exit_list));
+
+	}
 }
 void debug_message_list() {
+	if (debugging){
 	void printf_function(char*key,void*n){
 		printf("ID : %s \n",key);
 		//agregar a que entrenador pertenece
 	};
 	printf("The IDs on message list response are these: \n");
 	dictionary_iterator(message_response, &printf_function);
+	}
 }
 
 
@@ -2100,6 +2103,12 @@ void destroy_poke_map() {
 		list_destroy_and_destroy_elements(positions, &free);
 	}
 	dictionary_destroy_and_destroy_elements(poke_map, &destroy_pokemon_in_pokemap);
+}
+void debug_trainer(t_trainer* trainer) {
+	if(debugging) {
+		printf_trainer(trainer);
+	}
+
 }
 
 void destroy_global_objectives() {
