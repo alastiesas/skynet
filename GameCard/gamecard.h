@@ -19,7 +19,9 @@
 #include <fcntl.h>
 
 t_log* logger;
+t_log* helper;
 t_config* config;
+bool log_debug_console;
 
 uint32_t TIEMPO_DE_REINTENTO_CONEXION;
 uint32_t TIEMPO_DE_REINTENTO_OPERACION;

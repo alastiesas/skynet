@@ -154,7 +154,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
-		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_catch->pokemon_name);
+		log_warning(helper, "no existe %s/Metadata.bin", message_catch->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
@@ -201,7 +201,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		t_list* blocks_list_int = list_create();
 		uint32_t blocks_count = 0;
 		while(blocks_array[blocks_count]!=NULL){
-			printf("any block is %s \n",blocks_array[blocks_count]);
+			log_debug(logger, "any block is %s \n",blocks_array[blocks_count]);
 			list_add(blocks_list, blocks_array[blocks_count]);
 			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
@@ -237,7 +237,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		string_append(&key, y);
 		free(x);
 		free(y);
-		printf("the key for pokemon map is %s\n",key);
+		log_debug(logger, "the key for pokemon map is %s\n",key);
 		//MIRAR EN EL DICCIONARIO SI EXISTE LA KEY
 		if(dictionary_has_key(pokemon_dictionary,key)){
 			//MODIFICA VALUE EN EL diccionario
@@ -266,7 +266,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			//calcular nueva cantidad de bloques
 			double aux = ((double)new_size/(double)block_size);
 			uint32_t new_blocks_count = (uint32_t) ceil(aux);
-			printf("nueva cantidad de bloques: %d\n",new_blocks_count);
+			log_debug(logger, "nueva cantidad de bloques: %d\n",new_blocks_count);
 
 			//si cambio la cantidad de bloques, actualizar el metadata y el bitmap, y mi lista de bloques
 			//para catch puede haber menos o igual bloques
@@ -284,9 +284,9 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				}
 				//se actualizan los bloques en el metadata mas adelante
 			}
-			printf("tamaño de lista de bloques luego de eliminar: %d\n",list_size(blocks_list_int));
+			log_debug(logger, "tamaño de lista de bloques luego de eliminar: %d\n",list_size(blocks_list_int));
 			void imprimir(uint32_t elemt){
-				printf("elemento de la lista de bloques: %d\n", elemt);
+				log_debug(logger, "elemento de la lista de bloques: %d\n", elemt);
 			}
 			list_iterate(blocks_list_int, (void*)imprimir);
 
@@ -295,7 +295,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				write_file_blocks((void*)new_pokemon_file, blocks_list_int, new_size, message_catch->pokemon_name);
 
 
-			printf("Ya se escribieron los bloques, si tenia mas de 0 \n");
+			log_debug(logger, "Ya se escribieron los bloques, si tenia mas de 0 \n");
 			//ACTUALIZAR EL METADATA.BIN, nueva lista de blocks, el nuevo SIZE, y cambiar OPEN a N
 			//BLOCKS=[40,21,82,12]
 			//SIZE=250
@@ -316,7 +316,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			string_append(&blocks_to_write,"]");
 
 
-			printf("Bloques a escribir en el metadata: %s\n", blocks_to_write);
+			log_debug(logger, "Bloques a escribir en el metadata: %s\n", blocks_to_write);
 			config_set_value(file, "BLOCKS", blocks_to_write);
 			config_set_value(file, "SIZE", new_size_to_metadata);
 
@@ -386,7 +386,7 @@ t_message_localized* process_get(t_message_get* message_get){
 
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
-		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_get->pokemon_name);
+		log_warning(helper, "no existe %s/Metadata.bin", message_get->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
@@ -437,7 +437,7 @@ t_message_localized* process_get(t_message_get* message_get){
 		t_list* blocks_list_int = list_create();
 		uint32_t blocks_count = 0;
 		while(blocks_array[blocks_count]!=NULL){
-			printf("any block is %s \n",blocks_array[blocks_count]);
+			log_debug(logger, "any block is %s \n",blocks_array[blocks_count]);
 			list_add(blocks_list,blocks_array[blocks_count]);
 			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
@@ -518,7 +518,7 @@ void serve_new(void* input){
 	free(input);
 
 	if(op_code != OPERATION_NEW)
-		log_error(logger, "Aca nunca llego");
+		log_error(helper, "Aca nunca llego");
 
 	t_message_new* message_new = (t_message_new*) message;
 
@@ -542,7 +542,7 @@ void serve_catch(void* input){
 	free(input);
 
 	if(op_code != OPERATION_CATCH)
-		log_error(logger, "Aca nunca llego");
+		log_error(helper, "Aca nunca llego");
 
 	t_message_catch* message_catch = (t_message_catch*) message;
 
@@ -564,7 +564,7 @@ void serve_get(void* input){
 	free(input);
 
 	if(op_code != OPERATION_GET)
-		log_error(logger, "Aca nunca llego");
+		log_error(helper, "Aca nunca llego");
 
 	t_message_get* message_get = (t_message_get*) message;
 

@@ -19,8 +19,7 @@ int32_t send_with_retry(int32_t socket, void* a_enviar, size_t bytes, int32_t fl
 
 		result = send(socket, a_enviar + current_bytes, bytes - current_bytes, flag); //El send manda los bytes, no siempre puede asegurar si el otro proceso lo recibio.
 		if(result == (-1)){		// lo mas probable es que el send nunca devuelva 0...
-			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de envio: %d\n", result);
-			printf("Se desconecto el proceso, hay que volver a accept-connect\n");
+			printf("Se desconecto el proceso (send %d), hay que volver a accept-connect\n", result);
 			return -1;
 		}
 		current_bytes += result;
@@ -50,8 +49,8 @@ int32_t recv_with_retry(int32_t socket, void* a_recibir, size_t bytes, int32_t f
 										//asi que lo reintentamos igual
 		result = recv(socket, a_recibir + current_bytes, bytes - current_bytes, flag);
 		if((result == -1) || (result == 0)){	// por lo que pude probar, puede que el otro proceso haberme enviado todos los datos, y este no haberlos recibido. En ese caso, este se queda trabado en un recv de 0 infinito. Hay que pedirle al otro proceso que vuelva a enviar?
-			printf("ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR de recv: %d\n", result);		//si da 0 hubo desconexion..
-			printf("Se desconecto el proceso, hay que volver a accept-connect\n");			//https://stackoverflow.com/questions/38021659
+																						//si da 0 hubo desconexion..
+			printf("Se desconecto el proceso (recv %d), hay que volver a accept-connect\n", result);			//https://stackoverflow.com/questions/38021659
 			return -1;
 		}
 		current_bytes += result;
@@ -156,7 +155,7 @@ int32_t listen_messages(void* input)
 		operation_code cod_op;
 				//Quedarse trabado en recv() hasta recibir un mensaje, y hacer lo que corresponda cuando llegue
 		int recibido = recv_with_retry(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
-		printf("recv = %d", recibido);
+		//printf("recv = %d", recibido);
 		if(recibido == -1 || recibido == 0){
 			log_error(logger, "El recv() dio: %d", recibido);
 			log_info(logger, "Se vuelve a la funcion anterior a reconectar");

@@ -35,15 +35,17 @@ void config_init(){
 
 int main(void) {
 
-
-
-	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
-	//
-	logger = log_create("gamecard.log", "gameCard", LOG_CONSOLE, LOG_LEVEL_TRACE);
+	helper = log_create("gamecard_info.log", "gameCard", true, LOG_LEVEL_TRACE);
 	if((config = config_create("gamecard.config")) == NULL){
-		log_error(logger, "ERROR DE CONFIG");
+		printf("ERROR DE CONFIG");
 		exit(-1);
 	}
+	char* log_debug = config_get_string_value(config, "LOG_DEBUG");
+	if(strcmp(log_debug, "FALSE") == 0)
+		log_debug_console = false;
+	else
+		log_debug_console = true;
+	logger = log_create("gamecard.log", "gameCard", log_debug_console, LOG_LEVEL_TRACE);
 
 	config_init();
 
@@ -52,24 +54,6 @@ int main(void) {
 	pthread_mutex_init(&mutex_bitmap, NULL);
 	pthread_mutex_init(&mutex_pkmetadata, NULL);
 
-	/*
-
-	t_location* location = malloc(sizeof(t_location));
-	location->position = malloc(sizeof(t_position));
-	location->position->x = 9;
-	location->position->y = 9;
-	location->amount = 2;
-
-	//create_pokemon_directory("Snorlax");
-
-	t_message_catch* msg_catch = create_message_catch_long("Snorlax", 3,2);
-	process_catch(msg_catch);
-
-
-	t_message_get* message_get = create_message_get("Snorlax");
-	t_message_localized* message_localized = process_get(message_get);
-
-	 */
 
 	pthread_create(&gameboy_thread, NULL, (void*) gameboy_function, NULL);
 	pthread_create(&new_thread, NULL, (void*) new_function, NULL);

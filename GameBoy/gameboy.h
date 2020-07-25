@@ -13,6 +13,8 @@ char* ip;
 char* log_line;
 char* port;
 
+bool log_debug_console;
+
 t_package* package_appearead_pokemon();
 t_package* package_catch_pokemon();
 t_package* package_caught_pokemon();

@@ -23,7 +23,11 @@ void generic_initialization() {
 		log_debug_console = true;
 	logger = log_create("broker.log", "broker", log_debug_console, LOG_LEVEL_TRACE);
 	helper = log_create("log_basura.log", "broker", LOG_CONSOLE, LOG_LEVEL_INFO);
-	obligatorio = log_create(config_get_string_value(config, "LOG_FILE"), "broker", false, LOG_LEVEL_TRACE);
+	char* log_file = config_get_string_value(config, "LOG_FILE");
+	obligatorio = log_create(log_file, "broker", false, LOG_LEVEL_TRACE);
+	if(obligatorio == NULL){
+		log_error(logger, "NO SE PUDO CREAR EL ARCHIVO %d", log_debug);
+	}
 	IP = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PUERTO_BROKER");
 }
