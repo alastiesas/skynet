@@ -126,6 +126,7 @@ bool possible_deadlock();
 void deadlock_handler();
 uint32_t deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table);
 void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, bool perfect);
+void long_thread();
 void* short_thread();
 // algoritmos de seleccion
 void fifo_algorithm();
@@ -176,6 +177,10 @@ pthread_t subscribe(queue_code queue_code);
 void debug_colas();
 void debug_message_list();
 //FIN debugs
+
+void destroy_poke_map();
+void destroy_global_objectives();
+void destroy_message_team(t_message_team* message);
 
 
 
@@ -576,13 +581,13 @@ void initialize_trainers()
 	//TODO BORRAR LISTAS LEVANTADAS DEL CONFIG
 }
 
-void debug_objective_list() {
-
-	void debug_objective(t_objective* objective) {
-		printf("%s: %d, atrapados: %d, atrapando: %d\n", objective->pokemon, objective->count, objective->caught, objective->catching);
-	}
-	list_iterate(objectives_list, &debug_objective);
-}
+//void debug_objective_list() {
+//
+//	void debug_objective(t_objective* objective) {
+//		printf("%s: %d, atrapados: %d, atrapando: %d\n", objective->pokemon, objective->count, objective->caught, objective->catching);
+//	}
+//	list_iterate(objectives_list, &debug_objective);
+//}
 
 void add_trainer_to_objective(t_trainer* trainer)
 {
@@ -806,6 +811,7 @@ void trainer_thread(t_callback* callback_thread)
 	//sem_post(&trainer->sem_thread);
 	log_info(log, "trainer[%d] finalizado con exito cantidad de ciclos utilizados: %d", trainer->id, trainer->cpu_cycles);
 	destroy_trainer(trainer);
+
 }//TODO COMENTADO POR PRUEBAS REFACTOR?
 
 //encuentra al entrenador mas cerca de la posicion en ambas listas
@@ -830,8 +836,6 @@ void long_thread() {
 	while(!team_succes){
 		if(success_global_objective()) {
 			team_succes = true;
-		}else {
-			sleep(2);
 		}
 
 		sem_wait(&sem_long);
@@ -1050,7 +1054,10 @@ uint32_t deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table
 
 	list_iterate(locked_trainers, &add_to_tables);
 
-	return list_size(locked_trainers);
+	uint32_t lockec_trainers_aomunt = list_size(locked_trainers);
+	free(locked_trainers);
+
+	return lockec_trainers_aomunt;
 
 }
 
@@ -1396,8 +1403,8 @@ void trainer_assign_catch(char* pokemon, t_list* positions)
 	//char* pokemon = malloc((strlen(key)+1)*sizeof(char));
 	//memcpy(pokemon, key, strlen(key)+1);//sin esto rompe
 
-	t_link_element* element = positions->head;
-	t_position* position;
+	//t_link_element* element = positions->head;
+	//t_position* position;
 
 	void assign_closest_trainer(t_position* position) {
 		t_trainer* selected_trainer = find_trainer_for_catch(position);
@@ -1410,7 +1417,7 @@ void trainer_assign_catch(char* pokemon, t_list* positions)
 				return (distance(position, iterate_position) == 0);
 			}
 			log_info(log_utils, "ENRENADOR ASIGNADO, SE ELIMINARÁ LA POSICION (%d, %d) del pokemap en [%s]\n", position->x, position->y, pokemon);
-			list_remove_by_condition(positions, &condition);
+			list_remove_and_destroy_by_condition(positions, &condition, &free);
 		}else {
 		}
 
@@ -1537,20 +1544,21 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	if(trainer != NULL){
 		list_add(to, trainer);
 		context_changes++;
+		if(to == exit_list) {
+			char* state = state_list_string(from);
+			log_info(log, "trainer[%d] cambio de estado (%s -> exit), razon: objetivo cumplido", trainer->id, state);
+			free(state);
+
+			trainer->action = FINISH;
+			sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
+		}
+
 	}
 	else {
 		log_info(log_utils, "*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*");
 	}
 	sem_post(&sem_state_lists);
 	
-	if(to == exit_list) {
-		char* state = state_list_string(from);
-		log_info(log, "trainer[%d] cambio de estado (%s -> exit), razon: objetivo cumplido", trainer->id, state);
-		free(state);
-
-		trainer->action = FINISH;
-		sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
-	}
 
 }//YA TIENE log
 
@@ -1589,6 +1597,7 @@ void transition_from_id_to_ready(uint32_t id) {
 			reason = create_copy_string("realizar intercambio");
 		}
 		log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
+		free(state_change_log);
 		free(reason);
 	}
 }//YA TIENE log
@@ -1752,6 +1761,8 @@ void team_send_catch(t_message_team* message) {
 	sem_wait(&sem_messages_recieve_list);
 	dictionary_put(message_response,str_correlative_id,message->trainer);
 	sem_post(&sem_messages_recieve_list);
+
+	destroy_message_team(message);
 }
 
 void team_send_get(char* pokemon) {
@@ -1896,8 +1907,10 @@ pthread_t subscribe(queue_code queue_code) {
 	pthread_create(&thread, NULL, (void*) listen_messages, args);
 
 	} else {//conexion fallida -> comportamiento default
-		log_info(log, "error de suscripción al broker en cola %s -> se realizará la operación default", queue_code_string(queue_code));
+		char* queue_code_string_value = queue_code_string(queue_code);
+		log_info(log, "error de suscripción al broker en cola %s -> se realizará la operación default", queue_code_string_value);
 		set_default_behavior(queue_code);
+		free(queue_code_string_value);
 	}
 
 	return thread;
@@ -1914,12 +1927,6 @@ int32_t team_send_package(char* ip, char* port, t_package* package) {
 	int32_t correlative_id = receive_ID(socket, log_utils);
 	send_ACK(socket, log_utils);
 	return correlative_id;
-}
-
-void destroy_message_team(t_message_team* message){
-	free(message->pokemon);
-	free(message->position);
-	free(message);
 }
 
 void catch(t_trainer* trainer){
@@ -2002,6 +2009,8 @@ void trade_trainer(t_trainer* trainer1){
 		sub_pokemon(trainer2, pokemon2);
 		add_pokemon(trainer1, pokemon2);
 		add_pokemon(trainer2, pokemon1);
+		free(pokemon1);
+		free(pokemon2);
 
 		//ya se realizo el intercambio
 		solved_deadlocks++;
@@ -2039,7 +2048,6 @@ void message_list_add_catch(t_trainer* trainer) {
 
 	//memcpy(message->pokemon, trainer->target->pokemon, strlen(trainer->target->pokemon)+1);
 	message->pokemon = create_copy_string(trainer->target->pokemon);
-	message->pokemon = trainer->target->pokemon;
 	message->position = malloc(sizeof(t_position));
 	message->position->x = trainer->target->position->x;
 	message->position->y = trainer->target->position->y;
@@ -2062,4 +2070,28 @@ void debug_message_list() {
 	printf("The IDs on message list response are these: \n");
 	dictionary_iterator(message_response, &printf_function);
 }
+
+
+void destroy_poke_map() {
+
+	void destroy_pokemon_in_pokemap(t_position* positions) {
+
+		list_destroy_and_destroy_elements(positions, &free);
+	}
+	dictionary_destroy_and_destroy_elements(poke_map, &destroy_pokemon_in_pokemap);
+}
+
+void destroy_global_objectives() {
+	void destroy_objective(t_objective* objective) {
+		free(objective->pokemon);
+		free(objective);
+	}
+	list_destroy_and_destroy_elements(objectives_list, &destroy_objective);
+}
+void destroy_message_team(t_message_team* message) {
+	free(message->pokemon);
+	free(message->position);
+	free(message);
+}
+
 #endif /* TEAM_H_ */

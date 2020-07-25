@@ -87,7 +87,6 @@ int main(void)
 	process_message(argumentos);//TODO TESTING
 
 	//exit(0);
-//	debug_objective_list();
 //	t_list* held_table = trainer_held_pokemons(retest_trainer);
 //	printf("trainer[%d] retiene:\n", retest_trainer->id);
 //	void debug_table(char* pokemon) {
@@ -101,7 +100,6 @@ int main(void)
 
 
 
-	printf("SE INICIARON LOS OBJETIVOS GLOBALES\n");
 //	exit(0);
 
 
@@ -134,7 +132,6 @@ int main(void)
 //	test_position_4->y = 13;
 //	add_to_poke_map("cuatro",(void*) test_position_4);
 	//*/
-	printf("EL TAMAÑO DE READY ES %d\n", list_size(ready_list));
 
 	subscribe(OPERATION_APPEARED);
 	subscribe(OPERATION_LOCALIZED);
@@ -160,14 +157,24 @@ int main(void)
 	//FIN PRUEBAS
 
 	pthread_join(long_tid, NULL);
-	printf("pthread_join(long_tid, NULL);'n");
 
 	pthread_join(short_tid, NULL);
-	printf("pthread_join(short_tid, NULL);\n");
-
 	log_info(log, "Cantidad de ciclos de CPU totales: %d", cpu_cycles);
 	log_info(log, "Cantidad de cambios de contexto realizados: %d", context_changes);
 	log_info(log, "deadlocks: producidos: %d\tresueltos: %d", deadlocks, solved_deadlocks);
+
+
+	//LIMPIEZA DE MEMORIA
+	destroy_poke_map();
+	destroy_global_objectives();
+
+	list_destroy(new_list);
+	list_destroy(ready_list);
+	list_destroy(block_list);
+	list_destroy(exec_list);
+	list_destroy(exit_list);
+	list_destroy_and_destroy_elements(messages_list, &destroy_message_team);
+	dictionary_destroy(message_response);
 
 
 	exit(0);

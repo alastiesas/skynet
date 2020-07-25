@@ -134,7 +134,6 @@ void destroy_trainer(t_trainer* trainer) {
 	if(trainer != NULL) {
 		destroy_target(trainer->target);
 		free(trainer->position);
-		int i = 0;
 
 		dictionary_destroy_and_destroy_elements(trainer->objectives, free);
 		dictionary_destroy_and_destroy_elements(trainer->pokemons, free);
