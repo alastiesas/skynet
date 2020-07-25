@@ -1551,7 +1551,7 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	sem_wait(&sem_state_lists);
 
 
-	if(list_size(from)>1)
+	if(list_size(from)>0){
 		trainer = list_remove_by_condition(from, &condition);
 
 	if(trainer != NULL){
@@ -1571,6 +1571,7 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 		log_info(log_utils, "*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*");
 	}
 	sem_post(&sem_state_lists);
+	}
 	
 
 }//YA TIENE log
