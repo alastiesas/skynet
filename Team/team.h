@@ -1554,24 +1554,24 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	if(list_size(from)>0){
 		trainer = list_remove_by_condition(from, &condition);
 
-	if(trainer != NULL){
-		list_add(to, trainer);
-		context_changes++;
-		if(to == exit_list) {
-			char* state = state_list_string(from);
-			log_info(log, "trainer[%d] cambio de estado (%s -> exit), razon: objetivo cumplido", trainer->id, state);
-			free(state);
+		if(trainer != NULL){
+			list_add(to, trainer);
+			context_changes++;
+			if(to == exit_list) {
+				char* state = state_list_string(from);
+				log_info(log, "trainer[%d] cambio de estado (%s -> exit), razon: objetivo cumplido", trainer->id, state);
+				free(state);
 
-			trainer->action = FINISH;
-			sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
+				trainer->action = FINISH;
+				sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
+			}
+
 		}
-
-	}
-	else {
-		log_info(log_utils, "*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*");
+		else {
+			log_info(log_utils, "*ERROR* NO SE PUDO HACER LA TRANSICIÓN, EL ENTRENADOR NO SE ENCONTRABA EN LA LISTA INDICADA *ERROR*");
+		}
 	}
 	sem_post(&sem_state_lists);
-	}
 	
 
 }//YA TIENE log
