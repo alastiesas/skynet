@@ -27,8 +27,8 @@ void init_fs(){
 		FILE* file;
 		file = fopen(metadata_path, "w");
 		if(file == NULL){
-			log_error(logger, "no se pudo crear archivo en /Metadata/Metadata.bin");
-			log_warning(logger, "no se pudo crear filesystem en el path dado por config %s", PUNTO_MONTAJE_TALLGRASS);
+			log_error(helper, "no se pudo crear archivo en /Metadata/Metadata.bin");
+			log_warning(helper, "no se pudo crear filesystem en el path dado por config %s", PUNTO_MONTAJE_TALLGRASS);
 		    printf("fopen failed, errno = %d\n", errno);
 		    exit(-1);
 		}
@@ -53,7 +53,6 @@ void init_fs(){
 	}
 	else{
 		//si ya existia el FS, se usa y listo, no se crea nada
-		printf("YA EXISTE \n");
 		blocks = config_get_int_value(metaconfig, "BLOCKS");
 		block_size = config_get_int_value(metaconfig, "BLOCK_SIZE");
 		load_bitarray();
@@ -171,10 +170,9 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 		string_append(&block_path, blocks_directory);
 		string_append(&block_path, block_number);
 		string_append(&block_path, ".bin");
-		printf("estamos en el while1\n");
 
 		//abrir el archivo
-		printf("el path es %s \n", block_path);
+		log_debug(logger, "el path es %s \n", block_path);
 		p=fopen(block_path,"r");
 		if(p == NULL){
 		    printf("fopen failed, errno = %d\n", errno);
@@ -192,42 +190,17 @@ void* open_file_blocks(t_list* file_blocks, uint32_t total_size){
 		i++;
 		free(block_path);
 		free(block_number);
-		printf("estamos en el while2\n");
 	}
 	char* test = void_to_string(pokemon_file, total_size);
-	printf("el file tiene %s\n",test);
+	free(test);
 	list_destroy(file_blocks);
 	return pokemon_file;	//este es mi void* del string del archivo pokemon, sin el '\0' del string
 }
 
 //escribe el archivo_pokemon en los bloques
 void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_size, char* pokemon_name){
-	//pthread_mutex_t* my_semaphore = get_pokemon_mutex(pokemon_name);
 
-	//chequear si ahora el archivo ocupa mas o menos bloques
-	//double blocks_amount = ceil(total_size/block_size); //?? esta bien?
-	printf("elementos de la lista: %d\n", list_size(my_blocks));
-	//uint32_t blocks_amount = 1;
-	//aca iria tipo de dato float o double y 6.2 y funcion en c math (float y devuelve int)
-	/*
-	if(list_size(my_blocks) < blocks_amount){
-		//calcular cuantos bloques mas necesita
-		//encontrar esa cantidad de bloques libres
-		//agregar los bloques encontrados a my_blocks
-	//TODO modificar los bloques en el metadata (con su mutex) del pokemon
-	}
-
-	else if(list_size(my_blocks) > blocks_amount){
-		//calcular cuantos bloques de menos
-		//borrar de la lista esta cantidad de bloques ??? puede ser cualquier bloque?
-	//TODO modificar los bloques en el metadata (con su mutex) del pokemon
-	}
-	*/
-
-	//TODO modificar el size en el metadata (con su mutex) del pokemon, segun lo que ocupe el nuevo void* pokemon_file
-
-
-	//TODO escribir los bloques, similar a la lectura, (open_file_blocks())
+	log_debug(logger, "elementos de la lista: %d\n", list_size(my_blocks));
 
 	void* pos_init = pokemon_file;
 	//uint32_t pos_finish = block_size;
@@ -240,7 +213,6 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 	void write_block(uint32_t number_block){
 		//string a copiar va de pos_init a pos_finish
 		//fopen
-		printf("ASFASJFIKOASJGOIASMFLPAM\n");
 		char* block_path = string_new();
 		string_append(&block_path, blocks_directory);
 		char* number_block_str = string_itoa(number_block);
@@ -266,7 +238,6 @@ void write_file_blocks(void* pokemon_file, t_list* my_blocks, uint32_t total_siz
 		pos_init += block_size;
 		free(block_path);
 		//pos_finish =+ block_size;
-		printf("SALIMOS DEL WRITE\n");
 
 
 	}
@@ -287,7 +258,6 @@ t_list* find_available_blocks(uint32_t amount){
 	for(uint32_t i = 0; i<blocks;i++){
 		//pthread_mutex_lock(&mutex_bitmap);
 		bool result = bitarray_test_bit(bitmap, i);
-		printf("valor del bit %d\n",result);
 		if(result == 0){
 			if(until<amount){
 				list_add(available_blocks,i);
@@ -302,7 +272,7 @@ t_list* find_available_blocks(uint32_t amount){
 	}
 
 	if(list_size(available_blocks)<amount){
-		printf("espacio suficiente no disponible en disco\n");
+		log_debug(logger, "espacio suficiente no disponible en disco\n");
 		list_clean(available_blocks);
 	}
 	else
@@ -310,7 +280,6 @@ t_list* find_available_blocks(uint32_t amount){
 		void bitarray_set_bit_iterate(int32_t index){
 			bitarray_set_bit(bitmap, index);
 		}
-		printf("si llego aca\n");
 		list_iterate(available_blocks, (void*)bitarray_set_bit_iterate);
 	}
 	save_bitarray(bitmap);
@@ -325,7 +294,9 @@ t_dictionary* void_to_dictionary(void* pokemon_file, uint32_t total_size){
 
 
 	char* test = string_new();
-	string_append(&test, void_to_string(pokemon_file, total_size));
+	char* temp = void_to_string(pokemon_file, total_size);
+	string_append(&test, temp);
+	free(temp);
 	string_append(&test, "\0");
 
 	char** lines = string_split(test, "\n");
@@ -341,6 +312,7 @@ t_dictionary* void_to_dictionary(void* pokemon_file, uint32_t total_size){
 	string_iterate_lines(lines, add_cofiguration);
 	string_iterate_lines(lines, (void*) free);
 
+	free(test);
 	free(lines);
 	free(pokemon_file);
 	//pasar el void* a un diccionario como hace config_create() de config.c
@@ -361,9 +333,7 @@ void* dictionary_to_void(t_dictionary* pokemon_file_dictionary, uint32_t* size){
 	*size = strlen(lines);
 	//pokemon_file = string_to_void(lines, *size);
 
-	//TODO destruir diccionarIo
-	//FIXME destruir diccionarIo
-	//XXX destruir diccionarIo
+
 	return (void*)lines;
 }
 
@@ -391,12 +361,12 @@ void create_file_directory(char* pokemon,t_location* location){
 	uint32_t total_size = strlen(location_string);
 
 	//double aux = total_size/block_size;
-	printf("total_size %d\n",total_size);
-	printf("block_size %d\n",block_size);
+	log_debug(logger, "total_size %d\n",total_size);
+	log_debug(logger, "block_size %d\n",block_size);
 	//0.093
 	double aux = ((double)total_size/(double)block_size);
 	uint32_t blocks_amount = (uint32_t) ceil(aux);
-	printf("a ver el numero%d\n",blocks_amount);
+	log_debug(logger, "a ver el numero%d\n",blocks_amount);
 	t_list* available_blocks = find_available_blocks(blocks_amount);
 	//RECORRER LISTA DE BLOQUES Y CREAR ARCHIVOS
 	write_file_blocks((void*)location_string, available_blocks, total_size, pokemon);
@@ -444,7 +414,7 @@ bool exists_pokemon(char* pokemon_name) {
 
 char* get_pokemon_directory(char* pokemon_name) {
 
-	char* pokemon_directory = (char*) malloc(strlen(files_directory) + strlen(pokemon_name));
+	char* pokemon_directory = (char*) malloc(strlen(files_directory) + strlen(pokemon_name) + 1);
 	strcpy(pokemon_directory, files_directory);
 	strcat(pokemon_directory, pokemon_name);
 
@@ -454,7 +424,7 @@ char* get_pokemon_directory(char* pokemon_name) {
 char* get_pokemon_file(char* pokemon_name) {
 
 	char* pokemon_directory = get_pokemon_directory(pokemon_name);
-	char* pokemon_file = (char*) malloc(strlen(pokemon_directory) + 13);
+	char* pokemon_file = (char*) malloc(strlen(pokemon_directory) + 14);
 	strcpy(pokemon_file, pokemon_directory);
 	strcat(pokemon_file, "/Metadata.bin");
 
@@ -497,7 +467,7 @@ void create_pokemon_file(char* pokemon_name) {
 
 	FILE* file;
 	file = fopen(pokemon_file, "w");
-
+	//escribir bloques en el archivo
 	fprintf(file, "DIRECTORY=N\n");
 	fprintf(file, "SIZE=0\n");
 	fprintf(file, "BLOCKS=[]\n");
@@ -509,13 +479,13 @@ void create_pokemon_file(char* pokemon_name) {
 
 t_config* open_pokemon_file(char* pokemon_name) {
 
-	char* pokemon_file = get_pokemon_file(pokemon_name);
+	char* pokemon_file_path = get_pokemon_file(pokemon_name);
 	t_config* pokemon_config; //change object?
 	char* open;
 
 	do {
 		pthread_mutex_lock(&mutex_pkmetadata);
-		pokemon_config = config_create(pokemon_file);
+		pokemon_config = config_create(pokemon_file_path);
 		open = config_get_string_value(pokemon_config, "OPEN");
 		if (strcmp(open, "Y") == 0) {
 			pthread_mutex_unlock(&mutex_pkmetadata);
@@ -529,7 +499,7 @@ t_config* open_pokemon_file(char* pokemon_name) {
 	config_save(pokemon_config);
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
-	free(pokemon_file);
+	free(pokemon_file_path);
 
 	return pokemon_config;
 }
@@ -538,7 +508,7 @@ char* get_key(uint32_t position_x, uint32_t position_y) {
 
 	char* x = string_itoa(position_x);
 	char* y = string_itoa(position_y);
-	char* key = (char*) malloc(strlen(x) + 1 + strlen(y));
+	char* key = (char*) malloc(strlen(x) + 2 + strlen(y));
 	strcpy(key, x);
 	strcat(key, "-");
 	strcat(key, y);

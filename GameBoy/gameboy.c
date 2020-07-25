@@ -10,14 +10,20 @@
 
 int main(int argc, char* argv[]) {
 
-	gameboy_behavior_log = log_create("gameboy_behavior.log", "gameboy behavior", LOG_CONSOLE, LOG_LEVEL_INFO);
-	log_info(gameboy_behavior_log, " 0. starting process");
+	if((gameboy_config = config_create("gameboy.config")) == NULL){
+		printf("ERROR DE CONFIG");
+		exit(-1);
+	}
+	char* log_debug = config_get_string_value(gameboy_config, "LOG_DEBUG");
+	if(strcmp(log_debug, "FALSE") == 0)
+		log_debug_console = false;
+	else
+		log_debug_console = true;
 
-	gameboy_log = log_create("gameboy.log", "gameboy", LOG_CONSOLE, LOG_LEVEL_INFO);
-	log_info(gameboy_behavior_log, " 1. log created");
+	gameboy_behavior_log = log_create("gameboy_behavior.log", "gameboy behavior", log_debug_console, LOG_LEVEL_INFO);
 
-	gameboy_config = config_create("gameboy.config");
-	log_info(gameboy_behavior_log, " 2. config created");
+	gameboy_log = log_create("gameboy.log", "gameboy", log_debug_console, LOG_LEVEL_INFO);
+
 
 	log_line = (char*) malloc(300);
 

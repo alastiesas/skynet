@@ -37,6 +37,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
 	t_dictionary* pokemon_dictionary;
 	if (size == 0) {
+		list_destroy(blocks_list);
 		//si no tenia bloques se crea un diccionario vacio
 		pokemon_dictionary = dictionary_create();
 	} else {
@@ -87,6 +88,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 			msync(bmap, blocks / 8, MS_SYNC);
 		}
 		pthread_mutex_unlock(&mutex_bitmap);
+		list_destroy(available_blocks);
 	}
 
 	/*-----------------------------------*/
@@ -109,6 +111,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	}
 	list_iterate(blocks_list_int, (void*)list_to_string);
 	string_append(&blocks_to_write, "]");
+	list_destroy(blocks_list_int);
 
 	//actualizar metadata
 	config_set_value(pokemon_config, "BLOCKS", blocks_to_write);
@@ -120,9 +123,11 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	config_destroy(pokemon_config);
+	dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
 	free(new_size_to_metadata);
 	free(blocks_to_write);
+	free(new_pokemon_file);
 
 	t_message_appeared* message_appeared = create_message_appeared_long(new_pokemon->id, new_pokemon->pokemon_name, new_pokemon->location->position->x, new_pokemon->location->position->y);
 
@@ -149,7 +154,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
-		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_catch->pokemon_name);
+		log_warning(helper, "no existe %s/Metadata.bin", message_catch->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
@@ -196,7 +201,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		t_list* blocks_list_int = list_create();
 		uint32_t blocks_count = 0;
 		while(blocks_array[blocks_count]!=NULL){
-			printf("any block is %s \n",blocks_array[blocks_count]);
+			log_debug(logger, "any block is %s \n",blocks_array[blocks_count]);
 			list_add(blocks_list, blocks_array[blocks_count]);
 			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
@@ -232,7 +237,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		string_append(&key, y);
 		free(x);
 		free(y);
-		printf("the key for pokemon map is %s\n",key);
+		log_debug(logger, "the key for pokemon map is %s\n",key);
 		//MIRAR EN EL DICCIONARIO SI EXISTE LA KEY
 		if(dictionary_has_key(pokemon_dictionary,key)){
 			//MODIFICA VALUE EN EL diccionario
@@ -261,7 +266,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			//calcular nueva cantidad de bloques
 			double aux = ((double)new_size/(double)block_size);
 			uint32_t new_blocks_count = (uint32_t) ceil(aux);
-			printf("nueva cantidad de bloques: %d\n",new_blocks_count);
+			log_debug(logger, "nueva cantidad de bloques: %d\n",new_blocks_count);
 
 			//si cambio la cantidad de bloques, actualizar el metadata y el bitmap, y mi lista de bloques
 			//para catch puede haber menos o igual bloques
@@ -279,9 +284,9 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				}
 				//se actualizan los bloques en el metadata mas adelante
 			}
-			printf("tamaño de lista de bloques luego de eliminar: %d\n",list_size(blocks_list_int));
+			log_debug(logger, "tamaño de lista de bloques luego de eliminar: %d\n",list_size(blocks_list_int));
 			void imprimir(uint32_t elemt){
-				printf("elemento de la lista de bloques: %d\n", elemt);
+				log_debug(logger, "elemento de la lista de bloques: %d\n", elemt);
 			}
 			list_iterate(blocks_list_int, (void*)imprimir);
 
@@ -290,7 +295,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				write_file_blocks((void*)new_pokemon_file, blocks_list_int, new_size, message_catch->pokemon_name);
 
 
-			printf("Ya se escribieron los bloques, si tenia mas de 0 \n");
+			log_debug(logger, "Ya se escribieron los bloques, si tenia mas de 0 \n");
 			//ACTUALIZAR EL METADATA.BIN, nueva lista de blocks, el nuevo SIZE, y cambiar OPEN a N
 			//BLOCKS=[40,21,82,12]
 			//SIZE=250
@@ -311,7 +316,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			string_append(&blocks_to_write,"]");
 
 
-			printf("Bloques a escribir en el metadata: %s\n", blocks_to_write);
+			log_debug(logger, "Bloques a escribir en el metadata: %s\n", blocks_to_write);
 			config_set_value(file, "BLOCKS", blocks_to_write);
 			config_set_value(file, "SIZE", new_size_to_metadata);
 
@@ -322,7 +327,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			free(new_size_to_metadata);
 			free(blocks_to_write);
 			//destruir diccionario y actualizar a open = N
-
+			free(new_pokemon_file);
 		}
 		else
 		{
@@ -332,16 +337,19 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			//NO SE ENCONTRO LA POSICION BUSCADA EN EL FILESYSTEM
 			//destruir diccionario y actualizar a open = N
 		}
+		free(key);
 
 		dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
 
 		}
 		else{
+			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//caso archivo sin bloques, diccionario no creado
 			caught_result = 0;
 
 		}
+		list_destroy(blocks_list_int);
 
 		config_set_value(file, "OPEN","N");
 
@@ -361,7 +369,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 	log_info(logger, "Se genero el mensaje caught");
 	destroy_message_catch(message_catch);
 
-
+	free(pokemon_metadata);
 	return message_caught;
 }
 
@@ -378,7 +386,7 @@ t_message_localized* process_get(t_message_get* message_get){
 
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
-		log_warning(logger, "no se pudo leer %s/Metadata.bin", message_get->pokemon_name);
+		log_warning(helper, "no existe %s/Metadata.bin", message_get->pokemon_name);
 		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
@@ -429,7 +437,7 @@ t_message_localized* process_get(t_message_get* message_get){
 		t_list* blocks_list_int = list_create();
 		uint32_t blocks_count = 0;
 		while(blocks_array[blocks_count]!=NULL){
-			printf("any block is %s \n",blocks_array[blocks_count]);
+			log_debug(logger, "any block is %s \n",blocks_array[blocks_count]);
 			list_add(blocks_list,blocks_array[blocks_count]);
 			list_add(blocks_list_int, (void*)atoi(blocks_array[blocks_count]));
 			blocks_count++;
@@ -476,10 +484,12 @@ t_message_localized* process_get(t_message_get* message_get){
 		}
 		else
 		{
+			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//no contenia bloques el archivo entonces ni se crea el diccionario
 
 			message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 0, NULL);
 		}
+		list_destroy(blocks_list_int);
 
 		//actualizar metadata. No van a cambiar ni el size ni la lista de bloques
 		config_set_value(file, "OPEN", "N");
@@ -495,7 +505,7 @@ t_message_localized* process_get(t_message_get* message_get){
 	log_info(logger, "Se genero el mensaje localized");
 	destroy_message_get(message_get);
 
-
+	free(pokemon_metadata);
 	//generar mensaje localized y destruir el mensaje get
 	return message_localized;
 }
@@ -508,7 +518,7 @@ void serve_new(void* input){
 	free(input);
 
 	if(op_code != OPERATION_NEW)
-		log_error(logger, "Aca nunca llego");
+		log_error(helper, "Aca nunca llego");
 
 	t_message_new* message_new = (t_message_new*) message;
 
@@ -532,7 +542,7 @@ void serve_catch(void* input){
 	free(input);
 
 	if(op_code != OPERATION_CATCH)
-		log_error(logger, "Aca nunca llego");
+		log_error(helper, "Aca nunca llego");
 
 	t_message_catch* message_catch = (t_message_catch*) message;
 
@@ -554,7 +564,7 @@ void serve_get(void* input){
 	free(input);
 
 	if(op_code != OPERATION_GET)
-		log_error(logger, "Aca nunca llego");
+		log_error(helper, "Aca nunca llego");
 
 	t_message_get* message_get = (t_message_get*) message;
 

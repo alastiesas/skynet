@@ -136,7 +136,9 @@ void destroy_message_get(t_message_get* message_get) {
 void destroy_message_localized(t_message_localized* message_localized) {
 
 	free(message_localized->pokemon_name);
-	free(message_localized->positions);
+	if(message_localized->positions != NULL){
+		free(message_localized->positions);
+	}
 	free(message_localized);
 }
 

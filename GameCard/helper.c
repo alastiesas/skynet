@@ -27,7 +27,7 @@ void message_function(void (*function)(void*), queue_code queue_code){
 			sleep(TIEMPO_DE_REINTENTO_CONEXION);
 		}
 		else
-			log_warning(logger, "Aca nunca llego");
+			log_warning(helper, "Aca nunca llego");
 	}
 }
 
@@ -50,7 +50,7 @@ int32_t suscribe_to_broker(queue_code queue_code) {
 
 	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, logger);
 	if(socket == -1)
-		log_error(logger, "No se pudo conectar al broker");
+		log_error(helper, "No se pudo conectar al broker");
 
 	t_package* suscription_package = serialize_suscripcion(MY_ID, queue_code);
 
@@ -99,7 +99,7 @@ void iniciar_servidor_gamecard()
     for (p=servinfo; p != NULL; p = p->ai_next)
     {
         if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
-        	log_error(logger, "Error de socket()");
+        	log_error(helper, "Error de socket()");
         	continue;
         }
         int reuse = 1;
@@ -113,7 +113,7 @@ void iniciar_servidor_gamecard()
 
         if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
             close(socket_servidor);
-            log_error(logger, "Error de bind (el puerto esta ocupado), reinicie el programa");
+            log_error(helper, "Error de bind (el puerto esta ocupado), reinicie el programa");
             for(;;);
             continue;
         }
@@ -121,7 +121,7 @@ void iniciar_servidor_gamecard()
     }
 
 	listen(socket_servidor, SOMAXCONN);
-	log_info(logger, "Escuchando en el socket %d, en %s:%s", socket_servidor, IP_GAMECARD, PUERTO_GAMECARD);
+	log_info(helper, "Escuchando gameboys en %s:%s", IP_GAMECARD, PUERTO_GAMECARD);
 
     freeaddrinfo(servinfo);
 
@@ -140,7 +140,7 @@ void wait_clients(int32_t socket_servidor, t_log* logger)
 
 	int32_t socket_cliente;
 	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
-		log_error(logger, "Error al aceptar cliente");
+		log_error(helper, "Error al aceptar cliente");
 	else{
 		log_info(logger, "Conexion aceptada");
 	}
@@ -167,9 +167,9 @@ void gamecard_serves_client(void* input){
 
 	int recibido = recv_with_retry(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
 	if(recibido == -1)
-		log_error(logger, "Error del recv()");
+		log_error(helper, "Error del recv()");
 	if(recibido == 0)
-		log_error(logger, "Se recibieron 0 bytes, se cierra el recv()");
+		log_error(helper, "Se recibieron 0 bytes, se cierra el recv()");
 
 	log_info(logger, "se recibieron %d bytes", recibido);
 
