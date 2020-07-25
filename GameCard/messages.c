@@ -10,6 +10,8 @@
 
 t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
+	log_info(helper, "recibido mensaje new_pokemon");
+
 	char* pokemon_name = new_pokemon->pokemon_name;
 
 	pthread_mutex_lock(&mutex_pkmetadata);
@@ -96,6 +98,8 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
 	write_file_blocks(new_pokemon_file, blocks_list_int, new_size, new_pokemon->pokemon_name);
 
+	log_info(helper, "asignacion de bloques realizada");
+
 	//generar string de bloques
 	char* blocks_to_write = string_new();
 	uint32_t current_block = 1;
@@ -125,6 +129,8 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	config_destroy(pokemon_config);
 	dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
+	log_info(helper, "metadata actualizado");
+
 	free(new_size_to_metadata);
 	free(blocks_to_write);
 	free(new_pokemon_file);
@@ -137,6 +143,8 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 }
 
 t_message_caught* process_catch(t_message_catch* message_catch){
+
+	log_info(helper, "recibido mensaje caught_pokemon");
 
 	t_message_caught* message_caught;
 	uint32_t caught_result;
@@ -294,6 +302,8 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			if(list_size(blocks_list_int)>0)
 				write_file_blocks((void*)new_pokemon_file, blocks_list_int, new_size, message_catch->pokemon_name);
 
+			log_info(helper, "desasignacion de bloques realizada");
+
 
 			log_debug(logger, "Ya se escribieron los bloques, si tenia mas de 0 \n");
 			//ACTUALIZAR EL METADATA.BIN, nueva lista de blocks, el nuevo SIZE, y cambiar OPEN a N
@@ -342,6 +352,8 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 		dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
+		log_info(helper, "metadata actualizado");
+
 
 		}
 		else{
@@ -376,6 +388,8 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 }
 
 t_message_localized* process_get(t_message_get* message_get){
+
+	log_info(helper, "recibido mensaje get_pokemon");
 
 	t_message_localized* message_localized;
 
@@ -483,6 +497,8 @@ t_message_localized* process_get(t_message_get* message_get){
 			//no se modifica el archivo, entonces con destruir el diccionario alcanza
 
 			dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
+
+			log_info(helper, "metadata actualizado");
 		}
 		else
 		{
