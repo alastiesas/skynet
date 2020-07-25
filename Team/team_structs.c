@@ -79,20 +79,23 @@ t_trainer* create_trainer_from_config(uint32_t id, char* config_position, char* 
 	}
 	uint32_t inventory_size = i;
 	i = 0;
-	if(pokemons_string != NULL) {
+	if(config_pokemons != NULL) {
 		while(pokemons_string[i] != NULL) {
 			add_one_to_dictionary(pokemons, pokemons_string[i]);
 			i++;
 		}
+		free_string_list(pokemons_string);
+		free(pokemons_string);
 	}
 	if(i > inventory_size){
 		printf("ERROR DE CONFIG: pokemons > objetivos en trainer[%d]", id);
 		exit(-1);
 	}
 
+	free_string_list(objectives_string);
+	free(objectives_string);
 
 	//tira error si intento borrar los punteros split
-
 	return create_trainer(id, position, objectives, pokemons, inventory_size);
 
 }
@@ -102,6 +105,8 @@ t_position* create_position_from_config(char* config_position) {
 	char ** positions_split = string_split(config_position, "|");
 	position->x = atoi(positions_split[0]);
 	position->y = atoi(positions_split[1]);
+	free_string_list(positions_split);
+	free(positions_split);
 
 
 	return position;

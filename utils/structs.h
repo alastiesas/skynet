@@ -140,5 +140,6 @@ void destroy_message_caught(t_message_caught* message_caught);
 void destroy_message_get(t_message_get* message_get);
 void destroy_message_localized(t_message_localized* message_localized);
 void destroy_message_new(t_message_new* message_new);
+void destroy_package(t_package* package);
 
 #endif /* STRUCTS_H_ */

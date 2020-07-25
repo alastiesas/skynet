@@ -577,6 +577,9 @@ void initialize_trainers()
 	free_string_list(positions_config);
 	free_string_list(objectives_config);
 	free_string_list(pokemons_config);
+	free(positions_config);
+	free(objectives_config);
+	free(pokemons_config);
 
 	//TODO BORRAR LISTAS LEVANTADAS DEL CONFIG
 }
@@ -728,6 +731,7 @@ void initialize_global_objectives()
 	}
 
 	list_iterate(need_catch_objectives, &send_get_if_needed);//para cada pokemon que necesite envia el get inicial
+	list_destroy(need_catch_objectives);
 
 }
 
@@ -1050,12 +1054,16 @@ uint32_t deadlock_detector(t_dictionary* waiting_table, t_dictionary* held_table
 		list_iterate(held_pokemons, &add_to_held);
 
 		list_iterate(waiting_pokemons, &add_to_waiting);
+
+		list_destroy_and_destroy_elements(waiting_pokemons, &free);
+		list_destroy_and_destroy_elements(held_pokemons, &free);
+
 	}
 
 	list_iterate(locked_trainers, &add_to_tables);
 
 	uint32_t lockec_trainers_aomunt = list_size(locked_trainers);
-	free(locked_trainers);
+	list_destroy(locked_trainers);
 
 	return lockec_trainers_aomunt;
 
@@ -1084,9 +1092,11 @@ t_trainer* closest_perfect_couple(t_trainer* trainer, t_list* holding_trainers_l
 		return list_any_satisfy(trainer_holds, &trainer_needs_any);//trade perfecto solo si necesita alguno de los que holdea el trainer
 	}
 
-	t_list* possible_copuples_list = list_filter(holding_trainers_list, &matches);//filtro por quienes pueden hacer un trade perfecto
-
-	return closest_couple(trainer, possible_copuples_list);
+	t_list* possible_couples_list = list_filter(holding_trainers_list, &matches);//filtro por quienes pueden hacer un trade perfecto
+	list_destroy_and_destroy_elements(trainer_holds, &free);
+	t_trainer* closest_perfect_couple_trainer = closest_couple(trainer, possible_couples_list);
+	list_destroy(possible_couples_list);
+	return closest_perfect_couple_trainer;
 
 }
 
@@ -1115,13 +1125,14 @@ void assign_trade_couples(t_dictionary* waiting_table,t_dictionary* held_table, 
 								return trainer_needs(trainer_couple, one_pokemon);
 							}
 							t_list* couple_match_pokemons = list_filter(trainer_held_pokemons_list, couple_needs);
-							pokemon_from_held = list_get(couple_match_pokemons,0);
+							pokemon_from_held = create_copy_string(list_get(couple_match_pokemons,0));
+							list_destroy(couple_match_pokemons);
 
 						}else {
-							pokemon_from_held = list_get(trainer_held_pokemons_list,0);
+							pokemon_from_held = create_copy_string(list_get(trainer_held_pokemons_list,0));
 						}
 
-
+						list_destroy_and_destroy_elements(trainer_held_pokemons_list, &free);
 						assign_trade_couple(trainer, pokemon_from_held, trainer_couple, pokemon);
 					}
 				}
@@ -1617,6 +1628,7 @@ void transition_ready_to_exec(uint32_t index)
 	char* reason = enter_cpu_reason_string();
 	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
 	sem_post(&trainer->sem_thread);
+	free(reason);
 }//YA TIENE log
 
 void transition_ready_to_exec_by_trainer(t_trainer* trainer) {
@@ -1965,7 +1977,9 @@ void trainer_catch(t_trainer* trainer, bool result) {
 		trainer->action = FREE;
 		sub_catching(trainer->target->pokemon);
 	}
-	trainer_set_target(trainer, create_target("", create_position(0,0), 0, false));
+	t_position* empty_target_position = create_position(0,0);
+	trainer_set_target(trainer, create_target("", empty_target_position, 0, false));
+	free(empty_target_position);
 }
 
 uint32_t trade(t_trainer* trainer, uint32_t trade_cpu){
@@ -1997,8 +2011,10 @@ void trade_trainer(t_trainer* trainer1){
 		return (((t_trainer*)trainer)->id == trainer1->target->trainer_id);
 	}
 	sem_wait(&sem_state_lists);
-	t_trainer* trainer2 = list_get(list_filter(block_list, &condition),0);
+	t_list* list_trainer_id = list_filter(block_list, &condition);
+	t_trainer* trainer2 = list_get(list_trainer_id,0);
 	sem_post(&sem_state_lists);
+	list_destroy(list_trainer_id);
 
 	if(trainer2 != NULL) {
 
@@ -2021,8 +2037,10 @@ void trade_trainer(t_trainer* trainer1){
 		exit(-1);
 	}
 
-	trainer_set_target(trainer1, create_target("", create_position(0,0), 0, false));
-	trainer_set_target(trainer2, create_target("", create_position(0,0), 0, false));
+	t_position* empty_target_position = create_position(0,0);
+	trainer_set_target(trainer1, create_target("", empty_target_position, 0, false));
+	trainer_set_target(trainer2, create_target("", empty_target_position, 0, false));
+	free(empty_target_position);
 
 	if(trainer_success_objective(trainer1) == 1){
 		trainer1->action = FINISH;

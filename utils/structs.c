@@ -147,3 +147,9 @@ void destroy_message_new(t_message_new* message_new) {
 	free(message_new->location);
 	free(message_new);
 }
+
+void destroy_package(t_package* package) {
+	free(package->buffer->stream);
+	free(package->buffer);
+	free(package);
+}
