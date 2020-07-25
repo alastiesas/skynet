@@ -46,7 +46,7 @@ int main(void)
 	log = log_create(log_file, team_name, true, LOG_LEVEL_INFO);
 	free(team_name);
 	//log = log_create("team.log", "team program", true, LOG_LEVEL_INFO);
-	log_utils = log_create("team_utils.log", "team program", true, LOG_LEVEL_INFO);
+	log_utils = log_create("team_utils.log", "team program", false, LOG_LEVEL_INFO);
 	log_info(log, "inicio programa team[%d]", team_id);
 
 	pthread_t sender_tid;

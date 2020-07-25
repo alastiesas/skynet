@@ -1549,10 +1549,10 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 	t_trainer* trainer = NULL;
 
 	sem_wait(&sem_state_lists);
+
+
 	if(list_size(from)>1)
 		trainer = list_remove_by_condition(from, &condition);
-	else
-		trainer = list_remove(from, 0);
 
 	if(trainer != NULL){
 		list_add(to, trainer);
