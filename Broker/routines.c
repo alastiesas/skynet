@@ -26,7 +26,7 @@ void generic_initialization() {
 	char* log_file = config_get_string_value(config, "LOG_FILE");
 	obligatorio = log_create(log_file, "broker", false, LOG_LEVEL_TRACE);
 	if(obligatorio == NULL){
-		log_error(logger, "NO SE PUDO CREAR EL ARCHIVO %d", log_debug);
+		log_error(logger, "NO SE PUDO CREAR EL ARCHIVO %d", log_file);
 	}
 	IP = config_get_string_value(config, "IP_BROKER");
 	PORT = config_get_string_value(config, "PUERTO_BROKER");
