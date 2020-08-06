@@ -22,7 +22,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	t_config* pokemon_config = open_pokemon_file(pokemon_name);
-	log_info(logger, "TIEMPO_RETARDO_OPERACION %d\n", TIEMPO_RETARDO_OPERACION);
+	log_debug(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 	sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 
 	/*----------*/
@@ -183,14 +183,14 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				config_save(file);
 				pthread_mutex_unlock(&mutex_pkmetadata);
 
-				log_info(logger, "TIEMPO_RETARDO_OPERACION %d\n", TIEMPO_RETARDO_OPERACION);
+				log_info(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 				sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 				retry = 0;
 			}
 			else{
 				pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
-				log_info(logger, "TIEMPO_DE_REINTENTO_OPERACION %d\n", TIEMPO_DE_REINTENTO_OPERACION);
+				log_debug(helper, "TIEMPO_DE_REINTENTO_OPERACION (file ocupado) %d", TIEMPO_DE_REINTENTO_OPERACION);
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
 
 				pthread_mutex_lock(&mutex_pkmetadata);
@@ -423,14 +423,14 @@ t_message_localized* process_get(t_message_get* message_get){
 				config_save(file);
 				pthread_mutex_unlock(&mutex_pkmetadata);
 
-				log_info(logger, "TIEMPO_RETARDO_OPERACION %d\n", TIEMPO_RETARDO_OPERACION);
+				log_info(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 				sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 				retry = 0;
 			}
 			else{
 				pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
-				log_info(logger, "TIEMPO_DE_REINTENTO_OPERACION %d\n", TIEMPO_DE_REINTENTO_OPERACION);
+				log_debug(helper, "TIEMPO_DE_REINTENTO_OPERACION (file ocupado) %d", TIEMPO_DE_REINTENTO_OPERACION);
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
 
 				pthread_mutex_lock(&mutex_pkmetadata);
@@ -552,8 +552,9 @@ void serve_new(void* input){
 	destroy_message_appeared(message_appeared);
 
 
-	send_to_broker(package);
-	log_info(helper, "Se envio un mensaje APPEARED");
+	int32_t result = send_to_broker(package);
+	if(result != -1)
+		log_info(helper, "Se envio un mensaje APPEARED");
 }
 
 void serve_catch(void* input){
@@ -576,8 +577,9 @@ void serve_catch(void* input){
 	destroy_message_caught(message_caught);
 
 
-	send_to_broker(package);
-	log_info(helper, "Se envio un mensaje CAUGHT");
+	int32_t result = send_to_broker(package);
+	if(result != -1)
+		log_info(helper, "Se envio un mensaje CAUGHT");
 }
 
 void serve_get(void* input){
@@ -600,8 +602,9 @@ void serve_get(void* input){
 	destroy_message_localized(message_localized);
 
 
-	send_to_broker(package);
-	log_info(helper, "Se envio un mensaje LOCALIZED");
+	int32_t result = send_to_broker(package);
+	if(result != -1)
+		log_info(helper, "Se envio un mensaje LOCALIZED");
 }
 
 

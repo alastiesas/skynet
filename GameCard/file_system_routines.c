@@ -490,7 +490,7 @@ t_config* open_pokemon_file(char* pokemon_name) {
 		if (strcmp(open, "Y") == 0) {
 			pthread_mutex_unlock(&mutex_pkmetadata);
 			config_destroy(pokemon_config);
-			log_info(logger, "TIEMPO_DE_REINTENTO_OPERACION %d\n", TIEMPO_DE_REINTENTO_OPERACION);
+			log_debug(helper, "TIEMPO_DE_REINTENTO_OPERACION (file ocupado) %d", TIEMPO_DE_REINTENTO_OPERACION);
 			sleep(TIEMPO_DE_REINTENTO_OPERACION);
 		}
 	} while (strcmp(open, "Y") == 0);
