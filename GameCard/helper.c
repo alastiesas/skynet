@@ -50,33 +50,36 @@ void get_function(void){
 int32_t suscribe_to_broker(queue_code queue_code) {
 
 	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, helper);
-	if(socket == -1)
+	if(socket == -1){
 		log_error(helper, "No se pudo conectar al broker");
+		pthread_exit(NULL);
+	}
 
 	t_package* suscription_package = serialize_suscripcion(MY_ID, queue_code);
 
 	send_paquete(socket, suscription_package);
 	if (receive_ACK(socket, logger) == -1) {
 		log_info(helper, "ERROR EN LA SUSCRIPCION");
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
 	}
 
 	return socket;
 }
 
-void send_to_broker(t_package* package){
+int32_t send_to_broker(t_package* package){
 
-	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, logger);
+	int32_t socket = connect_to_server(IP_BROKER, PUERTO_BROKER, TIEMPO_DE_REINTENTO_CONEXION, CANTIDAD_DE_REINTENTOS_CONEXION, helper);
 	if(socket != -1){
 	send_paquete(socket, package);
-	//TODO reintentar envio si falla con la variable global TIEMPO_DE_REINTENTO_CONEXION
 
 	receive_ID(socket, logger);
 	send_ACK(socket, logger);
 	close(socket);
+	return 1234;//no se usa
 	}
 	else{
-		log_info(logger, "No se envia nada al broker");
+		log_info(helper, "No se envia nada al broker");
+		return -1;
 	}
 }
 

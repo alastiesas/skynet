@@ -83,7 +83,7 @@ void serve_new(void* input);
 void serve_catch(void* input);
 void serve_get(void* input);
 
-void send_to_broker(t_package* package);
+int32_t send_to_broker(t_package* package);
 void initiliaze_file_system();
 
 void create_file_directory(char*,t_location*);
