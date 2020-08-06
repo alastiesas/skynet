@@ -12,7 +12,7 @@ void init_fs(){
 	if((metaconfig = config_create(metadata_path)) == NULL){
 		blocks = config_get_int_value(config, "DEFAULT_BLOCKS");
 		block_size = config_get_int_value(config, "DEFAULT_BLOCK_SIZE");
-		log_warning(logger, "Se crea filesystem vacio");
+		log_debug(helper, "Se crea filesystem vacio");
 		//se crea un filesystem
 		char* blocks_char;
 		char* block_size_char;
@@ -52,6 +52,7 @@ void init_fs(){
 		free(files_metadata_path);
 	}
 	else{
+		log_debug(helper, "Se carga filesystem existente");
 		//si ya existia el FS, se usa y listo, no se crea nada
 		blocks = config_get_int_value(metaconfig, "BLOCKS");
 		block_size = config_get_int_value(metaconfig, "BLOCK_SIZE");
@@ -490,7 +491,7 @@ t_config* open_pokemon_file(char* pokemon_name) {
 		if (strcmp(open, "Y") == 0) {
 			pthread_mutex_unlock(&mutex_pkmetadata);
 			config_destroy(pokemon_config);
-			log_debug(helper, "TIEMPO_DE_REINTENTO_OPERACION (file ocupado) %d", TIEMPO_DE_REINTENTO_OPERACION);
+			log_trace(helper, "TIEMPO_DE_REINTENTO_OPERACION %d (file ocupado)", TIEMPO_DE_REINTENTO_OPERACION);
 			sleep(TIEMPO_DE_REINTENTO_OPERACION);
 		}
 	} while (strcmp(open, "Y") == 0);

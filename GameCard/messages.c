@@ -10,8 +10,6 @@
 
 t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
-	log_info(helper, "recibido mensaje new_pokemon");
-
 	char* pokemon_name = new_pokemon->pokemon_name;
 
 	pthread_mutex_lock(&mutex_pkmetadata);
@@ -22,7 +20,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	t_config* pokemon_config = open_pokemon_file(pokemon_name);
-	log_debug(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
+	log_trace(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 	sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 
 	/*----------*/
@@ -91,6 +89,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 		}
 		pthread_mutex_unlock(&mutex_bitmap);
 		list_destroy(available_blocks);
+		log_debug(helper, "Se ocupa/n %d bloque/s en el bitmap", diff);
 	}
 
 	/*-----------------------------------*/
@@ -98,7 +97,7 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 
 	write_file_blocks(new_pokemon_file, blocks_list_int, new_size, new_pokemon->pokemon_name);
 
-	log_info(helper, "asignacion de bloques realizada");
+	log_info(helper, "Escritura de bloques de %s realizada", new_pokemon->pokemon_name);
 
 	//generar string de bloques
 	char* blocks_to_write = string_new();
@@ -125,11 +124,10 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	pthread_mutex_lock(&mutex_pkmetadata);
 	config_save(pokemon_config);
 	pthread_mutex_unlock(&mutex_pkmetadata);
+	log_info(helper, "Metadata de %s actualizado y liberado", new_pokemon->pokemon_name);
 
 	config_destroy(pokemon_config);
 	dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
-
-	log_info(helper, "metadata actualizado");
 
 	free(new_size_to_metadata);
 	free(blocks_to_write);
@@ -143,8 +141,6 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 }
 
 t_message_caught* process_catch(t_message_catch* message_catch){
-
-	log_info(helper, "recibido mensaje caught_pokemon");
 
 	t_message_caught* message_caught;
 	uint32_t caught_result;
@@ -162,8 +158,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
-		log_warning(helper, "no existe %s/Metadata.bin", message_catch->pokemon_name);
-		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
+		log_warning(helper, "no existe %s/Metadata.bin, resulta caught false", message_catch->pokemon_name);
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
 		//xxx si no puede apropiarse del metadata en Y, entonces tampoco tiene sentido que haga sleep(TIEMPO_RETARDO_OPERACION)
@@ -183,14 +178,14 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 				config_save(file);
 				pthread_mutex_unlock(&mutex_pkmetadata);
 
-				log_info(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
+				log_trace(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 				sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 				retry = 0;
 			}
 			else{
 				pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
-				log_debug(helper, "TIEMPO_DE_REINTENTO_OPERACION (file ocupado) %d", TIEMPO_DE_REINTENTO_OPERACION);
+				log_trace(helper, "TIEMPO_DE_REINTENTO_OPERACION %d (file ocupado)", TIEMPO_DE_REINTENTO_OPERACION);
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
 
 				pthread_mutex_lock(&mutex_pkmetadata);
@@ -290,6 +285,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 					msync(bmap, blocks/8, MS_SYNC);
 					pthread_mutex_unlock(&mutex_bitmap);
 				}
+				log_debug(helper, "Se libera/n %d bloque/s en el bitmap", diff);
 				//se actualizan los bloques en el metadata mas adelante
 			}
 			log_debug(logger, "tamaño de lista de bloques luego de eliminar: %d\n",list_size(blocks_list_int));
@@ -302,10 +298,8 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 			if(list_size(blocks_list_int)>0)
 				write_file_blocks((void*)new_pokemon_file, blocks_list_int, new_size, message_catch->pokemon_name);
 
-			log_info(helper, "desasignacion de bloques realizada");
 
-
-			log_debug(logger, "Ya se escribieron los bloques, si tenia mas de 0 \n");
+			log_info(helper, "Escritura de bloques de %s realizada", message_catch->pokemon_name);
 			//ACTUALIZAR EL METADATA.BIN, nueva lista de blocks, el nuevo SIZE, y cambiar OPEN a N
 			//BLOCKS=[40,21,82,12]
 			//SIZE=250
@@ -341,7 +335,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		}
 		else
 		{
-			log_warning(helper, "%s/Metadata.bin no contenia la posicion %s", message_catch->pokemon_name, key);
+			log_warning(helper, "%s/Metadata.bin no contenia la posicion %s, resulta caught false", message_catch->pokemon_name, key);
 			//caso archivo sin la posicion, diccionario ya creado
 			caught_result = 0;
 			//SI NO LO ENCUENTRA ES QUE NO HAY POKEMON EN ESA POSICION CAUGHT FALSE.
@@ -352,14 +346,12 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 		dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
-		log_info(helper, "metadata actualizado");
-
 
 		}
 		else{
 			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//caso archivo sin bloques, diccionario no creado
-			log_warning(helper, "%s/Metadata.bin no contenia bloques", message_catch->pokemon_name);
+			log_warning(helper, "%s/Metadata.bin no contenia bloques, resulta caught false", message_catch->pokemon_name);
 			caught_result = 0;
 
 		}
@@ -370,6 +362,7 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		pthread_mutex_lock(&mutex_pkmetadata);
 		config_save(file);
 		pthread_mutex_unlock(&mutex_pkmetadata);
+		log_info(helper, "Metadata de %s actualizado y liberado", message_catch->pokemon_name);
 
 		config_destroy(file);
 
@@ -389,8 +382,6 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 
 t_message_localized* process_get(t_message_get* message_get){
 
-	log_info(helper, "recibido mensaje get_pokemon");
-
 	t_message_localized* message_localized;
 
 	//crear path del metadata
@@ -402,8 +393,7 @@ t_message_localized* process_get(t_message_get* message_get){
 
 	pthread_mutex_lock(&mutex_pkmetadata);
 	if((file = config_create(pokemon_metadata)) == NULL){
-		log_warning(helper, "no existe %s/Metadata.bin", message_get->pokemon_name);
-		log_info(logger, "no existe entonces el caught dice que no se puede atrapar");
+		log_warning(helper, "no existe %s/Metadata.bin, resulta localized vacio", message_get->pokemon_name);
 		pthread_mutex_unlock(&mutex_pkmetadata);
 
 		//xxx si no puede apropiarse del metadata en Y, entonces tampoco tiene sentido que haga sleep(TIEMPO_RETARDO_OPERACION)
@@ -423,14 +413,14 @@ t_message_localized* process_get(t_message_get* message_get){
 				config_save(file);
 				pthread_mutex_unlock(&mutex_pkmetadata);
 
-				log_info(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
+				log_trace(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 				sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
 				retry = 0;
 			}
 			else{
 				pthread_mutex_unlock(&mutex_pkmetadata);
 				config_destroy(file);
-				log_debug(helper, "TIEMPO_DE_REINTENTO_OPERACION (file ocupado) %d", TIEMPO_DE_REINTENTO_OPERACION);
+				log_trace(helper, "TIEMPO_DE_REINTENTO_OPERACION %d (file ocupado)", TIEMPO_DE_REINTENTO_OPERACION);
 				sleep(TIEMPO_DE_REINTENTO_OPERACION);
 
 				pthread_mutex_lock(&mutex_pkmetadata);
@@ -469,10 +459,6 @@ t_message_localized* process_get(t_message_get* message_get){
 			//DICCIONARIO CON POSITION(KEY)->CANT(VALUE)
 			t_dictionary* pokemon_dictionary = void_to_dictionary(pokemon_file, size_metadata);
 
-			log_trace(logger, "dictionary get en posicion 8-6 value: %s \n", dictionary_get(pokemon_dictionary, "8-6"));
-			log_trace(logger, "dictionary get en posicion 5-5 value: %s \n", dictionary_get(pokemon_dictionary, "5-5"));
-			log_trace(logger, "dictionary get en posicion 3-2 value: %s \n", dictionary_get(pokemon_dictionary, "3-2"));
-			log_trace(logger, "dictionary get en posicion 1-9 value: %s \n", dictionary_get(pokemon_dictionary, "1-9"));
 
 			//Obtener todas las posiciones y cantidades de Pokemon pedido.
 
@@ -498,13 +484,12 @@ t_message_localized* process_get(t_message_get* message_get){
 
 			dictionary_destroy_and_destroy_elements(pokemon_dictionary, (void*) free);
 
-			log_info(helper, "metadata actualizado");
 		}
 		else
 		{
 			list_destroy_and_destroy_elements(blocks_list, (void*) free);
 			//no contenia bloques el archivo entonces ni se crea el diccionario
-			log_warning(helper, "%s/Metadata.bin no contenia bloques", message_get->pokemon_name);
+			log_warning(helper, "%s/Metadata.bin no contenia bloques, resulta localized vacio", message_get->pokemon_name);
 			message_localized = create_message_localized(message_get->id, message_get->pokemon_name, 0, NULL);
 		}
 		list_destroy(blocks_list_int);
@@ -514,6 +499,7 @@ t_message_localized* process_get(t_message_get* message_get){
 		pthread_mutex_lock(&mutex_pkmetadata);
 		config_save(file);
 		pthread_mutex_unlock(&mutex_pkmetadata);
+		log_info(helper, "Metadata de %s actualizado y liberado", message_get->pokemon_name);
 
 		config_destroy(file);
 
@@ -538,7 +524,7 @@ void serve_new(void* input){
 	if(op_code != OPERATION_NEW)
 		log_error(helper, "Aca nunca llego");
 
-	log_info(helper, "Llego un mensaje NEW");
+	log_info(helper, "Recibido mensaje new_pokemon");
 	t_message_new* message_new = (t_message_new*) message;
 
 	t_message_appeared* message_appeared;
@@ -565,7 +551,7 @@ void serve_catch(void* input){
 	if(op_code != OPERATION_CATCH)
 		log_error(helper, "Aca nunca llego");
 
-	log_info(helper, "Llego un mensaje CATCH");
+	log_info(helper, "Recibido mensaje catch_pokemon");
 	t_message_catch* message_catch = (t_message_catch*) message;
 
 	t_message_caught* message_caught;
@@ -590,7 +576,7 @@ void serve_get(void* input){
 	if(op_code != OPERATION_GET)
 		log_error(helper, "Aca nunca llego");
 
-	log_info(helper, "Llego un mensaje GET");
+	log_info(helper, "Recibido mensaje get_pokemon");
 	t_message_get* message_get = (t_message_get*) message;
 
 	t_message_localized* message_localized;
