@@ -56,6 +56,7 @@ sem_t sem_state_lists;//todas usan el mismo semáforo
 sem_t sem_scheduler;//short y long no se ejecutan a la vez
 sem_t sem_short;
 sem_t sem_long;
+bool ready_empty = false;
 t_state_change_reason exit_cpu_reason = START;//MUTEX = sem_cpu_info
 bool team_succes = false;
 sem_t sem_cpu;//mutex para que short y traienrs no puedan ejecutarse a la vez
@@ -779,7 +780,7 @@ void trainer_thread(t_callback* callback_thread)
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
-					log_info(log, "trainer[%d] operación: movimiento (%s) -> (%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y);
+					log_info(log, "trainer[%d] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
 				}
 				else if(trainer->target->catching){
 					trainer->action = CATCH;
@@ -816,6 +817,7 @@ void trainer_thread(t_callback* callback_thread)
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
 	log_info(log, "trainer[%d] finalizado con exito cantidad de ciclos utilizados: %d", trainer->id, trainer->cpu_cycles);
+	sem_post(&sem_long);
 	destroy_trainer(trainer);
 
 }//TODO COMENTADO POR PRUEBAS REFACTOR?
@@ -843,6 +845,7 @@ void long_thread() {
 		if(success_global_objective()) {
 			team_succes = true;
 		}
+
 
 		sem_wait(&sem_long);
 		sem_wait(&sem_scheduler);
@@ -1185,11 +1188,13 @@ void fifo_algorithm()
 			transition_ready_to_exec(0);//toma el primero de la cola ready
 		}
 		else{
-			sem_post(&sem_long);//toma el mando el long
+			ready_empty = true;
+//			sem_post(&sem_long);//toma el mando el long
 		}
 
 	} else if(ready_size == 0) {
-		sem_post(&sem_long);//toma el mando el long
+		ready_empty = true;
+//		sem_post(&sem_long);//toma el mando el long
 	}
 
 }
@@ -1206,12 +1211,14 @@ void rr_algorithm()
 			transition_ready_to_exec(0);//toma el primero de la cola ready
 		}
 		else{
+			ready_empty = true;
 			//toma el mando el long
-			sem_post(&sem_long);
+//			sem_post(&sem_long);
 		}
 
 	}else if(ready_size == 0) {
-		sem_post(&sem_long);//toma el mando el long
+		ready_empty = true;
+//		sem_post(&sem_long);//toma el mando el long
 	}
 
 }
@@ -1233,12 +1240,14 @@ void sjfs_algorithm()
 			}
 		}
 		else{
+			ready_empty = true;
 			//toma el mando el long
-			sem_post(&sem_long);
+//			sem_post(&sem_long);
 		}
 
 	}else if(ready_size == 0) {
-		sem_post(&sem_long);//toma el mando el long
+		ready_empty = true;
+//		sem_post(&sem_long);//toma el mando el long
 	}
 }
 
@@ -1259,12 +1268,14 @@ void sjfc_algorithm()
 	//			sem_post(&trainer->sem_thread);
 			}
 		} else{
+			ready_empty = true;
 			//toma el mando el long
-			sem_post(&sem_long);
+//			sem_post(&sem_long);
 		}
 
 	}else if(ready_size == 0) {
-		sem_post(&sem_long);//toma el mando el long
+		ready_empty = true;
+//		sem_post(&sem_long);//toma el mando el long
 	}
 }
 
@@ -1565,6 +1576,9 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 				trainer->action = FINISH;
 				sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
 			}
+			if(to == block_list) {
+				sem_post(&sem_long);
+			}
 
 		}
 		else {
@@ -1650,6 +1664,7 @@ void transition_exec_to_ready()
 void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
+	sem_post(&sem_long);
 }//YA TIENE log EN EXIT_CPU
 
 void transition_exec_to_exit()
@@ -1979,6 +1994,7 @@ void trainer_catch(t_trainer* trainer, bool result) {
 		trainer->action = FREE;
 		sub_catching(trainer->target->pokemon);
 	}
+	sem_post(&sem_long);
 	t_position* empty_target_position = create_position(0,0);
 	trainer_set_target(trainer, create_target("", empty_target_position, 0, false));
 	free(empty_target_position);
@@ -2034,29 +2050,29 @@ void trade_trainer(t_trainer* trainer1){
 		solved_deadlocks++;
 		log_info(log, "deadlock resuelto -> intercambio realizado:\ntrainer[%d] ->%s-> trainer[%d]\ntrainer[%d] ->%s-> trainer[%d]", trainer1->id, pokemon1, trainer2->id, trainer2->id, pokemon2, trainer1->id);
 
+		t_position* empty_target_position = create_position(0,0);
+		trainer_set_target(trainer1, create_target("", empty_target_position, 0, false));
+		trainer_set_target(trainer2, create_target("", empty_target_position, 0, false));
+		free(empty_target_position);
+
+		if(trainer_success_objective(trainer1) == 1){
+			trainer1->action = FINISH;
+			transition_by_id(trainer1->id, exec_list, exit_list);//YA HACE log a EXIT FALTA FROM
+		} else{
+			trainer1->action = FREE;
+		}
+
+		if(trainer_success_objective(trainer2) == 1){
+			trainer2->action = FINISH;
+			transition_by_id(trainer2->id, block_list, exit_list);//YA HACE log a EXIT FALTA FROM
+		} else{
+			trainer2->action = FREE;
+		}
 	} else {
 		log_info(log_utils, "ERROR TRAINER NULL EN TRADE");
 		exit(-1);
 	}
 
-	t_position* empty_target_position = create_position(0,0);
-	trainer_set_target(trainer1, create_target("", empty_target_position, 0, false));
-	trainer_set_target(trainer2, create_target("", empty_target_position, 0, false));
-	free(empty_target_position);
-
-	if(trainer_success_objective(trainer1) == 1){
-		trainer1->action = FINISH;
-		transition_by_id(trainer1->id, exec_list, exit_list);//YA HACE log a EXIT FALTA FROM
-	} else{
-		trainer1->action = FREE;
-	}
-
-	if(trainer_success_objective(trainer2) == 1){
-		trainer2->action = FINISH;
-		transition_by_id(trainer2->id, block_list, exit_list);//YA HACE log a EXIT FALTA FROM
-	} else{
-		trainer2->action = FREE;
-	}
 
 }
 
