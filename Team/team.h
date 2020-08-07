@@ -769,7 +769,7 @@ bool success_global_objective()
 
 void trainer_thread(t_callback* callback_thread)
 {
-	//if(/*si es 0 menor*/)
+	//if(/*si es 0 menor*/)f
 		//funcion cambiar valor global de variable interrumption
 		//COMO SE DESALOJA A UN HILO DE ENTENADOR, COMO SE ENTERA EL PLANIFICADOR O EL HILO DE EJECUCION!!
 		//while(1) agregar
@@ -1573,6 +1573,13 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 		sem_post(&trainer->sem_thread);
 	}
 
+	if(to == block_list && trainer->action == FREE) {
+		sem_post(&sem_long);
+	}
+
+
+
+
 }//NO ES RESPONSABLE DEL log
 
 void transition_by_id(uint32_t id, t_list* from,t_list* to) {
@@ -1594,6 +1601,7 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 		if(trainer != NULL){
 			list_add(to, trainer);
 			context_changes++;
+
 			if(to == exit_list) {
 				char* state = state_list_string(from);
 				log_info(log, "trainer[%d] cambio de estado (%s -> exit), razon: objetivo cumplido", trainer->id, state);
@@ -1601,6 +1609,9 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 
 				trainer->action = FINISH;
 				sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
+			}else if(to == block_list && trainer->action == FREE) {
+
+				sem_post(&sem_long);
 			}
 
 		}
@@ -1688,6 +1699,7 @@ void transition_exec_to_ready()
 void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
+
 }//YA TIENE log EN EXIT_CPU
 
 void transition_exec_to_exit()
@@ -1817,6 +1829,10 @@ void team_send_catch(t_message_team* message) {
 	} else {
 		log_info(log, "error de envío de mensaje CATCH -> se realizará la operación default");
 		trainer_catch(message->trainer, true);
+		if(message->trainer->action == FREE) {
+			sem_post(&sem_long);
+
+		}
 	}
 	//por ultimo agrego el correlative id a la lista de espera de caught
 
@@ -1934,6 +1950,8 @@ void process_message(serve_thread_args* args) {
 			trainer_catch(trainer, caught_message->result);
 			if(trainer_success_objective(trainer)) {
 				transition_by_id(trainer->id, block_list, exit_list);//YA HACE log a EXIT FALTA FROM
+			} else if(trainer->action == FREE){
+				sem_post(&sem_long);
 			}
 		}
 		else{
@@ -2047,7 +2065,6 @@ void trainer_catch(t_trainer* trainer, bool result) {
 	t_position* empty_target_position = create_position(0,0);
 	trainer_set_target(trainer, create_target("", empty_target_position, 0, false));
 	free(empty_target_position);
-	sem_post(&sem_long);
 }
 
 uint32_t trade(t_trainer* trainer, uint32_t trade_cpu){
