@@ -30,6 +30,7 @@ void message_function(void (*function)(void*), queue_code queue_code, char* queu
 		else
 			log_warning(helper, "Aca nunca llego");
 	}
+	free(args);
 }
 
 void new_function(void){
@@ -212,4 +213,5 @@ void gamecard_serves_client(void* input){
 		break;
 	}
 
+	free(size);
 }

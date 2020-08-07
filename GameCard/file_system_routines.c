@@ -481,9 +481,9 @@ void create_pokemon_file(char* pokemon_name) {
 t_config* open_pokemon_file(char* pokemon_name) {
 
 	char* pokemon_file_path = get_pokemon_file(pokemon_name);
-	t_config* pokemon_config; //change object?
+	t_config* pokemon_config;
 	char* open;
-
+/*
 	do {
 		pthread_mutex_lock(&mutex_pkmetadata);
 		pokemon_config = config_create(pokemon_file_path);
@@ -499,9 +499,36 @@ t_config* open_pokemon_file(char* pokemon_name) {
 	config_set_value(pokemon_config, "OPEN", "Y");
 	config_save(pokemon_config);
 	pthread_mutex_unlock(&mutex_pkmetadata);
+*/
+
+
+	pthread_mutex_lock(&mutex_pkmetadata);
+	pokemon_config = config_create(pokemon_file_path);//ya esta creado no va a dar null
+	uint32_t retry = 1;
+	while(retry){
+		open = config_get_string_value(pokemon_config, "OPEN");
+		if(strcmp(open, "N") == 0){
+			//editar el metada.bin -> OPEN=Y
+			config_set_value(pokemon_config, "OPEN", "Y");
+			config_save(pokemon_config);
+			pthread_mutex_unlock(&mutex_pkmetadata);
+
+			log_trace(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
+			sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
+			retry = 0;
+		}
+		else{
+			pthread_mutex_unlock(&mutex_pkmetadata);
+			config_destroy(pokemon_config);
+			log_trace(helper, "TIEMPO_DE_REINTENTO_OPERACION %d (file ocupado)", TIEMPO_DE_REINTENTO_OPERACION);
+			sleep(TIEMPO_DE_REINTENTO_OPERACION);
+
+			pthread_mutex_lock(&mutex_pkmetadata);
+			pokemon_config = config_create(pokemon_file_path);
+		}
+	}
 
 	free(pokemon_file_path);
-
 	return pokemon_config;
 }
 
