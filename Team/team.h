@@ -579,9 +579,11 @@ void initialize_trainers()
 		}
 
 		sem_wait(&sem_state_lists);
-		if(trainer_success_objective(trainer))
-			list_add(exit_list, trainer);//TODO TRAINER NO SE BORRA DE ESTA MANERA
-		else if(trainer_full(trainer)) {
+		if(trainer_success_objective(trainer)) {
+			list_add(exit_list, trainer);
+			trainer->action = FINISH;
+			sem_post(&trainer->sem_thread);//Se hace post para que el trainer se borre y termine su hilo
+		} else if(trainer_full(trainer)) {
 
 			list_add(block_list, trainer);
 		} else {
@@ -599,8 +601,6 @@ void initialize_trainers()
 	free(positions_config);
 	free(objectives_config);
 	free(pokemons_config);
-
-	//TODO BORRAR LISTAS LEVANTADAS DEL CONFIG
 }
 
 void add_trainer_to_objective(t_trainer* trainer)
@@ -823,27 +823,10 @@ void trainer_thread(t_callback* callback_thread)
 
 
 
-	//pthread_mutex_unlock(trainer->semThread);
-	//sem_post(&trainer->sem_thread);
 	log_info(log, "trainer[%d] finalizado con exito cantidad de ciclos utilizados: %d", trainer->id, trainer->cpu_cycles);
-//	sem_post(&sem_long);//TODO HACE FALTA?
 	destroy_trainer(trainer);
 
-}//TODO COMENTADO POR PRUEBAS REFACTOR?
-
-//encuentra al entrenador mas cerca de la posicion en ambas listas
-
-//compara la posicion de los 2 entrenadores y la lista.
-
-//setea al entrenador, el pokemon y la distancia objetivo
-
-//dependiendo de la lista en la que este hace el transition.
-
-//VAMOS POR ACA FEDE!!!!!!!!! 13/05/2020
-//large_term_scheduler
-//void 		  dictionary_iterator(t_dictionary *, void(*closure)(char*,void*));
-
-
+}
 
 void long_thread() {
 	sem_init(&sem_long, 0, 1);
@@ -950,7 +933,6 @@ void long_term_scheduler(){
 			log_info(log,"resultado de algoritmo de detección de deadlocks: no hay entrenadores interbloqueados");
 		}
 	}
-	//TODO completarlo: que pasa cuando no tenemos posiciones en el pokemap
 }
 
 bool possible_deadlock(){
@@ -1804,13 +1786,18 @@ void team_send_catch(t_message_team* message) {
 	//una vez enviado y legoeado la info destruyo el mensahe
 	destroy_message_catch(catch);
 
+	if(correlative_id != -1) {
+		char str_correlative_id[6];
+		sprintf(str_correlative_id,"%d",correlative_id);
+		sem_wait(&sem_messages_recieve_list);
+		dictionary_put(message_response,str_correlative_id,message->trainer);
+		sem_post(&sem_messages_recieve_list);
 
+	} else {
+		log_info(log, "error de envío de mensaje CATCH -> se realizará la operación default");
+		trainer_catch(message->trainer, true);
+	}
 	//por ultimo agrego el correlative id a la lista de espera de caught
-	char str_correlative_id[6];
-	sprintf(str_correlative_id,"%d",correlative_id);
-	sem_wait(&sem_messages_recieve_list);
-	dictionary_put(message_response,str_correlative_id,message->trainer);
-	sem_post(&sem_messages_recieve_list);
 
 	destroy_message_team(message);
 }
@@ -1821,9 +1808,15 @@ void team_send_get(char* pokemon) {
 	t_package* package = serialize_get(get);
 
 	int32_t id = team_send_package(ip_broker, port_broker, package);//send_message ya libera el paquete
-	log_info(log, "mensaje GET enviado: [ID: %d, pokemon: %s]", id, pokemon);
-	destroy_message_get(get);
+	if(id != -1) {
 
+	log_info(log, "mensaje GET enviado: [ID: %d, pokemon: %s]", id, pokemon);
+
+	} else {
+		log_info(log, "error de envío de mensaje GET -> se realizará la operación default");
+	}
+
+	destroy_message_get(get);
 }
 
 void set_default_behavior(queue_code queue) {
@@ -1974,12 +1967,25 @@ pthread_t subscribe(queue_code queue_code) {
 
 
 int32_t team_send_package(char* ip, char* port, t_package* package) {
-	//TODO RETORNAR -1 SI FALLA ALGUNO DE LOS DE ABAJO
-	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);//si falla retorna -1
-	send_paquete(socket, package);//ya libera el paquete //si falla retorna -1
+	int32_t correlative_id = -1;
+	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);
+	if(socket != -1) {
+		if(send_paquete(socket, package) != -1) {
+			correlative_id = receive_ID(socket, log);
+			if(correlative_id != -1) {
+				send_ACK(socket, log_utils);
+			} else {
+				return -1;
+			}
+		} else {
+			return -1;
+		}
 
-	int32_t correlative_id = receive_ID(socket, log);//si falla retorna -1
-	send_ACK(socket, log_utils);//si falla retorna -1
+	} else {
+		return -1;
+	}
+
+
 	return correlative_id;
 }
 
@@ -2120,7 +2126,6 @@ void message_list_add_catch(t_trainer* trainer) {
 	sem_post(&sem_messages_list);
 
 	sem_post(&sem_messages);
-	//TODO LIBERAR MEMORIA
 }
 
 void debug_colas() {
@@ -2246,7 +2251,7 @@ void wait_clients(int32_t socket_servidor, t_log* logger)
     args->logger = logger;
     args->function = NULL;
     pthread_t team_serves_client_tid;
-	pthread_create(&team_serves_client_tid,NULL,(void*)team_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
+	pthread_create(&team_serves_client_tid,NULL,(void*)team_serves_client, (void *)args);
 	pthread_detach(team_serves_client_tid);
 
 }
