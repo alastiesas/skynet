@@ -13,7 +13,6 @@
 
 int main(void)
 {
-
 //	//PRUEBAS DURAS
 //	t_position* positions = calloc(2, sizeof(t_position));//TODO TESTING
 //	positions->x = 9;//TODO TESTING
@@ -61,6 +60,7 @@ int main(void)
 	exec_list = list_create();
 	exit_list = list_create();
 	poke_map = dictionary_create();
+	pokemap_order = list_create();
 
 
 

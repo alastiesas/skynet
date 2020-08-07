@@ -43,6 +43,7 @@ uint32_t retry_count = 5;//READ_ONLY
 
 //team
 t_dictionary* poke_map;//MUTEX = sem_poke_map
+t_list* pokemap_order;//MUTEX = sem_poke_map
 sem_t sem_poke_map;
 t_list* objectives_list;//MUTEX = sem_objectives_list
 sem_t sem_objectives_list;
@@ -92,7 +93,7 @@ void initialize_global_objectives();
 //funciones de entrenadores
 void add_trainer_to_objective(t_trainer* trainer);
 void trainer_thread(t_callback* callback_thread);
-void trainer_assign_catch(char* pokemon, t_list* positions);
+void trainer_assign_catch(char* pokemon);
 t_trainer* find_trainer_for_catch(t_position* position);
 void assign_trade_couple(t_trainer* trainer1, char* pokemon1, t_trainer* trainer2, char* pokemon2);
 void trainer_assign_move(t_trainer* trainer, char* pokemon, t_position* position, bool catching, uint32_t target_id);
@@ -901,7 +902,9 @@ void long_term_scheduler(){
 	uint32_t size_ready = list_size(ready_list);
 	sem_post(&sem_state_lists);
 	sem_wait(&sem_poke_map);
-	dictionary_iterator(poke_map, &trainer_assign_catch);
+	//TODO aca iteramos por la lista de orden
+	list_iterate(pokemap_order, &trainer_assign_catch);
+	//dictionary_iterator(poke_map, &trainer_assign_catch);
 	sem_post(&sem_poke_map);
 
 	sem_wait(&sem_state_lists);
@@ -1428,15 +1431,17 @@ void trainer_assign_trade(t_trainer* trainer, char* pokemon, uint32_t target_id)
 	trainer_set_target(trainer, create_target(pokemon, trainer->position, target_id, 0));
 }
 
-void trainer_assign_catch(char* pokemon, t_list* positions)
+void trainer_assign_catch(char* pokemon)
 {
+	t_list* positions = dictionary_get(poke_map, pokemon);
 	//char* pokemon = malloc((strlen(key)+1)*sizeof(char));
 	//memcpy(pokemon, key, strlen(key)+1);//sin esto rompe
 
 	//t_link_element* element = positions->head;
 	//t_position* position;
 
-	void assign_closest_trainer(t_position* position) {
+	bool assign_closest_trainer(t_position* position) {
+		bool succes;
 		t_trainer* selected_trainer = find_trainer_for_catch(position);
 
 		if(selected_trainer != NULL) {
@@ -1448,11 +1453,25 @@ void trainer_assign_catch(char* pokemon, t_list* positions)
 			}
 			log_info(log_utils, "ENRENADOR ASIGNADO, SE ELIMINARÁ LA POSICION (%d, %d) del pokemap en [%s]\n", position->x, position->y, pokemon);
 			list_remove_and_destroy_by_condition(positions, &condition, &free);
+			succes = true;
 		}else {
+			succes = false;
 		}
 
 	}
-	list_iterate(positions, &assign_closest_trainer);
+	//TODO aca hacemos por la primera posicion.
+	if(list_size(positions) > 0) {
+		//TODO ACA ELIMNAR EL PRIMERO DE LA LISTA QUE ENCUENTRA
+		t_position* position = list_get(positions,0);
+		if(assign_closest_trainer(position)) {
+			bool condition(char* key) {
+				return strcmp(key, pokemon) == 0;
+			}
+			char* pokemon_remove = list_remove_by_condition(pokemap_order, &condition);
+			free(pokemon_remove);
+		}//SINO NO BORRAMOS
+	}
+	//list_iterate(positions, &assign_closest_trainer);
 }
 
 t_trainer* find_trainer_for_catch(t_position* position) {
@@ -1496,6 +1515,8 @@ void add_to_poke_map(char* pokemon, t_position* position)
 	t_position* position_copy = create_position(position->x, position->y);
 	//CASO DE QUE NO ESTE EL POKEMON EN EL MAP
 	sem_wait(&sem_poke_map);
+	//TODO aca agrego a la lista de orden
+	list_add(pokemap_order,create_copy_string(pokemon));
 	if(!dictionary_has_key(poke_map, pokemon)){
 		t_list* positions = list_create();
 		list_add(positions, position_copy);
