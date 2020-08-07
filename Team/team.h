@@ -1467,7 +1467,7 @@ void trainer_assign_catch(char* pokemon)
 				return strcmp(key, pokemon) == 0;
 			}
 			char* pokemon_remove = list_remove_by_condition(pokemap_order, &condition);
-			//free(pokemon_remove);
+			free(pokemon_remove);
 		}//SINO NO BORRAMOS
 	}
 	//list_iterate(positions, &assign_closest_trainer);
@@ -1642,7 +1642,8 @@ void transition_from_id_to_ready(uint32_t id) {
 	if(trainer != NULL) {
 		char* reason = NULL;
 		if(trainer->target->catching) {
-			reason = create_copy_string("atrapar pokemon");
+			reason = malloc(sizeof(char)*32);
+			sprintf(reason, "atrapar %s(%d, %d)", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
 		} else {
 
 			reason = create_copy_string("realizar intercambio");
