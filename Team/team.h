@@ -847,7 +847,6 @@ void long_thread() {
 		sem_wait(&sem_state_lists);
 		ready_size = list_size(ready_list);
 		sem_post(&sem_state_lists);
-		printf("IDLE_CPU = %s\tREADY_SIZE = %d\n", idle_cpu?"true":"false", ready_size);
 		if(idle_cpu &&  ready_size > 0) {
 			idle_cpu = false;
 			sem_post(&sem_short);
@@ -1468,7 +1467,7 @@ void trainer_assign_catch(char* pokemon)
 				return strcmp(key, pokemon) == 0;
 			}
 			char* pokemon_remove = list_remove_by_condition(pokemap_order, &condition);
-			free(pokemon_remove);
+			//free(pokemon_remove);
 		}//SINO NO BORRAMOS
 	}
 	//list_iterate(positions, &assign_closest_trainer);
@@ -1882,7 +1881,6 @@ void process_message(serve_thread_args* args) {
 		log_info(log, "appeared recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION: (%d, %d)], %s", ((t_message_appeared*)(message))->id, ((t_message_appeared*)(message))->correlative_id, ((t_message_appeared*)(message))->size_pokemon_name, ((t_message_appeared*)(message))->pokemon_name, ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y, added?"PROCESADO":"IGNORADO");
 
 		destroy_message_appeared(message);
-		printf("LLEGA AL FINAL DE APPEARED\n");
 
 //		debug_colas();
 	break;
@@ -2094,12 +2092,12 @@ void trade_trainer(t_trainer* trainer1){
 		sub_pokemon(trainer2, pokemon2);
 		add_pokemon(trainer1, pokemon2);
 		add_pokemon(trainer2, pokemon1);
-		free(pokemon1);
-		free(pokemon2);
 
 		//ya se realizo el intercambio
 		solved_deadlocks++;
 		log_info(log, "deadlock resuelto -> intercambio realizado:\ntrainer[%d] ->%s-> trainer[%d]\ntrainer[%d] ->%s-> trainer[%d]", trainer1->id, pokemon1, trainer2->id, trainer2->id, pokemon2, trainer1->id);
+		free(pokemon1);
+		free(pokemon2);
 
 		t_position* empty_target_position = create_position(0,0);
 		trainer_set_target(trainer1, create_target("", empty_target_position, 0, false));
