@@ -26,6 +26,8 @@ uint32_t team_id;
 char* ip_broker;
 char* port_broker;
 char* log_file;
+char* ip;
+char* port;
 
 uint32_t time_delay = 1;//READ_ONLY
 uint32_t quantum = 2;//READ_ONLY
@@ -56,10 +58,10 @@ sem_t sem_state_lists;//todas usan el mismo semáforo
 sem_t sem_scheduler;//short y long no se ejecutan a la vez
 sem_t sem_short;
 sem_t sem_long;
-bool ready_empty = false;
 t_state_change_reason exit_cpu_reason = START;//MUTEX = sem_cpu_info
 bool team_succes = false;
 sem_t sem_cpu;//mutex para que short y traienrs no puedan ejecutarse a la vez
+bool idle_cpu = true;
 
 //informes
 uint32_t cpu_cycles = 0;//MUTEX = sem_cpu_info
@@ -171,8 +173,12 @@ void* sender_thread();
 void team_send_catch(t_message_team* message);
 void team_send_get(char* pokemon);
 void set_default_behavior(queue_code);
+bool add_to_pokemap_if_needed(char* pokemon, t_position* position);
 void process_message(serve_thread_args* args);
 pthread_t subscribe(queue_code queue_code);
+void iniciar_servidor_team();
+void wait_clients(int32_t socket_servidor, t_log* logger);
+void team_serves_client(void* input);
 //FIN comunicación
 
 //debugs
@@ -197,6 +203,9 @@ void initialize_global_config() {
 	}
 
 	team_id = config_get_int_value(config, "ID");
+	ip = config_get_string_value(config, "IP");
+	port = config_get_string_value(config, "PUERTO");
+
 
 	ip_broker = config_get_string_value(config, "IP_BROKER");
 	port_broker = config_get_string_value(config, "PUERTO_BROKER");
@@ -817,7 +826,7 @@ void trainer_thread(t_callback* callback_thread)
 	//pthread_mutex_unlock(trainer->semThread);
 	//sem_post(&trainer->sem_thread);
 	log_info(log, "trainer[%d] finalizado con exito cantidad de ciclos utilizados: %d", trainer->id, trainer->cpu_cycles);
-	sem_post(&sem_long);
+//	sem_post(&sem_long);//TODO HACE FALTA?
 	destroy_trainer(trainer);
 
 }//TODO COMENTADO POR PRUEBAS REFACTOR?
@@ -837,22 +846,28 @@ void trainer_thread(t_callback* callback_thread)
 
 
 void long_thread() {
-	sem_init(&sem_long, 0, 0);
+	sem_init(&sem_long, 0, 1);
 	sem_init(&sem_scheduler, 0, 1);
-	//sem post para pruebas
-	sem_post(&sem_long);
 	while(!team_succes){
 		if(success_global_objective()) {
 			team_succes = true;
 		}
 
-
+//		printf("esto es lo ultimo? \n");
 		sem_wait(&sem_long);
 		sem_wait(&sem_scheduler);
 		long_term_scheduler();
 		sem_post(&sem_scheduler);
 
-		sem_post(&sem_short);
+		uint32_t ready_size = 0;
+		sem_wait(&sem_state_lists);
+		ready_size = list_size(ready_list);
+		sem_post(&sem_state_lists);
+		printf("IDLE_CPU = %s\tREADY_SIZE = %d\n", idle_cpu?"true":"false", ready_size);
+		if(idle_cpu &&  ready_size > 0) {
+			idle_cpu = false;
+			sem_post(&sem_short);
+		}
 
 	}
 
@@ -897,10 +912,6 @@ void* short_thread()
 }
 
 void long_term_scheduler(){
-
-	//PRUEBAAAAA
-
-
 
 	//revisar size ready
 	sem_wait(&sem_state_lists);
@@ -964,8 +975,8 @@ void deadlock_handler(){
 
 	log_info(log, "resultado de algoritmo de detección de deadlocks: %d entrenadores interbloqueados, pokemon (especies) retenidos: %d, pokemon (especies) en espera: %d", locked_trainers, dictionary_size(held_table), dictionary_size(waiting_table));
 	uint32_t deadlocks_before = deadlocks;
-
 	//fixeamos parejas perfectas
+
 
 //	void debug_table(char* key, t_list* table) {
 //		void debug_list(t_trainer* trainer) {
@@ -1181,20 +1192,21 @@ void fifo_algorithm()
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
 	if(exit_cpu()) {
-
-
+		sem_wait(&sem_state_lists);
+		ready_size =  list_size(ready_list);
+		sem_post(&sem_state_lists);
 
 		if(ready_size > 0){
 			transition_ready_to_exec(0);//toma el primero de la cola ready
 		}
 		else{
-			ready_empty = true;
-//			sem_post(&sem_long);//toma el mando el long
+			idle_cpu = true;
+			sem_post(&sem_long);//toma el mando el long
 		}
 
 	} else if(ready_size == 0) {
-		ready_empty = true;
-//		sem_post(&sem_long);//toma el mando el long
+		idle_cpu = true;
+		sem_post(&sem_long);//toma el mando el long
 	}
 
 }
@@ -1207,18 +1219,22 @@ void rr_algorithm()
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
 	if(exit_cpu()) {
+		sem_wait(&sem_state_lists);
+		ready_size =  list_size(ready_list);
+		sem_post(&sem_state_lists);
+
 		if(ready_size > 0){
 			transition_ready_to_exec(0);//toma el primero de la cola ready
 		}
 		else{
-			ready_empty = true;
 			//toma el mando el long
-//			sem_post(&sem_long);
+			idle_cpu = true;
+			sem_post(&sem_long);
 		}
 
 	}else if(ready_size == 0) {
-		ready_empty = true;
-//		sem_post(&sem_long);//toma el mando el long
+		idle_cpu = true;
+		sem_post(&sem_long);//toma el mando el long
 	}
 
 }
@@ -1231,6 +1247,10 @@ void sjfs_algorithm()
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
 	if(exit_cpu()) {
+		sem_wait(&sem_state_lists);
+		ready_size =  list_size(ready_list);
+		sem_post(&sem_state_lists);
+
 		if(ready_size > 0){
 			t_trainer* trainer = shortest_job_trainer_from_ready();
 			if(trainer != NULL) {
@@ -1240,14 +1260,14 @@ void sjfs_algorithm()
 			}
 		}
 		else{
-			ready_empty = true;
 			//toma el mando el long
-//			sem_post(&sem_long);
+			idle_cpu = true;
+			sem_post(&sem_long);
 		}
 
 	}else if(ready_size == 0) {
-		ready_empty = true;
-//		sem_post(&sem_long);//toma el mando el long
+		idle_cpu = true;
+		sem_post(&sem_long);//toma el mando el long
 	}
 }
 
@@ -1260,6 +1280,10 @@ void sjfc_algorithm()
 	uint32_t ready_size =  list_size(ready_list);
 	sem_post(&sem_state_lists);
 	if(exit_cpu()) {
+		sem_wait(&sem_state_lists);
+		ready_size =  list_size(ready_list);
+		sem_post(&sem_state_lists);
+
 		if(ready_size > 0){
 			t_trainer* trainer = shortest_job_trainer_from_ready();
 			if(trainer != NULL) {
@@ -1268,14 +1292,14 @@ void sjfc_algorithm()
 	//			sem_post(&trainer->sem_thread);
 			}
 		} else{
-			ready_empty = true;
-			//toma el mando el long
-//			sem_post(&sem_long);
+//			toma el mando el long
+			idle_cpu = true;
+			sem_post(&sem_long);
 		}
 
 	}else if(ready_size == 0) {
-		ready_empty = true;
-//		sem_post(&sem_long);//toma el mando el long
+		idle_cpu = true;
+		sem_post(&sem_long);//toma el mando el long
 	}
 }
 
@@ -1576,9 +1600,6 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 				trainer->action = FINISH;
 				sem_post(&trainer->sem_thread);//este post es exclusivamente para que el trainer libere memoria, lo cual no lo tomamos como tiempo de CPU
 			}
-			if(to == block_list) {
-				sem_post(&sem_long);
-			}
 
 		}
 		else {
@@ -1664,7 +1685,6 @@ void transition_exec_to_ready()
 void transition_exec_to_block()
 {
 	state_change(0,exec_list,block_list);
-	sem_post(&sem_long);
 }//YA TIENE log EN EXIT_CPU
 
 void transition_exec_to_exit()
@@ -1780,7 +1800,7 @@ void team_send_catch(t_message_team* message) {
 	//tercero envio el paquete
 	int32_t correlative_id = team_send_package(ip_broker, port_broker, package);//send_message ya libera el paquete
 	log_info(log, "mensaje CATCH enviado: [ID: %d, pokemon: %s, posicion: (%d, %d)]", correlative_id, message->pokemon, message->position->x, message->position->y);
-
+	//TODO AGREGAR DEFUALT si correlative_id ==-1
 	//una vez enviado y legoeado la info destruyo el mensahe
 	destroy_message_catch(catch);
 
@@ -1819,14 +1839,17 @@ void set_default_behavior(queue_code queue) {
 	}
 }
 
-void add_to_pokemap_if_needed(char* pokemon, t_position* position) {
+bool add_to_pokemap_if_needed(char* pokemon, t_position* position) {
+	bool pokemon_added = false;
 	if(pokemon_is_needed_on_pokemap(pokemon)){//se necesita el pokemon?
 
 		add_to_poke_map(pokemon, position);
+		pokemon_added = true;
 
 		//long_term_scheduler();
 		sem_post(&sem_long);//SI APARECE UN NUEVO POKEMON NECESITADO, SE HACE POST AL LONG PARA QUE PLANIFIQUE A UN ENTRENADOR A BUSCARLO
 	}
+	return pokemon_added;
 }
 
 void process_message(serve_thread_args* args) {
@@ -1838,13 +1861,14 @@ void process_message(serve_thread_args* args) {
 		destroy_message_new(message);
 	break;
 	case OPERATION_APPEARED:;
-	t_message_appeared* appeared_message = ((t_message_appeared*)(message));
-		log_info(log, "appeared recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION: (%d, %d)]", ((t_message_appeared*)(message))->id, ((t_message_appeared*)(message))->correlative_id, ((t_message_appeared*)(message))->size_pokemon_name, ((t_message_appeared*)(message))->pokemon_name, ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y);
+		t_message_appeared* appeared_message = ((t_message_appeared*)(message));
 
 		//SOLO SE AGREGA SI ES REQUERIDO EN OBJETIVOS GLOBALES
-		add_to_pokemap_if_needed(appeared_message->pokemon_name,appeared_message->position);
+		bool added = add_to_pokemap_if_needed(appeared_message->pokemon_name,appeared_message->position);
+		log_info(log, "appeared recibido: [ID: %d, CORRELATIVE_ID: %d, SIZE: %d, POKEMON: %s, POSITION: (%d, %d)], %s", ((t_message_appeared*)(message))->id, ((t_message_appeared*)(message))->correlative_id, ((t_message_appeared*)(message))->size_pokemon_name, ((t_message_appeared*)(message))->pokemon_name, ((t_message_appeared*)(message))->position->x, ((t_message_appeared*)(message))->position->y, added?"PROCESADO":"IGNORADO");
 
 		destroy_message_appeared(message);
+		printf("LLEGA AL FINAL DE APPEARED\n");
 
 //		debug_colas();
 	break;
@@ -1950,12 +1974,12 @@ pthread_t subscribe(queue_code queue_code) {
 
 
 int32_t team_send_package(char* ip, char* port, t_package* package) {
+	//TODO RETORNAR -1 SI FALLA ALGUNO DE LOS DE ABAJO
+	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);//si falla retorna -1
+	send_paquete(socket, package);//ya libera el paquete //si falla retorna -1
 
-	int32_t socket = connect_to_server(ip, port,retry_time, retry_count, log);
-	send_paquete(socket, package);//ya libera el paquete
-
-	int32_t correlative_id = receive_ID(socket, log);
-	send_ACK(socket, log_utils);
+	int32_t correlative_id = receive_ID(socket, log);//si falla retorna -1
+	send_ACK(socket, log_utils);//si falla retorna -1
 	return correlative_id;
 }
 
@@ -1994,10 +2018,10 @@ void trainer_catch(t_trainer* trainer, bool result) {
 		trainer->action = FREE;
 		sub_catching(trainer->target->pokemon);
 	}
-	sem_post(&sem_long);
 	t_position* empty_target_position = create_position(0,0);
 	trainer_set_target(trainer, create_target("", empty_target_position, 0, false));
 	free(empty_target_position);
+	sem_post(&sem_long);
 }
 
 uint32_t trade(t_trainer* trainer, uint32_t trade_cpu){
@@ -2034,11 +2058,11 @@ void trade_trainer(t_trainer* trainer1){
 	sem_post(&sem_state_lists);
 	list_destroy(list_trainer_id);
 
+	bool new_trainer_in_block = false;
 	if(trainer2 != NULL) {
 
 		char* pokemon1 = create_copy_string(trainer1->target->pokemon);
 		char* pokemon2 = create_copy_string(trainer2->target->pokemon);
-
 		sub_pokemon(trainer1, pokemon1);
 		sub_pokemon(trainer2, pokemon2);
 		add_pokemon(trainer1, pokemon2);
@@ -2060,6 +2084,7 @@ void trade_trainer(t_trainer* trainer1){
 			transition_by_id(trainer1->id, exec_list, exit_list);//YA HACE log a EXIT FALTA FROM
 		} else{
 			trainer1->action = FREE;
+			new_trainer_in_block = true;
 		}
 
 		if(trainer_success_objective(trainer2) == 1){
@@ -2067,13 +2092,16 @@ void trade_trainer(t_trainer* trainer1){
 			transition_by_id(trainer2->id, block_list, exit_list);//YA HACE log a EXIT FALTA FROM
 		} else{
 			trainer2->action = FREE;
+			new_trainer_in_block = true;
 		}
 	} else {
 		log_info(log_utils, "ERROR TRAINER NULL EN TRADE");
 		exit(-1);
 	}
 
-
+	if(new_trainer_in_block) {
+		sem_post(&sem_long);
+	}
 }
 
 
@@ -2140,5 +2168,127 @@ void destroy_message_team(t_message_team* message) {
 	free(message->position);
 	free(message);
 }
+
+
+
+
+
+
+//SERVIDOR ESCUCHA
+
+void iniciar_servidor_team()
+{
+	pthread_t thread = pthread_self();
+	int32_t socket_servidor;
+
+
+    struct addrinfo hints, *servinfo, *p;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    getaddrinfo(ip, port, &hints, &servinfo);
+
+    for (p=servinfo; p != NULL; p = p->ai_next)
+    {
+        if ((socket_servidor = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
+        	log_error(log_utils, "Error de socket()");
+        	continue;
+        }
+        int reuse = 1;
+        if (setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+            perror("setsockopt(SO_REUSEADDR) failed");
+
+		#ifdef SO_REUSEPORT
+        if (setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse)) < 0)
+            perror("setsockopt(SO_REUSEPORT) failed");
+    	#endif
+
+        if (bind(socket_servidor, p->ai_addr, p->ai_addrlen) == -1) {
+            close(socket_servidor);
+            log_error(log_utils, "Error de bind (el puerto esta ocupado), reinicie el programa");
+            for(;;);
+            continue;
+        }
+        break;
+    }
+
+	listen(socket_servidor, SOMAXCONN);
+	log_info(log_utils, "Escuchando gameboys en %s:%s", ip, port);
+
+    freeaddrinfo(servinfo);
+
+    while(1)
+    	wait_clients(socket_servidor, log);
+}
+
+void wait_clients(int32_t socket_servidor, t_log* logger)
+{
+	pthread_t self = pthread_self();
+	struct sockaddr_in dir_cliente;
+
+	uint32_t tam_direccion = sizeof(struct sockaddr_in);
+
+	log_info(logger, "Esperando conexion en el thread %d", self);
+
+	int32_t socket_cliente;
+	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
+		log_error(log_utils, "Error al aceptar cliente");
+	else{
+		log_info(logger, "Conexion aceptada");
+	}
+
+
+    struct thread_args* args = malloc(sizeof(struct thread_args));
+    args->socket = socket_cliente;
+    args->logger = logger;
+    args->function = NULL;
+    pthread_t team_serves_client_tid;
+	pthread_create(&team_serves_client_tid,NULL,(void*)team_serves_client, (void *)args);		//TODO comprobar errores de pthread_create
+	pthread_detach(team_serves_client_tid);
+
+}
+
+
+void team_serves_client(void* input){
+	int32_t socket = ((struct thread_args*)input)->socket;
+	t_log*	logger = ((struct thread_args*)input)->logger;
+	free(input);
+
+	log_info(logger, "Se creo un thread para recibir mensajes del cliente %d\n", socket);
+
+	operation_code cod_op;
+
+	int recibido = recv_with_retry(socket, &cod_op, sizeof(int32_t), MSG_WAITALL);
+	if(recibido == -1)
+		log_error(log_utils, "Error del recv()");
+	if(recibido == 0)
+		log_error(log_utils, "Se recibieron 0 bytes, se cierra el recv()");
+
+	log_info(logger, "se recibieron %d bytes", recibido);
+
+	log_info(logger, "se recibio la cod op: %d\n", cod_op);
+
+    log_info(logger, "se recibio el cod op: %d\n", cod_op);
+	void* message = process_request(cod_op, socket, logger);
+
+//se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
+	serve_thread_args* argus = malloc(sizeof(serve_thread_args));
+	argus->op_code = cod_op;
+	argus->message = message;
+
+	pthread_t serve_thread;
+	process_message(argus);
+//	pthread_create(&serve_thread,NULL, process_message, (void *)argus);
+//	pthread_detach(serve_thread);
+
+
+
+}
+
+
+
 
 #endif /* TEAM_H_ */

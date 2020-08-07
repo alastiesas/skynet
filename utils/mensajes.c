@@ -92,8 +92,10 @@ int32_t receive_ID(uint32_t socket, t_log* logger){
 	int32_t ID;
 
 	int32_t resultado;
-	if((resultado = recv_with_retry(socket, &ID, sizeof(int32_t), MSG_WAITALL)) == -1)
+	if((resultado = recv_with_retry(socket, &ID, sizeof(int32_t), MSG_WAITALL)) == -1) {
 		log_error(logger, "Error al recibir el ID de mensaje\n");
+		return -1;
+	}
 	else
 		log_info(logger, "Se recibio el ID de mensaje: %d\n", ID);
 

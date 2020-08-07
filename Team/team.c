@@ -51,7 +51,8 @@ int main(void)
 
 	pthread_t sender_tid;
 	pthread_create(&sender_tid, NULL, sender_thread, NULL);
-
+	pthread_t server_tid;
+	pthread_create(&server_tid, NULL, iniciar_servidor_team, NULL);
 	messages_list = list_create();
 	message_response = dictionary_create();
 	new_list = list_create();
