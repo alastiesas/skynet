@@ -20,8 +20,10 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 	pthread_mutex_unlock(&mutex_pkmetadata);
 
 	t_config* pokemon_config = open_pokemon_file(pokemon_name);
+	/*
 	log_trace(helper, "TIEMPO_RETARDO_OPERACION %d", TIEMPO_RETARDO_OPERACION);
 	sleep(TIEMPO_RETARDO_OPERACION); //una vez soltado el mutex y en open Y
+	*/ //adentro de la funcion anterior
 
 	/*----------*/
 
@@ -221,10 +223,6 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 		t_dictionary* pokemon_dictionary;
 		pokemon_dictionary = void_to_dictionary(pokemon_file, size_metadata);
 
-		log_trace(logger, "dictionary get en posicion 8-6 value: %s \n",dictionary_get(pokemon_dictionary, "8-6"));
-		log_trace(logger, "dictionary get en posicion 5-5 value: %s \n",dictionary_get(pokemon_dictionary, "5-5"));
-		log_trace(logger, "dictionary get en posicion 3-2 value: %s \n",dictionary_get(pokemon_dictionary, "3-2"));
-		log_trace(logger, "dictionary get en posicion 1-9 value: %s \n",dictionary_get(pokemon_dictionary, "1-9"));
 		/*
 		DIRECTORY=N
 		SIZE=250
@@ -541,6 +539,11 @@ void serve_new(void* input){
 	int32_t result = send_to_broker(package);
 	if(result != -1)
 		log_info(helper, "Se envio un mensaje APPEARED");
+	else{
+		free(package->buffer->stream);
+		free(package->buffer);
+		free(package);
+	}
 }
 
 void serve_catch(void* input){
@@ -566,6 +569,11 @@ void serve_catch(void* input){
 	int32_t result = send_to_broker(package);
 	if(result != -1)
 		log_info(helper, "Se envio un mensaje CAUGHT");
+	else{
+		free(package->buffer->stream);
+		free(package->buffer);
+		free(package);
+	}
 }
 
 void serve_get(void* input){
@@ -591,6 +599,11 @@ void serve_get(void* input){
 	int32_t result = send_to_broker(package);
 	if(result != -1)
 		log_info(helper, "Se envio un mensaje LOCALIZED");
+	else{
+		free(package->buffer->stream);
+		free(package->buffer);
+		free(package);
+	}
 }
 
 
