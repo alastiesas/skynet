@@ -43,7 +43,7 @@ uint32_t retry_count = 5;//READ_ONLY
 
 //team
 t_dictionary* poke_map;//MUTEX = sem_poke_map
-t_list* pokemap_order;//MUTEX = sem_poke_map
+t_list* poke_map_order;//MUTEX = sem_poke_map
 sem_t sem_poke_map;
 t_list* objectives_list;//MUTEX = sem_objectives_list
 sem_t sem_objectives_list;
@@ -901,8 +901,7 @@ void long_term_scheduler(){
 	uint32_t size_ready = list_size(ready_list);
 	sem_post(&sem_state_lists);
 	sem_wait(&sem_poke_map);
-	//TODO aca iteramos por la lista de orden
-	list_iterate(pokemap_order, &trainer_assign_catch);
+	list_iterate(poke_map_order, &trainer_assign_catch);
 	//dictionary_iterator(poke_map, &trainer_assign_catch);
 	sem_post(&sem_poke_map);
 
@@ -920,13 +919,7 @@ void long_term_scheduler(){
 
 	if(idle_cpu || deadlock_priority == DEADLOCK_PRIORITY) {
 		deadlock_priority = 0;//resetear prioridad
-		if(idle_cpu) {
-		log_info(log, "inicio de algoritmo de deteccion de deadlocks razon: CPU ociosa");
-
-		} else {
-			log_info(log, "inicio de algoritmo de deteccion de deadlocks razon: se corrío %d veces el planificador de largo plazo sin poder agregar entrenadores a ready", DEADLOCK_PRIORITY);
-
-		}
+		log_info(log, "inicio de algoritmo de deteccion de deadlocks");
 
 		if(possible_deadlock()) {
 
@@ -1458,15 +1451,13 @@ void trainer_assign_catch(char* pokemon)
 		}
 
 	}
-	//TODO aca hacemos por la primera posicion.
 	if(list_size(positions) > 0) {
-		//TODO ACA ELIMNAR EL PRIMERO DE LA LISTA QUE ENCUENTRA
 		t_position* position = list_get(positions,0);
 		if(assign_closest_trainer(position)) {
 			bool condition(char* key) {
 				return strcmp(key, pokemon) == 0;
 			}
-			char* pokemon_remove = list_remove_by_condition(pokemap_order, &condition);
+			char* pokemon_remove = list_remove_by_condition(poke_map_order, &condition);
 			free(pokemon_remove);
 		}//SINO NO BORRAMOS
 	}
@@ -1514,8 +1505,7 @@ void add_to_poke_map(char* pokemon, t_position* position)
 	t_position* position_copy = create_position(position->x, position->y);
 	//CASO DE QUE NO ESTE EL POKEMON EN EL MAP
 	sem_wait(&sem_poke_map);
-	//TODO aca agrego a la lista de orden
-	list_add(pokemap_order,create_copy_string(pokemon));
+	list_add(poke_map_order,create_copy_string(pokemon));
 	if(!dictionary_has_key(poke_map, pokemon)){
 		t_list* positions = list_create();
 		list_add(positions, position_copy);
@@ -1815,8 +1805,6 @@ void team_send_catch(t_message_team* message) {
 	//tercero envio el paquete
 	int32_t correlative_id = team_send_package(ip_broker, port_broker, package);//send_message ya libera el paquete
 	log_info(log, "mensaje CATCH enviado: [ID: %d, pokemon: %s, posicion: (%d, %d)]", correlative_id, message->pokemon, message->position->x, message->position->y);
-	//TODO AGREGAR DEFUALT si correlative_id ==-1
-	//una vez enviado y legoeado la info destruyo el mensahe
 	destroy_message_catch(catch);
 
 	if(correlative_id != -1) {
@@ -2190,6 +2178,7 @@ void destroy_poke_map() {
 		list_destroy_and_destroy_elements(positions, &free);
 	}
 	dictionary_destroy_and_destroy_elements(poke_map, &destroy_pokemon_in_pokemap);
+	list_destroy_and_destroy_elements(poke_map_order, &free);
 }
 void debug_trainer(t_trainer* trainer) {
 	if(debugging) {

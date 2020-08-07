@@ -60,7 +60,7 @@ int main(void)
 	exec_list = list_create();
 	exit_list = list_create();
 	poke_map = dictionary_create();
-	pokemap_order = list_create();
+	poke_map_order = list_create();
 
 
 
