@@ -1563,7 +1563,10 @@ void state_change(uint32_t index, t_list* from,t_list* to)
 	t_trainer* trainer = list_remove(from, index);
 	list_add(to, trainer);
 	sem_post(&sem_state_lists);
-	context_changes++;
+	if(from == exec_list){
+		context_changes++;
+	}
+
 	if(to == exit_list) {
 		trainer->action = FINISH;
 		sem_post(&trainer->sem_thread);
@@ -1596,7 +1599,9 @@ void transition_by_id(uint32_t id, t_list* from,t_list* to) {
 
 		if(trainer != NULL){
 			list_add(to, trainer);
-			context_changes++;
+			if(from == exec_list){
+				context_changes++;
+			}
 
 			if(to == exit_list) {
 				char* state = state_list_string(from);
@@ -1631,14 +1636,14 @@ void transition_from_id_to_ready(uint32_t id) {
 	if(trainer != NULL) {
 		state_change_log = create_copy_string("new -> ready");
 		list_add(ready_list, trainer);
-		context_changes++;
+		//context_changes++;
 		new_trainer_in_ready = true;
 	} else {
 		trainer = list_remove_by_condition(block_list, &condition);
 		if(trainer != NULL) {
 			state_change_log = create_copy_string("block -> ready");
 			list_add(ready_list, trainer);
-			context_changes++;
+			//context_changes++;
 			new_trainer_in_ready = true;
 		}else {
 			log_info(log_utils, "**ERROR**SE INTENTÓ HACER UNA TRANSICIÓN A READY DE UN ENTRENADOR QUE NO SE ENCUENTRA EN NEW NI BLOCK!**ERROR**\n");
