@@ -11,7 +11,7 @@
 #include"includes.h"
 #include"utilities.h"
 #include"team_structs.h"
-#define DEADLOCK_PRIORITY 100
+#define DEADLOCK_PRIORITY 15
 //---GLOBALS---
 
 //logs: pueden desactivarse para no mostrarse en consola
@@ -2263,13 +2263,13 @@ void wait_clients(int32_t socket_servidor, t_log* logger)
 
 	uint32_t tam_direccion = sizeof(struct sockaddr_in);
 
-	log_info(logger, "Esperando conexion en el thread %d", self);
+	log_info(log_utils, "Esperando conexion en el thread %d", self);
 
 	int32_t socket_cliente;
 	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
 		log_error(log_utils, "Error al aceptar cliente");
 	else{
-		log_info(logger, "Conexion aceptada");
+		log_info(log_utils, "Conexion aceptada");
 	}
 
 
@@ -2289,7 +2289,7 @@ void team_serves_client(void* input){
 	t_log*	logger = ((struct thread_args*)input)->logger;
 	free(input);
 
-	log_info(logger, "Se creo un thread para recibir mensajes del cliente %d\n", socket);
+	log_info(log_utils, "Se creo un thread para recibir mensajes del cliente %d\n", socket);
 
 	operation_code cod_op;
 
@@ -2299,11 +2299,11 @@ void team_serves_client(void* input){
 	if(recibido == 0)
 		log_error(log_utils, "Se recibieron 0 bytes, se cierra el recv()");
 
-	log_info(logger, "se recibieron %d bytes", recibido);
+	log_info(log_utils, "se recibieron %d bytes", recibido);
 
-	log_info(logger, "se recibio la cod op: %d\n", cod_op);
+	log_info(log_utils, "se recibio la cod op: %d\n", cod_op);
 
-    log_info(logger, "se recibio el cod op: %d\n", cod_op);
+    log_info(log_utils, "se recibio el cod op: %d\n", cod_op);
 	void* message = process_request(cod_op, socket, logger);
 
 //se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
