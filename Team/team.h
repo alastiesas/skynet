@@ -1527,7 +1527,7 @@ void add_to_poke_map(char* pokemon, t_position* position)
 	sem_post(&sem_poke_map);
 	//EL CASO DE QUE ESTE EL POKEMON EN EL MAPA
 	//buscar el pokemon en la lista y retornar el indice
-
+	sem_post(&sem_long);
 
 }
 
@@ -1866,7 +1866,7 @@ bool add_to_pokemap_if_needed(char* pokemon, t_position* position) {
 		pokemon_added = true;
 
 		//long_term_scheduler();
-		sem_post(&sem_long);//SI APARECE UN NUEVO POKEMON NECESITADO, SE HACE POST AL LONG PARA QUE PLANIFIQUE A UN ENTRENADOR A BUSCARLO
+		//SI APARECE UN NUEVO POKEMON NECESITADO, SE HACE POST AL LONG PARA QUE PLANIFIQUE A UN ENTRENADOR A BUSCARLO
 	}
 	return pokemon_added;
 }
