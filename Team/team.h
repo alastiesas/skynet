@@ -11,7 +11,7 @@
 #include"includes.h"
 #include"utilities.h"
 #include"team_structs.h"
-#define DEADLOCK_PRIORITY 5
+#define DEADLOCK_PRIORITY 10000
 //---GLOBALS---
 
 //logs: pueden desactivarse para no mostrarse en consola
@@ -62,7 +62,8 @@ sem_t sem_long;
 t_state_change_reason exit_cpu_reason = START;//MUTEX = sem_cpu_info
 bool team_succes = false;
 sem_t sem_cpu;//mutex para que short y traienrs no puedan ejecutarse a la vez
-bool idle_cpu = true;
+bool idle_cpu = false;
+bool starting = true;
 
 //informes
 uint32_t cpu_cycles = 0;//MUTEX = sem_cpu_info
@@ -790,7 +791,7 @@ void trainer_thread(t_callback* callback_thread)
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
-					log_info(log, "trainer[%d] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
+					log_info(log, "trainer[%d (%d)] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, trainer_burst_estimate(trainer), previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
 				}
 				else if(trainer->target->catching){
 					trainer->action = CATCH;
@@ -802,7 +803,7 @@ void trainer_thread(t_callback* callback_thread)
 
 				break;
 			case CATCH:
-				log_info(log, "trainer[%d] operación: atrapar %s en (%d, %d)", trainer->id, trainer->target->pokemon, trainer->position->x, trainer->position->y);
+				log_info(log, "trainer[%d (%d)] operación: atrapar %s en (%d, %d)", trainer->id, trainer_burst_estimate(trainer), trainer->target->pokemon, trainer->position->x, trainer->position->y);
 				catch(trainer);
 
 				break;
@@ -843,10 +844,15 @@ void long_thread() {
 		long_term_scheduler();
 		sem_post(&sem_scheduler);
 
+
 		uint32_t ready_size = 0;
 		sem_wait(&sem_state_lists);
 		ready_size = list_size(ready_list);
 		sem_post(&sem_state_lists);
+		if(starting) {
+			starting = false;
+			sem_post(&sem_short);
+		}
 		if(idle_cpu &&  ready_size > 0) {
 			idle_cpu = false;
 			sem_post(&sem_short);
@@ -1330,7 +1336,7 @@ bool exit_cpu() {
 			sem_post(&sem_cpu_info);
 			if(reason_int != NO_CHANGE) {
 				char* reason = exit_cpu_reason_string();
-				log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
+				log_info(log, "trainer[%d (%d)] cambio de estado (%s), razon: %s", trainer->id, trainer_burst_estimate(trainer), state_change_log, reason);
 				free(reason);
 			}
 
@@ -1527,7 +1533,7 @@ void add_to_poke_map(char* pokemon, t_position* position)
 	sem_post(&sem_poke_map);
 	//EL CASO DE QUE ESTE EL POKEMON EN EL MAPA
 	//buscar el pokemon en la lista y retornar el indice
-
+	sem_post(&sem_long);
 
 }
 
@@ -1668,7 +1674,7 @@ void transition_ready_to_exec(uint32_t index)
 	t_trainer* trainer = list_get(exec_list,0);
 	sem_post(&sem_state_lists);
 	char* reason = enter_cpu_reason_string();
-	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
+	log_info(log, "trainer[%d (%d)] cambio de estado (ready -> exec), razon: %s", trainer->id, trainer->burst_estimate, reason);
 	sem_post(&trainer->sem_thread);
 	free(reason);
 }//YA TIENE log
@@ -1676,8 +1682,9 @@ void transition_ready_to_exec(uint32_t index)
 void transition_ready_to_exec_by_trainer(t_trainer* trainer) {
 	transition_by_id(trainer->id, ready_list, exec_list);
 	char* reason = enter_cpu_reason_string();
-	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
+	log_info(log, "trainer[%d (%d)] cambio de estado (ready -> exec), razon: %s", trainer->id, trainer->burst_estimate, reason);
 	sem_post(&trainer->sem_thread);
+	free(reason);
 }//YA TIENE log
 
 void transition_exec_to_ready()
@@ -1865,7 +1872,7 @@ bool add_to_pokemap_if_needed(char* pokemon, t_position* position) {
 		pokemon_added = true;
 
 		//long_term_scheduler();
-		sem_post(&sem_long);//SI APARECE UN NUEVO POKEMON NECESITADO, SE HACE POST AL LONG PARA QUE PLANIFIQUE A UN ENTRENADOR A BUSCARLO
+		//SI APARECE UN NUEVO POKEMON NECESITADO, SE HACE POST AL LONG PARA QUE PLANIFIQUE A UN ENTRENADOR A BUSCARLO
 	}
 	return pokemon_added;
 }
@@ -2262,13 +2269,13 @@ void wait_clients(int32_t socket_servidor, t_log* logger)
 
 	uint32_t tam_direccion = sizeof(struct sockaddr_in);
 
-	log_info(logger, "Esperando conexion en el thread %d", self);
+	log_info(log_utils, "Esperando conexion en el thread %d", self);
 
 	int32_t socket_cliente;
 	if((socket_cliente = accept(socket_servidor, (void*) &dir_cliente, &tam_direccion)) == -1)
 		log_error(log_utils, "Error al aceptar cliente");
 	else{
-		log_info(logger, "Conexion aceptada");
+		log_info(log_utils, "Conexion aceptada");
 	}
 
 
@@ -2288,7 +2295,7 @@ void team_serves_client(void* input){
 	t_log*	logger = ((struct thread_args*)input)->logger;
 	free(input);
 
-	log_info(logger, "Se creo un thread para recibir mensajes del cliente %d\n", socket);
+	log_info(log_utils, "Se creo un thread para recibir mensajes del cliente %d\n", socket);
 
 	operation_code cod_op;
 
@@ -2298,12 +2305,12 @@ void team_serves_client(void* input){
 	if(recibido == 0)
 		log_error(log_utils, "Se recibieron 0 bytes, se cierra el recv()");
 
-	log_info(logger, "se recibieron %d bytes", recibido);
+	log_info(log_utils, "se recibieron %d bytes", recibido);
 
-	log_info(logger, "se recibio la cod op: %d\n", cod_op);
+	log_info(log_utils, "se recibio la cod op: %d\n", cod_op);
 
-    log_info(logger, "se recibio el cod op: %d\n", cod_op);
-	void* message = process_request(cod_op, socket, logger);
+    log_info(log_utils, "se recibio el cod op: %d\n", cod_op);
+	void* message = process_request(cod_op, socket, log_utils);
 
 //se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
 	serve_thread_args* argus = malloc(sizeof(serve_thread_args));
