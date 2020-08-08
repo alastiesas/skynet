@@ -62,7 +62,8 @@ sem_t sem_long;
 t_state_change_reason exit_cpu_reason = START;//MUTEX = sem_cpu_info
 bool team_succes = false;
 sem_t sem_cpu;//mutex para que short y traienrs no puedan ejecutarse a la vez
-bool idle_cpu = true;
+bool idle_cpu = false;
+bool starting = true;
 
 //informes
 uint32_t cpu_cycles = 0;//MUTEX = sem_cpu_info
@@ -790,7 +791,7 @@ void trainer_thread(t_callback* callback_thread)
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
-					log_info(log, "trainer[%d] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
+					log_info(log, "trainer[%d (%d)] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, trainer->burst_estimate, previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
 				}
 				else if(trainer->target->catching){
 					trainer->action = CATCH;
@@ -802,7 +803,7 @@ void trainer_thread(t_callback* callback_thread)
 
 				break;
 			case CATCH:
-				log_info(log, "trainer[%d] operación: atrapar %s en (%d, %d)", trainer->id, trainer->target->pokemon, trainer->position->x, trainer->position->y);
+				log_info(log, "trainer[%d (%d)] operación: atrapar %s en (%d, %d)", trainer->id, trainer->burst_estimate, trainer->target->pokemon, trainer->position->x, trainer->position->y);
 				catch(trainer);
 
 				break;
@@ -843,10 +844,15 @@ void long_thread() {
 		long_term_scheduler();
 		sem_post(&sem_scheduler);
 
+
 		uint32_t ready_size = 0;
 		sem_wait(&sem_state_lists);
 		ready_size = list_size(ready_list);
 		sem_post(&sem_state_lists);
+		if(starting) {
+			starting = false;
+			sem_post(&sem_short);
+		}
 		if(idle_cpu &&  ready_size > 0) {
 			idle_cpu = false;
 			sem_post(&sem_short);
@@ -1330,7 +1336,7 @@ bool exit_cpu() {
 			sem_post(&sem_cpu_info);
 			if(reason_int != NO_CHANGE) {
 				char* reason = exit_cpu_reason_string();
-				log_info(log, "trainer[%d] cambio de estado (%s), razon: %s", trainer->id, state_change_log, reason);
+				log_info(log, "trainer[%d (%d)] cambio de estado (%s), razon: %s", trainer->id, trainer->burst_estimate, state_change_log, reason);
 				free(reason);
 			}
 
@@ -1668,7 +1674,7 @@ void transition_ready_to_exec(uint32_t index)
 	t_trainer* trainer = list_get(exec_list,0);
 	sem_post(&sem_state_lists);
 	char* reason = enter_cpu_reason_string();
-	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
+	log_info(log, "trainer[%d (%d)] cambio de estado (ready -> exec), razon: %s", trainer->id, trainer->burst_estimate, reason);
 	sem_post(&trainer->sem_thread);
 	free(reason);
 }//YA TIENE log
@@ -1676,7 +1682,7 @@ void transition_ready_to_exec(uint32_t index)
 void transition_ready_to_exec_by_trainer(t_trainer* trainer) {
 	transition_by_id(trainer->id, ready_list, exec_list);
 	char* reason = enter_cpu_reason_string();
-	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
+	log_info(log, "trainer[%d (%d)] cambio de estado (ready -> exec), razon: %s", trainer->id, trainer->burst_estimate, reason);
 	sem_post(&trainer->sem_thread);
 	free(reason);
 }//YA TIENE log
