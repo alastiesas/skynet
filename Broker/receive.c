@@ -81,12 +81,12 @@ t_pending* broker_receive_mensaje(uint32_t socket_cliente, uint32_t* size, bool 
 	t_mensaje->subs_confirmados = list_create();
 	t_mensaje->subs_enviados = list_create();
 
-	log_info(logger, "Esperando recibir tamanio del stream\n");
+	log_debug(logger, "Esperando recibir tamanio del stream");
 
 	if(recv_with_retry(socket_cliente, size, sizeof(uint32_t), MSG_WAITALL) < sizeof(uint32_t))
 		log_error(helper, "Error al recibir el tamanio del stream");
 	else
-		log_info(logger, "Se solicito recibir un tamanio de stream de: %d\n", *size);
+		log_debug(logger, "Se solicito recibir un tamanio de stream de: %d", *size);
 
 	//recibir id de new. (El cual va a ignorar, porque setea el suyo propio luego)
 	if(recv_with_retry(socket_cliente, &(t_mensaje->ID_mensaje), sizeof(t_mensaje->ID_mensaje), MSG_WAITALL) < sizeof(t_mensaje->ID_mensaje))

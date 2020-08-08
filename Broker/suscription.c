@@ -219,11 +219,11 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 			current_count = list_size(colaIDs);
 			current_total_count = (*total_queue_messages);
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
-		log_debug(suscriber->log, "Hay un total de %d mensajes actualmente en la cola", current_count);
+		log_trace(suscriber->log, "Hay un total de %d mensajes actualmente en la cola", current_count);
 
 		no_enviados_lista(current_global_message_ids, suscriber->sent_messages, &not_sent_ids);
 		not_sent_size = list_size(not_sent_ids);
-		log_debug(suscriber->log, "Hay %d mensajes pendientes a enviar", not_sent_size);
+		log_trace(suscriber->log, "Hay %d mensajes pendientes a enviar", not_sent_size);
 
 		//-----------------------------------------------------------------------------------------------------------
 
@@ -233,7 +233,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 				pthread_cond_wait(&(semaforos->broadcast), &(semaforos->mutex_cola));
 		/* do something that requires holding the mutex and condition is true */
 		pthread_mutex_unlock(&(semaforos->mutex_cola));
-		log_debug(suscriber->log, "Aparecieron nuevos mensajes a enviar");
+		log_info(suscriber->log, "Aparecieron nuevos mensajes a enviar");
 
 		/*if((*total_queue_messages) < current_total_count)	//si se vuelve a agregar meter mutex en total_queue_messages
 			printf("ERROR imposible, nunca puede ser menor\n");*/
@@ -243,7 +243,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 		while(!list_is_empty(not_sent_ids)){
 			//tomar el primer ID de mensaje que falte enviar, y sacarlo de la lista
 			elemento = list_remove(not_sent_ids, 0);
-			log_debug(suscriber->log, "Se va a enviar el mensaje de ID: %d", (int)elemento);
+			log_info(suscriber->log, "Se va a enviar el mensaje de ID: %d", (int)elemento);
 
 			//obtener el mensaje con ese ID
 			//Buscar el t_pending adentro de la cola, siempre se hace.
@@ -263,7 +263,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 					close_suscriber_thread(suscriber, not_sent_ids, current_global_message_ids);
 				}
 				else{
-					log_debug(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d. El send dio: %d (no asegura que lo haya recibido)", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber, result);
+					log_info(suscriber->log, "Se envio el mensaje de ID %d al suscriptor %d. El send dio: %d (no asegura que lo haya recibido)", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber, result);
 					log_info(obligatorio, "Se envio el mensaje de ID %d al suscriptor %d", (uint32_t) elemento, (uint32_t) suscriber->ID_suscriber);
 				}
 				//agregar el ID del mensaje como enviado en suscriber->sent_messages
@@ -283,7 +283,7 @@ void send_received_message(t_suscriber* suscriber, t_semaforos* semaforos, t_lis
 					close_suscriber_thread(suscriber, not_sent_ids, current_global_message_ids);
 				}
 				else{
-					log_info(logger, "El suscriptor confirma haber recibido el mensaje");
+					log_info(logger, "El suscriptor %d confirma haber recibido el mensaje %d", (uint32_t) suscriber->ID_suscriber, (uint32_t) elemento);
 					log_info(obligatorio, "El suscriptor %d confirma haber recibido el mensaje %d", (uint32_t) suscriber->ID_suscriber, (uint32_t) elemento);
 				}
 

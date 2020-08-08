@@ -88,10 +88,10 @@ t_message_appeared* new_pokemon_routine(t_message_new* new_pokemon) {
 			bitarray_set_bit(bitmap, block_number);
 			list_add(blocks_list_int, (void*)block_number);
 			msync(bmap, blocks / 8, MS_SYNC);
+			log_debug(helper, "%s ocupa el bloque %d", new_pokemon->pokemon_name, block_number);
 		}
 		pthread_mutex_unlock(&mutex_bitmap);
 		list_destroy(available_blocks);
-		log_debug(helper, "Se ocupa/n %d bloque/s en el bitmap", diff);
 	}
 
 	/*-----------------------------------*/
@@ -282,8 +282,8 @@ t_message_caught* process_catch(t_message_catch* message_catch){
 					bitarray_clean_bit(bitmap, block_number);
 					msync(bmap, blocks/8, MS_SYNC);
 					pthread_mutex_unlock(&mutex_bitmap);
+					log_debug(helper, "%s libera el bloque %d", message_catch->pokemon_name, block_number);
 				}
-				log_debug(helper, "Se libera/n %d bloque/s en el bitmap", diff);
 				//se actualizan los bloques en el metadata mas adelante
 			}
 			log_debug(logger, "tamaño de lista de bloques luego de eliminar: %d\n",list_size(blocks_list_int));

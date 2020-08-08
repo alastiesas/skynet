@@ -110,7 +110,7 @@ int32_t send_ACK(uint32_t socket, t_log* logger){
 	if((result = send_with_retry(socket, &ACK, sizeof(int32_t), MSG_NOSIGNAL)) == -1)
 		log_error(logger, "Error al enviar confirmacion");
 	else
-		log_info(logger, "Se envio la confirmacion (%d bytes)", result);
+		log_debug(logger, "Se envio la confirmacion (%d bytes)", result);
 
 	return result;
 
@@ -135,14 +135,14 @@ int32_t receive_ACK(uint32_t socket, t_log* logger){
 
 	int32_t resultado = recv_with_retry(socket, &ACK, sizeof(int32_t), MSG_WAITALL);
 	if(resultado == (-1 || 0)){
-		log_error(logger, "Error al recibir la confirmacion del mensaje\n");
+		log_error(logger, "Error al recibir la confirmacion del mensaje");
 		return -1; //failure
 	}
 	if(ACK == 1){
-		log_info(logger, "Se recibio la confirmacion del mensaje enviado\n");
+		log_trace(logger, "Se recibio la confirmacion del mensaje enviado");
 	}
 	else if(ACK == 2){
-		log_error(logger, "El proceso responde error en la solicitud\n");
+		log_error(logger, "El proceso responde error en la solicitud");
 		return -1;
 	}
 	else{
@@ -633,7 +633,7 @@ operation_code receive_cod_op(uint32_t socket, t_log* logger){
 	if((resultado = recv_with_retry(socket, &codigo, sizeof(operation_code), MSG_WAITALL)) == -1)
 		log_error(logger, "Error al recibir la cod_op\n");
 	else
-		log_info(logger, "Se recibio la cod op: %d\n", codigo);
+		log_debug(logger, "Se recibio la cod op: %d", codigo);
 
 	return codigo;
 }
