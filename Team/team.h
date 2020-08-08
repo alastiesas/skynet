@@ -11,7 +11,7 @@
 #include"includes.h"
 #include"utilities.h"
 #include"team_structs.h"
-#define DEADLOCK_PRIORITY 5
+#define DEADLOCK_PRIORITY 100
 //---GLOBALS---
 
 //logs: pueden desactivarse para no mostrarse en consola
@@ -1678,6 +1678,7 @@ void transition_ready_to_exec_by_trainer(t_trainer* trainer) {
 	char* reason = enter_cpu_reason_string();
 	log_info(log, "trainer[%d] cambio de estado (ready -> exec), razon: %s", trainer->id, reason);
 	sem_post(&trainer->sem_thread);
+	free(reason);
 }//YA TIENE log
 
 void transition_exec_to_ready()
