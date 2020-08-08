@@ -791,7 +791,7 @@ void trainer_thread(t_callback* callback_thread)
 				//aca va un if, no un while
 				if(trainer->position->x != trainer->target->position->x || trainer->position->y != trainer->target->position->y){
 					move(trainer);
-					log_info(log, "trainer[%d (%d)] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, trainer->burst_estimate, previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
+					log_info(log, "trainer[%d (%d)] operación: movimiento (%s) -> (%d, %d), objetivo: %s %s(%d, %d)", trainer->id, trainer_burst_estimate(trainer), previous_string, trainer->position->x,trainer->position->y, trainer->target->catching?"atrapar":"intercambiar", trainer->target->pokemon, trainer->target->position->x, trainer->target->position->y);
 				}
 				else if(trainer->target->catching){
 					trainer->action = CATCH;
@@ -803,7 +803,7 @@ void trainer_thread(t_callback* callback_thread)
 
 				break;
 			case CATCH:
-				log_info(log, "trainer[%d (%d)] operación: atrapar %s en (%d, %d)", trainer->id, trainer->burst_estimate, trainer->target->pokemon, trainer->position->x, trainer->position->y);
+				log_info(log, "trainer[%d (%d)] operación: atrapar %s en (%d, %d)", trainer->id, trainer_burst_estimate(trainer), trainer->target->pokemon, trainer->position->x, trainer->position->y);
 				catch(trainer);
 
 				break;
@@ -1336,7 +1336,7 @@ bool exit_cpu() {
 			sem_post(&sem_cpu_info);
 			if(reason_int != NO_CHANGE) {
 				char* reason = exit_cpu_reason_string();
-				log_info(log, "trainer[%d (%d)] cambio de estado (%s), razon: %s", trainer->id, trainer->burst_estimate, state_change_log, reason);
+				log_info(log, "trainer[%d (%d)] cambio de estado (%s), razon: %s", trainer->id, trainer_burst_estimate(trainer), state_change_log, reason);
 				free(reason);
 			}
 
