@@ -11,7 +11,7 @@
 #include"includes.h"
 #include"utilities.h"
 #include"team_structs.h"
-#define DEADLOCK_PRIORITY 15
+#define DEADLOCK_PRIORITY 10000
 //---GLOBALS---
 
 //logs: pueden desactivarse para no mostrarse en consola
