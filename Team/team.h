@@ -2304,7 +2304,7 @@ void team_serves_client(void* input){
 	log_info(log_utils, "se recibio la cod op: %d\n", cod_op);
 
     log_info(log_utils, "se recibio el cod op: %d\n", cod_op);
-	void* message = process_request(cod_op, socket, logger);
+	void* message = process_request(cod_op, socket, log_utils);
 
 //se crea un nuevo hilo para atender el mensaje, y se vuelve a la escucha
 	serve_thread_args* argus = malloc(sizeof(serve_thread_args));
